@@ -1,0 +1,119 @@
+export const dynamic = "force-dynamic"
+
+import { NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+
+export async function POST(request: Request) {
+  try {
+    const { question } = await request.json()
+    const q = (question ?? "").toLowerCase()
+
+    const [
+      totalVehicles,
+      vehiclesByStatus,
+      workOrdersByStatus,
+      pendingRepairs,
+      lowStockParts,
+      overdueSchedules,
+      dueSoonSchedules,
+    ] = await Promise.all([
+      prisma.vehicle.count(),
+      prisma.vehicle.groupBy({ by: ["status"], _count: true }),
+      prisma.workOrder.groupBy({ by: ["status"], _count: true }),
+      prisma.repairRequest.count({ where: { status: "PENDING" } }),
+      prisma.$queryRaw<{ name: string; stockQuantity: number; minimumQuantity: number }[]>`
+        SELECT "name", "stockQuantity", "minimumQuantity" FROM "parts"
+        WHERE "stockQuantity" <= "minimumQuantity"
+        ORDER BY "stockQuantity" ASC
+        LIMIT 10
+      `.catch(() => []),
+      prisma.maintenanceSchedule.count({ where: { status: "OVERDUE" } }),
+      prisma.maintenanceSchedule.count({ where: { status: "DUE_SOON" } }),
+    ])
+
+    const sc: Record<string, number> = {}
+    for (const s of vehiclesByStatus) sc[s.status] = s._count
+    const wc: Record<string, number> = {}
+    for (const w of workOrdersByStatus) wc[w.status] = w._count
+
+    const reply = buildReply(q, {
+      totalVehicles,
+      sc,
+      wc,
+      pendingRepairs,
+      lowStockParts,
+      overdueSchedules,
+      dueSoonSchedules,
+    })
+
+    return NextResponse.json({ reply })
+  } catch (error) {
+    console.error("AI API error:", error)
+    return NextResponse.json({ reply: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง" })
+  }
+}
+
+type Ctx = {
+  totalVehicles: number
+  sc: Record<string, number>
+  wc: Record<string, number>
+  pendingRepairs: number
+  lowStockParts: { name: string; stockQuantity: number; minimumQuantity: number }[]
+  overdueSchedules: number
+  dueSoonSchedules: number
+}
+
+function buildReply(q: string, ctx: Ctx): string {
+  const { sc, wc, totalVehicles } = ctx
+  const available = sc["AVAILABLE"] ?? 0
+  const inRepair = sc["IN_REPAIR"] ?? 0
+  const waitingParts = sc["WAITING_PARTS"] ?? 0
+  const overdue = sc["OVERDUE"] ?? 0
+  const outOfService = sc["OUT_OF_SERVICE"] ?? 0
+  const pct = totalVehicles > 0 ? ((available / totalVehicles) * 100).toFixed(1) : "0"
+
+  if (q.includes("รถ") && (q.includes("กี่คัน") || q.includes("ทั้งหมด") || q.includes("จำนวน"))) {
+    return `ขณะนี้มียานพาหนะทั้งหมด ${totalVehicles} คัน พร้อมใช้งาน ${available} คัน (${pct}%) กำลังซ่อม ${inRepair} คัน รออะไหล่ ${waitingParts} คัน เกินกำหนด ${overdue} คัน หยุดใช้งาน ${outOfService} คัน`
+  }
+
+  if (q.includes("ซ่อม") && (q.includes("กำลัง") || q.includes("ทำงาน") || progress(wc))) {
+    const total = (wc["OPEN"] ?? 0) + (wc["IN_PROGRESS"] ?? 0) + (wc["WAITING_PARTS"] ?? 0)
+    return `งานซ่อมที่กำลังดำเนินการ: รอรับงาน ${wc["OPEN"] ?? 0} กำลังซ่อม ${wc["IN_PROGRESS"] ?? 0} รออะไหล่ ${wc["WAITING_PARTS"] ?? 0} เสร็จแล้ว ${wc["COMPLETED"] ?? 0} รวม ${total} รายการ`
+  }
+
+  if (q.includes("แจ้งซ่อม") || q.includes("ค้าง")) {
+    return `ใบแจ้งซ่อมค้างดำเนินการ ${ctx.pendingRepairs} รายการ`
+  }
+
+  if (q.includes("อะไหล่") || q.includes("สต็อก") || q.includes("stock")) {
+    if (ctx.lowStockParts.length === 0) return "อะไหล่ทุกรายการมีสต็อกเพียงพอ"
+    const list = ctx.lowStockParts
+      .slice(0, 5)
+      .map((p) => `${p.name} (เหลือ ${p.stockQuantity} / ขั้นต่ำ ${p.minimumQuantity})`)
+      .join(", ")
+    return `อะไหล่ใกล้หมด ${ctx.lowStockParts.length} รายการ: ${list}`
+  }
+
+  if (q.includes("แผนซ่อม") || q.includes("บำรุง") || q.includes("schedule")) {
+    const parts: string[] = []
+    if (ctx.overdueSchedules > 0) parts.push(`เกินกำหนด ${ctx.overdueSchedules} รายการ`)
+    if (ctx.dueSoonSchedules > 0) parts.push(`ใกล้ถึงกำหนด ${ctx.dueSoonSchedules} รายการ`)
+    return parts.length > 0
+      ? `แผนซ่อมบำรุง: ${parts.join(" ")}`
+      : "แผนซ่อมบำรุงอยู่ในเกณฑ์ปกติ ไม่มีรายการเกินกำหนด"
+  }
+
+  if (q.includes("พร้อม") || q.includes("available")) {
+    return `รถพร้อมใช้งาน ${available} คัน จาก ${totalVehicles} คัน (${pct}%)`
+  }
+
+  if (q.includes("เกินกำหนด") || q.includes("overdue")) {
+    return `รถเกินกำหนดซ่อม ${overdue} คัน หยุดใช้งาน ${outOfService} คัน ควรเร่งดำเนินการ`
+  }
+
+  return `ขณะนี้มียานพาหนะ ${totalVehicles} คัน พร้อมใช้งาน ${available} คัน กำลังซ่อม ${inRepair} คัน งานค้าง ${ctx.pendingRepairs} รายการ อะไหล่ใกล้หมด ${ctx.lowStockParts.length} รายการ สามารถถามเพิ่มเติมเกี่ยวกับ รถ, ซ่อม, อะไหล่, แผนซ่อมบำรุง ได้ครับ`
+}
+
+function progress(wc: Record<string, number>): boolean {
+  return (wc["OPEN"] ?? 0) + (wc["IN_PROGRESS"] ?? 0) > 0
+}

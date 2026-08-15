@@ -1,0 +1,436 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  IN_USE
+  DUE_SOON
+  OVERDUE
+  IN_REPAIR
+  WAITING_PARTS
+  OUT_OF_SERVICE
+  RETIRED
+}
+
+enum ReadingType {
+  MILEAGE
+  HOURS
+}
+
+enum InspectionResult {
+  PASS
+  MINOR_ISSUES
+  FAIL
+}
+
+enum PassFail {
+  PASS
+  FAIL
+}
+
+enum MaintenanceStatus {
+  PENDING
+  DUE_SOON
+  OVERDUE
+  COMPLETED
+}
+
+enum UrgencyLevel {
+  LOW
+  MEDIUM
+  HIGH
+  EMERGENCY
+}
+
+enum RepairRequestStatus {
+  PENDING
+  ACKNOWLEDGED
+  APPROVED
+  WORK_ORDER_CREATED
+  REJECTED
+}
+
+enum WorkOrderStatus {
+  OPEN
+  PENDING_APPROVAL
+  ASSIGNED
+  DIAGNOSING
+  WAITING_PARTS
+  IN_PROGRESS
+  READY_FOR_QC
+  COMPLETED
+  CLOSED
+  CANCELLED
+}
+
+enum MovementType {
+  IN
+  OUT
+  ADJUSTMENT
+}
+
+model User {
+  id                  String                @id @default(uuid()) @db.Uuid
+  email               String                @unique
+  password            String
+  name                String
+  roleId              String                @db.Uuid
+  role                Role                  @relation(fields: [roleId], references: [id])
+  unitId              String?               @db.Uuid
+  unit                Unit?                 @relation(fields: [unitId], references: [id])
+  status              UserStatus            @default(ACTIVE)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  auditLogs           AuditLog[]
+  vehicleReadings     VehicleReading[]
+  inspections         InspectionChecklist[]
+  repairRequests      RepairRequest[]
+  assignedWorkOrders  WorkOrder[]           @relation("MechanicWorkOrders")
+  supervisedWorkOrders WorkOrder[]          @relation("SupervisorWorkOrders")
+  stockMovements      StockMovement[]
+  attachments         Attachment[]
+  aiLogs              AiLog[]
+
+  @@map("users")
+}
+
+model Role {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String       @unique
+  description String?
+  users       User[]
+  permissions Permission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id      String @id @default(uuid()) @db.Uuid
+  roleId  String @db.Uuid
+  role    Role   @relation(fields: [roleId], references: [id])
+  module  String
+  action  String
+
+  @@map("permissions")
+}
+
+model Unit {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  users       User[]
+  vehicles    Vehicle[]
+
+  @@map("units")
+}
+
+model Vehicle {
+  id                 String                @id @default(uuid()) @db.Uuid
+  registrationNumber String                @unique
+  fleetNumber        String?               @unique
+  vin                String?               @unique
+  engineNumber       String?               @unique
+  vehicleTypeId      String                @db.Uuid
+  vehicleType        VehicleType           @relation(fields: [vehicleTypeId], references: [id])
+  brand              String
+  model              String
+  year               Int
+  unitId             String                @db.Uuid
+  unit               Unit                  @relation(fields: [unitId], references: [id])
+  fuelType           String
+  currentMileage     Float                 @default(0)
+  engineHours        Float?                @default(0)
+  status             VehicleStatus         @default(AVAILABLE)
+
+  documents          VehicleDocument[]
+  photos             VehiclePhoto[]
+  readings           VehicleReading[]
+  inspections        InspectionChecklist[]
+  schedules          MaintenanceSchedule[]
+  repairRequests     RepairRequest[]
+  workOrders         WorkOrder[]
+
+  @@map("vehicles")
+}
+
+model VehicleType {
+  id               String            @id @default(uuid()) @db.Uuid
+  name             String
+  vehicles         Vehicle[]
+  maintenancePlans MaintenancePlan[]
+
+  @@map("vehicle_types")
+}
+
+model VehicleDocument {
+  id           String    @id @default(uuid()) @db.Uuid
+  vehicleId    String    @db.Uuid
+  vehicle      Vehicle   @relation(fields: [vehicleId], references: [id])
+  documentType String
+  fileUrl      String
+  expiryDate   DateTime?
+
+  @@map("vehicle_documents")
+}
+
+model VehiclePhoto {
+  id        String  @id @default(uuid()) @db.Uuid
+  vehicleId String  @db.Uuid
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+  photoUrl  String
+  isPrimary Boolean @default(false)
+
+  @@map("vehicle_photos")
+}
+
+model VehicleReading {
+  id           String      @id @default(uuid()) @db.Uuid
+  vehicleId    String      @db.Uuid
+  vehicle      Vehicle     @relation(fields: [vehicleId], references: [id])
+  readingValue Float
+  readingType  ReadingType
+  recordedAt   DateTime    @default(now())
+  recordedById String      @db.Uuid
+  recordedBy   User        @relation(fields: [recordedById], references: [id])
+
+  @@map("vehicle_readings")
+}
+
+model InspectionChecklist {
+  id             String           @id @default(uuid()) @db.Uuid
+  vehicleId      String           @db.Uuid
+  vehicle        Vehicle          @relation(fields: [vehicleId], references: [id])
+  inspectorId    String           @db.Uuid
+  inspector      User             @relation(fields: [inspectorId], references: [id])
+  inspectionDate DateTime         @default(now())
+  mileage        Float
+  result         InspectionResult
+  remarks        String?
+
+  items          InspectionItem[]
+
+  @@map("inspection_checklists")
+}
+
+model InspectionItem {
+  id          String              @id @default(uuid()) @db.Uuid
+  checklistId String              @db.Uuid
+  checklist   InspectionChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  itemName    String
+  status      PassFail
+  remarks     String?
+  photoUrl    String?
+
+  @@map("inspection_items")
+}
+
+model MaintenancePlan {
+  id              String                @id @default(uuid()) @db.Uuid
+  name            String
+  vehicleTypeId   String                @db.Uuid
+  vehicleType     VehicleType           @relation(fields: [vehicleTypeId], references: [id])
+  intervalMonths  Int?
+  intervalMileage Float?
+  intervalHours   Float?
+
+  schedules       MaintenanceSchedule[]
+
+  @@map("maintenance_plans")
+}
+
+model MaintenanceSchedule {
+  id                   String            @id @default(uuid()) @db.Uuid
+  vehicleId            String            @db.Uuid
+  vehicle              Vehicle           @relation(fields: [vehicleId], references: [id])
+  planId               String            @db.Uuid
+  plan                 MaintenancePlan   @relation(fields: [planId], references: [id])
+  lastPerformedDate    DateTime?
+  lastPerformedMileage Float?
+  nextDueDate          DateTime?
+  nextDueMileage       Float?
+  status               MaintenanceStatus @default(PENDING)
+
+  @@map("maintenance_schedules")
+}
+
+model RepairRequest {
+  id             String              @id @default(uuid()) @db.Uuid
+  requestNumber  String              @unique
+  vehicleId      String              @db.Uuid
+  vehicle        Vehicle             @relation(fields: [vehicleId], references: [id])
+  requesterId    String              @db.Uuid
+  requester      User                @relation(fields: [requesterId], references: [id])
+  symptoms       String
+  systemCategory String
+  urgency        UrgencyLevel        @default(MEDIUM)
+  mileage        Float
+  status         RepairRequestStatus @default(PENDING)
+  photoUrl       String?
+
+  workOrder      WorkOrder?
+
+  @@map("repair_requests")
+}
+
+model WorkOrder {
+  id              String          @id @default(uuid()) @db.Uuid
+  woNumber        String          @unique
+  repairRequestId String?         @unique @db.Uuid
+  repairRequest   RepairRequest?  @relation(fields: [repairRequestId], references: [id])
+  vehicleId       String          @db.Uuid
+  vehicle         Vehicle         @relation(fields: [vehicleId], references: [id])
+  mechanicId      String?         @db.Uuid
+  mechanic        User?           @relation("MechanicWorkOrders", fields: [mechanicId], references: [id])
+  supervisorId    String          @db.Uuid
+  supervisor      User            @relation("SupervisorWorkOrders", fields: [supervisorId], references: [id])
+  status          WorkOrderStatus @default(OPEN)
+  startDate       DateTime?
+  endDate         DateTime?
+  totalLaborCost  Float           @default(0)
+  totalPartsCost  Float           @default(0)
+
+  tasks           WorkOrderTask[]
+  partsUsed       WorkOrderPart[]
+
+  @@map("work_orders")
+}
+
+model WorkOrderTask {
+  id               String    @id @default(uuid()) @db.Uuid
+  workOrderId      String    @db.Uuid
+  workOrder        WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  taskDescription  String
+  laborHours       Float     @default(0)
+  cost             Float     @default(0)
+
+  @@map("work_order_tasks")
+}
+
+model Part {
+  id              String          @id @default(uuid()) @db.Uuid
+  partNumber      String          @unique
+  name            String
+  categoryId      String          @db.Uuid
+  category        PartCategory    @relation(fields: [categoryId], references: [id])
+  stockQuantity   Int             @default(0)
+  minimumQuantity Int             @default(0)
+  unitMeasure     String
+  unitPrice       Float           @default(0)
+  vendorId        String?         @db.Uuid
+  vendor          Vendor?         @relation(fields: [vendorId], references: [id])
+
+  stockMovements  StockMovement[]
+  workOrderParts  WorkOrderPart[]
+
+  @@map("parts")
+}
+
+model PartCategory {
+  id    String @id @default(uuid()) @db.Uuid
+  name  String
+  parts Part[]
+
+  @@map("part_categories")
+}
+
+model StockMovement {
+  id           String       @id @default(uuid()) @db.Uuid
+  partId       String       @db.Uuid
+  part         Part         @relation(fields: [partId], references: [id])
+  movementType MovementType
+  quantity     Int
+  referenceId  String?
+  performedById String      @db.Uuid
+  performedBy  User         @relation(fields: [performedById], references: [id])
+  date         DateTime     @default(now())
+
+  @@map("stock_movements")
+}
+
+model WorkOrderPart {
+  id          String    @id @default(uuid()) @db.Uuid
+  workOrderId String    @db.Uuid
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  partId      String    @db.Uuid
+  part        Part      @relation(fields: [partId], references: [id])
+  quantity    Int
+  unitPrice   Float
+  totalPrice  Float
+
+  @@map("work_order_parts")
+}
+
+model Vendor {
+  id          String  @id @default(uuid()) @db.Uuid
+  name        String
+  contactInfo String?
+  parts       Part[]
+
+  @@map("vendors")
+}
+
+model Notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  title     String
+  message   String
+  type      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+model Attachment {
+  id         String   @id @default(uuid()) @db.Uuid
+  entityType String
+  entityId   String   @db.Uuid
+  fileUrl    String
+  fileName   String
+  uploadedById String @db.Uuid
+  uploadedBy User     @relation(fields: [uploadedById], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@map("attachments")
+}
+
+model AiLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  prompt    String   @db.Text
+  response  String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@map("ai_logs")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id])
+  action     String
+  entityType String
+  entityId   String   @db.Uuid
+  oldValues  Json?
+  newValues  Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@map("audit_logs")
+}
