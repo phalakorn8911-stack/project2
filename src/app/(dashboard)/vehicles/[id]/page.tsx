@@ -23,6 +23,14 @@ const urgencyLabels: Record<string, { label: string; className: string }> = {
   EMERGENCY: { label: "ด่วนมาก", className: "text-destructive bg-destructive" },
 }
 
+const repairRequestStatusLabels: Record<string, { label: string; className: string }> = {
+  PENDING: { label: "รอดำเนินการ", className: "text-muted-foreground bg-muted" },
+  ACKNOWLEDGED: { label: "รับทราบแล้ว", className: "text-info bg-info/10" },
+  APPROVED: { label: "อนุมัติแล้ว", className: "text-status-due bg-status-due/10" },
+  WORK_ORDER_CREATED: { label: "สร้างใบสั่งซ่อมแล้ว", className: "text-success bg-success/10" },
+  REJECTED: { label: "ปฏิเสธ", className: "text-destructive bg-destructive/10" },
+}
+
 const scheduleStatusLabels: Record<string, { label: string; className: string }> = {
   PENDING: { label: "รอดำเนินการ", className: "text-muted-foreground bg-muted" },
   DUE_SOON: { label: "ใกล้ถึงกำหนด", className: "text-status-due bg-status-due/10" },
@@ -554,6 +562,7 @@ export default function VehicleDetailPage() {
               <p className="text-xs text-muted-foreground text-center py-4">ไม่มีประวัติ</p>
             ) : (
               (vehicle.repairRequests ?? []).map((rr: any) => {
+                const rrStatus = repairRequestStatusLabels[rr.status] ?? repairRequestStatusLabels.PENDING
                 const urg = urgencyLabels[rr.urgency] ?? urgencyLabels.MEDIUM
                 const isEditing = editingRR === rr.id
                 return (
@@ -561,6 +570,9 @@ export default function VehicleDetailPage() {
                     <div className="flex items-start justify-between mb-1">
                       <span className="text-xs font-mono text-muted-foreground">{rr.requestNumber}</span>
                       <div className="flex items-center gap-1">
+                        <span className={cn("inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium", rrStatus.className)}>
+                          {rrStatus.label}
+                        </span>
                         <span className={cn("inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium", urg.className)}>
                           {urg.label}
                         </span>
@@ -576,9 +588,10 @@ export default function VehicleDetailPage() {
                         <textarea value={editRRSymptoms} onChange={(e) => setEditRRSymptoms(e.target.value)} className="w-full px-2 py-1.5 text-sm border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50" rows={2} />
                         <select value={editRRStatus} onChange={(e) => setEditRRStatus(e.target.value)} className="w-full px-2 py-1.5 text-sm border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50">
                           <option value="PENDING">รอดำเนินการ</option>
-                          <option value="IN_PROGRESS">กำลังดำเนินการ</option>
-                          <option value="COMPLETED">เสร็จแล้ว</option>
-                          <option value="CANCELLED">ยกเลิก</option>
+                          <option value="ACKNOWLEDGED">รับทราบแล้ว</option>
+                          <option value="APPROVED">อนุมัติแล้ว</option>
+                          <option value="WORK_ORDER_CREATED">สร้างใบสั่งซ่อมแล้ว</option>
+                          <option value="REJECTED">ปฏิเสธ</option>
                         </select>
                         <div className="flex justify-end gap-1">
                           <button onClick={() => setEditingRR(null)} className="px-2 py-1 text-xs border border-border rounded-lg hover:bg-muted">ยกเลิก</button>
