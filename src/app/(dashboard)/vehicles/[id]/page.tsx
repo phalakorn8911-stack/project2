@@ -60,6 +60,7 @@ export default function VehicleDetailPage() {
   const [editYear, setEditYear] = useState(0)
   const [editMileage, setEditMileage] = useState(0)
   const [editVehicleTypeId, setEditVehicleTypeId] = useState("")
+  const [editStatus, setEditStatus] = useState("")
   const [vehicleTypes, setVehicleTypes] = useState<{ id: string; name: string }[]>([])
   const [saving, setSaving] = useState(false)
   const [showDriverPicker, setShowDriverPicker] = useState(false)
@@ -91,6 +92,7 @@ export default function VehicleDetailPage() {
         setEditYear(data.year)
         setEditMileage(data.currentMileage)
         setEditVehicleTypeId(data.vehicleTypeId ?? "")
+        setEditStatus(data.status)
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -154,7 +156,7 @@ export default function VehicleDetailPage() {
       await fetch(`/api/vehicles/${params.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ registrationNumber: editReg, model: editModel, year: editYear, currentMileage: editMileage, vehicleTypeId: editVehicleTypeId }),
+        body: JSON.stringify({ registrationNumber: editReg, model: editModel, year: editYear, currentMileage: editMileage, vehicleTypeId: editVehicleTypeId, status: editStatus }),
       })
       fetchVehicle()
       setEditing(false)
@@ -316,6 +318,16 @@ export default function VehicleDetailPage() {
                   {vehicleTypes.map((t) => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">สถานะ</label>
+                <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring">
+                  <option value="AVAILABLE">พร้อมใช้งาน</option>
+                  <option value="IN_REPAIR">กำลังซ่อม</option>
+                  <option value="WAITING_PARTS">รออะไหล่</option>
+                  <option value="OUT_OF_SERVICE">รถงดใช้งาน</option>
+                  <option value="IN_USE">กำลังใช้งาน</option>
                 </select>
               </div>
             </div>
