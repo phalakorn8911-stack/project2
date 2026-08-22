@@ -34,21 +34,33 @@ export async function POST(request: Request) {
 
     if (uploadError) {
       console.error("Upload error:", uploadError)
-      return NextResponse.json({ error: "Upload failed" }, { status: 500 })
+      return NextResponse.json({ error: "Upload failed: " + uploadError.message }, { status: 500 })
     }
 
     const { data: urlData } = supabase.storage
       .from("driver-photos")
       .getPublicUrl(filename)
 
-    await prisma.driver.update({
-      where: { id: driverId },
-      data: { photoUrl: urlData.publicUrl },
-    })
+    const photoUrl = urlData.publicUrl
 
-    return NextResponse.json({
-      photoUrl: urlData.publicUrl,
-    })
+    try {
+      await prisma.driver.update({
+        where: { id: driverId },
+        data: { photoUrl },
+      })
+    } catch (prismaErr) {
+      console.error("Prisma update failed, trying raw SQL:", prismaErr)
+      const { Client } = await import("pg")
+      const pg = new Client({
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false },
+      })
+      await pg.connect()
+      await pg.query('UPDATE drivers SET photo_url = $1 WHERE id = $2', [photoUrl, driverId])
+      await pg.end()
+    }
+
+    return NextResponse.json({ photoUrl })
   } catch (error) {
     console.error("Upload driver photo error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
@@ -74,10 +86,21 @@ export async function DELETE(request: Request) {
       await supabase.storage.from("driver-photos").remove([urlParts[1]])
     }
 
-    await prisma.driver.update({
-      where: { id: driverId },
-      data: { photoUrl: null },
-    })
+    try {
+      await prisma.driver.update({
+        where: { id: driverId },
+        data: { photoUrl: null },
+      })
+    } catch {
+      const { Client } = await import("pg")
+      const pg = new Client({
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false },
+      })
+      await pg.connect()
+      await pg.query('UPDATE drivers SET photo_url = NULL WHERE id = $1', [driverId])
+      await pg.end()
+    }
 
     return NextResponse.json({ ok: true })
   } catch (error) {
