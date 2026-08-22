@@ -1,7 +1,25 @@
 import type { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { prisma } from "./prisma"
 import bcrypt from "bcryptjs"
+import { Client } from "pg"
+
+async function findUserByEmail(email: string) {
+  const pg = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  })
+  await pg.connect()
+  const result = await pg.query(
+    `SELECT u.id, u.email, u.password, u.name, u.rank, u."firstName", u."lastName", u.status, u."unitId",
+            r.name as role_name
+     FROM users u
+     JOIN roles r ON r.id = u."roleId"
+     WHERE u.email = $1`,
+    [email]
+  )
+  await pg.end()
+  return result.rows[0] || null
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -16,10 +34,7 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-          include: { role: true },
-        })
+        const user = await findUserByEmail(credentials.email)
 
         if (!user || user.status !== "ACTIVE") {
           return null
@@ -35,7 +50,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role.name,
+          role: user.role_name,
           unitId: user.unitId,
           rank: user.rank,
           firstName: user.firstName,
