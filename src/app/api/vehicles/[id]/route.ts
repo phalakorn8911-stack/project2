@@ -14,6 +14,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         photos: {
           orderBy: { id: "desc" },
         },
+        drivers: {
+          include: { driver: true },
+        },
         repairRequests: {
           include: { workOrder: true },
           orderBy: { requestNumber: "desc" },
@@ -47,6 +50,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         photoUrl: p.photoUrl,
         isPrimary: p.isPrimary,
       })),
+      drivers: vehicle.drivers.map((vd) => ({
+        id: vd.driver.id,
+        rank: vd.driver.rank,
+        firstName: vd.driver.firstName,
+        lastName: vd.driver.lastName,
+      })),
       repairRequests: vehicle.repairRequests.map((rr) => ({
         id: rr.id,
         requestNumber: rr.requestNumber,
@@ -66,6 +75,27 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     })
   } catch (error) {
     console.error("Vehicle detail API error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
+
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params
+    const body = await request.json()
+
+    const vehicle = await prisma.vehicle.update({
+      where: { id },
+      data: {
+        ...(body.year !== undefined && { year: body.year }),
+        ...(body.currentMileage !== undefined && { currentMileage: body.currentMileage }),
+        ...(body.vehicleTypeId !== undefined && { vehicleTypeId: body.vehicleTypeId }),
+      },
+    })
+
+    return NextResponse.json({ ok: true, id: vehicle.id })
+  } catch (error) {
+    console.error("Update vehicle error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

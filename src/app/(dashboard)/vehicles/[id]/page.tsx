@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Truck, Calendar, Gauge, Fuel, Upload, X, ImagePlus, Star, Trash2 } from "lucide-react"
+import { ArrowLeft, Truck, Calendar, Gauge, Fuel, Upload, X, ImagePlus, Star, Trash2, Pencil, Save, UserPlus, UserMinus } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const statusMeta: Record<string, { label: string; className: string }> = {
@@ -36,26 +36,48 @@ interface Photo {
   isPrimary: boolean
 }
 
+interface DriverInfo {
+  id: string
+  rank: string
+  firstName: string
+  lastName: string
+}
+
 export default function VehicleDetailPage() {
   const params = useParams()
   const router = useRouter()
   const [vehicle, setVehicle] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [photos, setPhotos] = useState<Photo[]>([])
+  const [drivers, setDrivers] = useState<DriverInfo[]>([])
+  const [allDrivers, setAllDrivers] = useState<any[]>([])
   const [uploading, setUploading] = useState(false)
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [editing, setEditing] = useState(false)
+  const [editYear, setEditYear] = useState(0)
+  const [editMileage, setEditMileage] = useState(0)
+  const [saving, setSaving] = useState(false)
+  const [showDriverPicker, setShowDriverPicker] = useState(false)
 
   useEffect(() => {
+    fetchVehicle()
+    fetch("/api/drivers").then((r) => r.json()).then((d) => setAllDrivers(d)).catch(() => {})
+  }, [params.id])
+
+  const fetchVehicle = () => {
     fetch(`/api/vehicles/${params.id}`)
       .then((r) => r.json())
       .then((data) => {
         setVehicle(data)
         setPhotos(data.photos ?? [])
+        setDrivers(data.drivers ?? [])
+        setEditYear(data.year)
+        setEditMileage(data.currentMileage)
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [params.id])
+  }
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -96,7 +118,7 @@ export default function VehicleDetailPage() {
 
   const handleSetPrimary = async (photoId: string) => {
     try {
-      await fetch(`/api/upload`, {
+      await fetch("/api/upload", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ photoId, vehicleId: params.id }),
@@ -106,6 +128,46 @@ export default function VehicleDetailPage() {
       )
     } catch (err) {
       console.error("Set primary failed:", err)
+    }
+  }
+
+  const handleSaveVehicle = async () => {
+    setSaving(true)
+    try {
+      await fetch(`/api/vehicles/${params.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ year: editYear, currentMileage: editMileage }),
+      })
+      fetchVehicle()
+      setEditing(false)
+    } catch (err) {
+      console.error("Save error:", err)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleAssignDriver = async (driverId: string) => {
+    try {
+      await fetch("/api/vehicle-drivers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ vehicleId: params.id, driverId }),
+      })
+      fetchVehicle()
+      setShowDriverPicker(false)
+    } catch (err) {
+      console.error("Assign error:", err)
+    }
+  }
+
+  const handleUnassignDriver = async (driverId: string) => {
+    try {
+      await fetch(`/api/vehicle-drivers?vehicleId=${params.id}&driverId=${driverId}`, { method: "DELETE" })
+      fetchVehicle()
+    } catch (err) {
+      console.error("Unassign error:", err)
     }
   }
 
@@ -131,6 +193,7 @@ export default function VehicleDetailPage() {
 
   const status = statusMeta[vehicle.status] ?? { label: vehicle.status, className: "text-muted-foreground bg-muted" }
   const primaryPhoto = photos.find((p) => p.isPrimary) ?? photos[0]
+  const availableDrivers = allDrivers.filter((d: any) => !drivers.some((vd) => vd.id === d.id))
 
   return (
     <div className="p-4 md:p-6 space-y-4">
@@ -160,12 +223,41 @@ export default function VehicleDetailPage() {
               <p className="text-sm text-muted-foreground">{vehicle.brand} {vehicle.model}</p>
             </div>
           </div>
-          <span className={cn("inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium", status.className)}>
-            {status.label}
-          </span>
+          <div className="flex items-center gap-2">
+            {!editing && (
+              <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted transition-colors">
+                <Pencil className="size-3" />
+                แก้ไข
+              </button>
+            )}
+            <span className={cn("inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium", status.className)}>
+              {status.label}
+            </span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        {editing ? (
+          <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">ปี</label>
+                <input type="number" value={editYear} onChange={(e) => setEditYear(Number(e.target.value))} className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring" />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">เลขไมล์ (กม.)</label>
+                <input type="number" value={editMileage} onChange={(e) => setEditMileage(Number(e.target.value))} className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setEditing(false)} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors">ยกเลิก</button>
+              <button onClick={handleSaveVehicle} disabled={saving} className={cn("inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity", saving && "opacity-50 pointer-events-none")}>
+                <Save className="size-3.5" />
+                {saving ? "กำลังบันทึก..." : "บันทึก"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div className="flex items-center gap-2">
             <Calendar className="size-4 text-muted-foreground" />
             <div><p className="text-muted-foreground">ปี</p><p className="font-medium text-card-foreground">{vehicle.year}</p></div>
@@ -178,10 +270,53 @@ export default function VehicleDetailPage() {
             <Gauge className="size-4 text-muted-foreground" />
             <div><p className="text-muted-foreground">เลขไมล์</p><p className="font-medium text-card-foreground">{vehicle.currentMileage?.toLocaleString()} กม.</p></div>
           </div>
-          <div className="flex items-center gap-2">
-            <Fuel className="size-4 text-muted-foreground" />
-            <div><p className="text-muted-foreground">เชื้อเพลิง</p><p className="font-medium text-card-foreground">{vehicle.fuelType}</p></div>
+            <div className="flex items-center gap-2">
+              <Fuel className="size-4 text-muted-foreground" />
+              <div><p className="text-muted-foreground">เชื้อเพลิง</p><p className="font-medium text-card-foreground">{vehicle.fuelType}</p></div>
+            </div>
           </div>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-border bg-card">
+        <div className="px-5 pt-5 pb-3 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-card-foreground">ผู้รับผิดชอบรถ</h3>
+            <p className="text-xs text-muted-foreground">{drivers.length} คน</p>
+          </div>
+          <button onClick={() => setShowDriverPicker(!showDriverPicker)} className="inline-flex items-center gap-1.5 rounded-lg bg-info/10 px-3 py-1.5 text-xs font-medium text-info cursor-pointer hover:bg-info/20 transition-colors">
+            <UserPlus className="size-3.5" />
+            เพิ่มคนขับ
+          </button>
+        </div>
+        <div className="px-5 pb-5">
+          {showDriverPicker && availableDrivers.length > 0 && (
+            <div className="mb-3 rounded-lg border border-border bg-muted/30 p-2 space-y-1">
+              {availableDrivers.map((d: any) => (
+                <button key={d.id} onClick={() => handleAssignDriver(d.id)} className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-left hover:bg-muted transition-colors">
+                  <span className="text-muted-foreground">{d.rank}</span>
+                  <span className="font-medium text-card-foreground">{d.firstName} {d.lastName}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          {drivers.length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-4">ยังไม่มีผู้รับผิดชอบ</p>
+          ) : (
+            <div className="space-y-2">
+              {drivers.map((d) => (
+                <div key={d.id} className="flex items-center justify-between rounded-lg border border-border p-3">
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">{d.rank}</span>{" "}
+                    <span className="font-medium text-card-foreground">{d.firstName} {d.lastName}</span>
+                  </div>
+                  <button onClick={() => handleUnassignDriver(d.id)} className="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors" title="เลิกมอบหมาย">
+                    <UserMinus className="size-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
