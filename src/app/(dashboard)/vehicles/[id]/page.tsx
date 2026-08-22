@@ -59,12 +59,15 @@ export default function VehicleDetailPage() {
   const [editModel, setEditModel] = useState("")
   const [editYear, setEditYear] = useState(0)
   const [editMileage, setEditMileage] = useState(0)
+  const [editVehicleTypeId, setEditVehicleTypeId] = useState("")
+  const [vehicleTypes, setVehicleTypes] = useState<{ id: string; name: string }[]>([])
   const [saving, setSaving] = useState(false)
   const [showDriverPicker, setShowDriverPicker] = useState(false)
 
   useEffect(() => {
     fetchVehicle()
     fetch("/api/drivers").then((r) => r.json()).then((d) => setAllDrivers(d)).catch(() => {})
+    fetch("/api/vehicle-types").then((r) => r.json()).then((d) => setVehicleTypes(d)).catch(() => {})
   }, [params.id])
 
   const fetchVehicle = () => {
@@ -78,6 +81,7 @@ export default function VehicleDetailPage() {
         setEditModel(data.model)
         setEditYear(data.year)
         setEditMileage(data.currentMileage)
+        setEditVehicleTypeId(data.vehicleTypeId ?? "")
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -141,7 +145,7 @@ export default function VehicleDetailPage() {
       await fetch(`/api/vehicles/${params.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ registrationNumber: editReg, model: editModel, year: editYear, currentMileage: editMileage }),
+        body: JSON.stringify({ registrationNumber: editReg, model: editModel, year: editYear, currentMileage: editMileage, vehicleTypeId: editVehicleTypeId }),
       })
       fetchVehicle()
       setEditing(false)
@@ -258,6 +262,15 @@ export default function VehicleDetailPage() {
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">เลขไมล์ (กม.)</label>
                 <input type="number" value={editMileage} onChange={(e) => setEditMileage(Number(e.target.value))} className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring" />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">ประเภทรถ</label>
+                <select value={editVehicleTypeId} onChange={(e) => setEditVehicleTypeId(e.target.value)} className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring">
+                  <option value="">-- เลือกประเภท --</option>
+                  {vehicleTypes.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="flex justify-end gap-2">
