@@ -61,9 +61,9 @@ export function VehicleStatusLists({ available, inRepair, waitingParts, dueSoon 
                 <p className="text-xs text-muted-foreground text-center py-4">ไม่มีรายการ</p>
               ) : (
                 <div className="space-y-2">
-                  {data.map((v) => (
+                  {data.map((v, idx) => (
                     <div
-                      key={v.id}
+                      key={`${key}-${v.id}-${idx}`}
                       className="flex items-center justify-between rounded-lg border border-border p-3 hover:bg-muted/50 cursor-pointer transition-colors"
                       onClick={() => router.push(`/vehicles/${v.id}`)}
                     >
