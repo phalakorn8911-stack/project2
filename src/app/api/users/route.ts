@@ -4,8 +4,18 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const url = new URL(request.url)
+    
+    // GET /api/users?roles=true -> return roles only
+    if (url.searchParams.get("roles") === "true") {
+      const roles = await prisma.role.findMany({
+        orderBy: { name: "asc" },
+      })
+      return NextResponse.json(roles.map((r) => ({ id: r.id, name: r.name, description: r.description })))
+    }
+
     const users = await prisma.user.findMany({
       include: { role: true, unit: true },
       orderBy: { name: "asc" },
@@ -34,7 +44,40 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { email, password, name, rank, firstName, lastName, roleId, unitId } = await request.json()
+    const body = await request.json()
+
+    // Batch create: { items: [...users] }
+    if (Array.isArray(body.items)) {
+      const items = body.items.slice(0, 20)
+      const results: any[] = []
+
+      for (const item of items) {
+        if (!item.email || !item.password || !item.name || !item.roleId) continue
+
+        const existing = await prisma.user.findUnique({ where: { email: item.email } })
+        if (existing) continue
+
+        const hashedPassword = await bcrypt.hash(item.password, 10)
+        const user = await prisma.user.create({
+          data: {
+            email: item.email,
+            password: hashedPassword,
+            name: item.name,
+            rank: item.rank || null,
+            firstName: item.firstName || null,
+            lastName: item.lastName || null,
+            roleId: item.roleId,
+            unitId: item.unitId || null,
+          },
+        })
+        results.push({ id: user.id, name: user.name, email: user.email })
+      }
+
+      return NextResponse.json({ created: results.length })
+    }
+
+    // Single create (legacy)
+    const { email, password, name, rank, firstName, lastName, roleId, unitId } = body
 
     if (!email || !password || !name || !roleId) {
       return NextResponse.json({ error: "Email, password, name, and role are required" }, { status: 400 })
