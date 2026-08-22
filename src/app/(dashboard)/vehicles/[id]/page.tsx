@@ -55,6 +55,8 @@ export default function VehicleDetailPage() {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [editing, setEditing] = useState(false)
+  const [editReg, setEditReg] = useState("")
+  const [editModel, setEditModel] = useState("")
   const [editYear, setEditYear] = useState(0)
   const [editMileage, setEditMileage] = useState(0)
   const [saving, setSaving] = useState(false)
@@ -72,6 +74,8 @@ export default function VehicleDetailPage() {
         setVehicle(data)
         setPhotos(data.photos ?? [])
         setDrivers(data.drivers ?? [])
+        setEditReg(data.registrationNumber)
+        setEditModel(data.model)
         setEditYear(data.year)
         setEditMileage(data.currentMileage)
         setLoading(false)
@@ -137,7 +141,7 @@ export default function VehicleDetailPage() {
       await fetch(`/api/vehicles/${params.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ year: editYear, currentMileage: editMileage }),
+        body: JSON.stringify({ registrationNumber: editReg, model: editModel, year: editYear, currentMileage: editMileage }),
       })
       fetchVehicle()
       setEditing(false)
@@ -239,6 +243,14 @@ export default function VehicleDetailPage() {
         {editing ? (
           <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
             <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">หมายเลขทะเบียน</label>
+                <input type="text" value={editReg} onChange={(e) => setEditReg(e.target.value)} className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring" />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">รุ่น</label>
+                <input type="text" value={editModel} onChange={(e) => setEditModel(e.target.value)} className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring" />
+              </div>
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">ปี</label>
                 <input type="number" value={editYear} onChange={(e) => setEditYear(Number(e.target.value))} className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring" />

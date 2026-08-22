@@ -87,6 +87,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const vehicle = await prisma.vehicle.update({
       where: { id },
       data: {
+        ...(body.registrationNumber !== undefined && { registrationNumber: body.registrationNumber }),
+        ...(body.model !== undefined && { model: body.model }),
         ...(body.year !== undefined && { year: body.year }),
         ...(body.currentMileage !== undefined && { currentMileage: body.currentMileage }),
         ...(body.vehicleTypeId !== undefined && { vehicleTypeId: body.vehicleTypeId }),
