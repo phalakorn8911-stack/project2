@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Truck, Calendar, Gauge, Fuel, Upload, X, ImagePlus, Star, Trash2, Pencil, Save, UserPlus, UserMinus } from "lucide-react"
+import { ArrowLeft, Truck, Calendar, Gauge, Fuel, Upload, X, ImagePlus, Star, Trash2, Pencil, Save, UserPlus, UserMinus, ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const statusMeta: Record<string, { label: string; className: string }> = {
@@ -449,6 +449,42 @@ export default function VehicleDetailPage() {
                     >
                       <X className="size-4" />
                     </button>
+                    {photos.length > 1 && (
+                      <>
+                        <button
+                          onClick={() => {
+                            const idx = photos.findIndex((p) => p.id === selectedPhoto)
+                            const prev = idx > 0 ? idx - 1 : photos.length - 1
+                            setSelectedPhoto(photos[prev].id)
+                          }}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 size-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+                        >
+                          <ChevronLeft className="size-5" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            const idx = photos.findIndex((p) => p.id === selectedPhoto)
+                            const next = idx < photos.length - 1 ? idx + 1 : 0
+                            setSelectedPhoto(photos[next].id)
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 size-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+                        >
+                          <ChevronRight className="size-5" />
+                        </button>
+                      </>
+                    )}
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+                      {photos.map((p, i) => (
+                        <button
+                          key={p.id}
+                          onClick={() => setSelectedPhoto(p.id)}
+                          className={cn(
+                            "size-2 rounded-full transition-colors",
+                            p.id === selectedPhoto ? "bg-white" : "bg-white/40 hover:bg-white/60"
+                          )}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
