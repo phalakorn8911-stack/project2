@@ -14,6 +14,10 @@ export async function GET() {
       overdueSchedules,
       dueSoonSchedules,
       totalPartsCost,
+      availableVehicles,
+      inRepairVehicles,
+      waitingPartsVehicles,
+      dueSoonVehicles,
     ] = await Promise.all([
       prisma.vehicle.count(),
       prisma.vehicle.groupBy({ by: ["status"], _count: true }),
@@ -23,6 +27,30 @@ export async function GET() {
       prisma.maintenanceSchedule.count({ where: { status: "OVERDUE" } }),
       prisma.maintenanceSchedule.count({ where: { status: "DUE_SOON" } }),
       prisma.workOrder.aggregate({ _sum: { totalPartsCost: true }, where: { status: "COMPLETED", endDate: { not: null } } }),
+      prisma.vehicle.findMany({
+        where: { status: "AVAILABLE" },
+        include: { vehicleType: true },
+        orderBy: { registrationNumber: "asc" },
+        take: 20,
+      }),
+      prisma.vehicle.findMany({
+        where: { status: "IN_REPAIR" },
+        include: { vehicleType: true },
+        orderBy: { registrationNumber: "asc" },
+        take: 20,
+      }),
+      prisma.vehicle.findMany({
+        where: { status: "WAITING_PARTS" },
+        include: { vehicleType: true },
+        orderBy: { registrationNumber: "asc" },
+        take: 20,
+      }),
+      prisma.maintenanceSchedule.findMany({
+        where: { status: { in: ["DUE_SOON", "OVERDUE"] } },
+        include: { vehicle: true, plan: true },
+        orderBy: { nextDueDate: "asc" },
+        take: 20,
+      }),
     ])
 
     const statusCounts: Record<string, number> = {}
@@ -52,6 +80,37 @@ export async function GET() {
       dueSoonSchedules,
       lowStockCount: lowStockParts.length,
       monthlyCost,
+      vehicleLists: {
+        available: availableVehicles.map((v) => ({
+          id: v.id,
+          registrationNumber: v.registrationNumber,
+          model: v.model,
+          vehicleType: v.vehicleType.name,
+          status: v.status,
+        })),
+        inRepair: inRepairVehicles.map((v) => ({
+          id: v.id,
+          registrationNumber: v.registrationNumber,
+          model: v.model,
+          vehicleType: v.vehicleType.name,
+          status: v.status,
+        })),
+        waitingParts: waitingPartsVehicles.map((v) => ({
+          id: v.id,
+          registrationNumber: v.registrationNumber,
+          model: v.model,
+          vehicleType: v.vehicleType.name,
+          status: v.status,
+        })),
+        dueSoon: dueSoonVehicles.map((s) => ({
+          id: s.vehicle.id,
+          registrationNumber: s.vehicle.registrationNumber,
+          model: s.vehicle.model,
+          planName: s.plan.name,
+          nextDueDate: s.nextDueDate?.toLocaleDateString("th-TH") ?? "-",
+          status: s.status,
+        })),
+      },
     })
   } catch (error) {
     console.error("Dashboard API error:", error)
