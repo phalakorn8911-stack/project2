@@ -302,7 +302,7 @@ export default function PartsPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {filteredParts.map((part) => {
             const status = getStockStatus(part.stockQuantity, part.minimumQuantity);
             const category = getCategoryName(part.categoryId);
@@ -311,19 +311,18 @@ export default function PartsPage() {
             return (
               <div
                 key={part.id}
-                className="rounded-xl bg-card border border-border p-4 space-y-3 hover:shadow-md transition-shadow"
+                className="rounded-lg bg-card border border-border p-3 space-y-2 hover:shadow-md transition-shadow"
               >
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-1">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base truncate">{part.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      รหัส: {part.partNumber}
+                    <h3 className="font-semibold text-sm truncate">{part.name}</h3>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {part.partNumber}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{category}</p>
                   </div>
                   <span
                     className={cn(
-                      "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border shrink-0 ml-2",
+                      "inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border shrink-0",
                       status.color
                     )}
                   >
@@ -331,85 +330,74 @@ export default function PartsPage() {
                   </span>
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">สต็อก</span>
-                    <span className="font-semibold">
-                      {part.stockQuantity} {part.unitMeasure}
-                    </span>
-                  </div>
-
-                  {isAdjusting ? (
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="number"
-                        min={1}
-                        value={adjustValue}
-                        onChange={(e) => setAdjustValue(e.target.value)}
-                        className="w-16 px-2 py-1 text-sm border border-border rounded-lg bg-background text-center focus:outline-none focus:ring-1 focus:ring-primary"
-                      />
-                      <button
-                        onClick={() => handleStockAdjust(part.id, -1)}
-                        className="p-1 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
-                        title="ลดสต็อก"
-                      >
-                        <Minus className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleStockAdjust(part.id, 1)}
-                        className="p-1 rounded-lg bg-green-500/10 text-green-500 hover:bg-green-500/20 transition-colors"
-                        title="เพิ่มสต็อก"
-                      >
-                        <PlusIcon className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setAdjustingId(null);
-                          setAdjustValue("1");
-                        }}
-                        className="p-1 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
-                        title="ยกเลิก"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setAdjustingId(part.id)}
-                      className="w-full flex items-center justify-center gap-2 px-3 py-1.5 text-sm rounded-lg border border-border hover:bg-muted/50 transition-colors text-muted-foreground"
-                    >
-                      <Filter className="h-3.5 w-3.5" />
-                      ปรับสต็อก
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">ราคา/หน่วย</span>
-                  <span className="font-semibold">{formatCurrency(part.unitPrice)}</span>
-                </div>
-
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">สต็อกขั้นต่ำ</span>
-                  <span className="text-muted-foreground">
-                    {part.minimumQuantity} {part.unitMeasure}
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">สต็อก</span>
+                  <span className="font-semibold">
+                    {part.stockQuantity} {part.unitMeasure}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 pt-2 border-t border-border">
+                {isAdjusting ? (
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={1}
+                      value={adjustValue}
+                      onChange={(e) => setAdjustValue(e.target.value)}
+                      className="w-12 px-1 py-0.5 text-xs border border-border rounded bg-background text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                    <button
+                      onClick={() => handleStockAdjust(part.id, -1)}
+                      className="p-0.5 rounded bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
+                      title="ลดสต็อก"
+                    >
+                      <Minus className="h-3 w-3" />
+                    </button>
+                    <button
+                      onClick={() => handleStockAdjust(part.id, 1)}
+                      className="p-0.5 rounded bg-green-500/10 text-green-500 hover:bg-green-500/20 transition-colors"
+                      title="เพิ่มสต็อก"
+                    >
+                      <PlusIcon className="h-3 w-3" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setAdjustingId(null);
+                        setAdjustValue("1");
+                      }}
+                      className="p-0.5 rounded bg-muted hover:bg-muted/80 transition-colors"
+                      title="ยกเลิก"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setAdjustingId(part.id)}
+                    className="w-full flex items-center justify-center gap-1 px-2 py-1 text-xs rounded border border-border hover:bg-muted/50 transition-colors text-muted-foreground"
+                  >
+                    <Filter className="h-3 w-3" />
+                    ปรับ
+                  </button>
+                )}
+
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">ราคา</span>
+                  <span className="font-medium">{formatCurrency(part.unitPrice)}</span>
+                </div>
+
+                <div className="flex items-center gap-1 pt-1.5 border-t border-border">
                   <button
                     onClick={() => openEdit(part)}
-                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-1 px-2 py-1 text-xs rounded border border-border hover:bg-muted/50 transition-colors"
                   >
-                    <Pencil className="h-3.5 w-3.5" />
-                    แก้ไข
+                    <Pencil className="h-3 w-3" />
                   </button>
                   <button
                     onClick={() => setDeleteTarget(part)}
-                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-red-500/30 text-red-500 hover:bg-red-500/10 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-1 px-2 py-1 text-xs rounded border border-red-500/30 text-red-500 hover:bg-red-500/10 transition-colors"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    ลบ
+                    <Trash2 className="h-3 w-3" />
                   </button>
                 </div>
               </div>
