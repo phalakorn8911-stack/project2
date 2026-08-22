@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Search, Plus, Filter, Truck } from "lucide-react"
+import { useEffect, useState, Suspense } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
+import { Search, Plus, Filter, Truck, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const statusMeta: Record<string, { label: string; className: string }> = {
@@ -15,7 +16,11 @@ const statusMeta: Record<string, { label: string; className: string }> = {
   RETIRED: { label: "ปลดประจำการ", className: "text-muted-foreground bg-muted" },
 }
 
-export default function VehiclesPage() {
+function VehiclesContent() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const statusFilter = searchParams.get("status") || ""
+
   const [search, setSearch] = useState("")
   const [vehicles, setVehicles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -29,17 +34,26 @@ export default function VehiclesPage() {
 
   const filtered = vehicles.filter(
     (v) =>
-      v.reg?.includes(search) ||
-      v.model?.toLowerCase().includes(search.toLowerCase()) ||
-      v.brand?.toLowerCase().includes(search.toLowerCase()),
+      (!statusFilter || v.status === statusFilter) &&
+      (v.reg?.includes(search) ||
+        v.model?.toLowerCase().includes(search.toLowerCase()) ||
+        v.brand?.toLowerCase().includes(search.toLowerCase())),
   )
+
+  const clearFilter = () => {
+    router.push("/vehicles")
+  }
+
+  const filterLabel = statusFilter ? statusMeta[statusFilter]?.label ?? statusFilter : ""
 
   return (
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-foreground">ยานพาหนะ</h2>
-          <p className="text-sm text-muted-foreground">รายการยานพาหนะทั้งหมด {vehicles.length} คัน</p>
+          <p className="text-sm text-muted-foreground">
+            {statusFilter ? `กรองโดย: ${filterLabel} (${filtered.length} คัน)` : `รายการยานพาหนะทั้งหมด ${vehicles.length} คัน`}
+          </p>
         </div>
         <button className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
           <Plus className="size-4" />
@@ -58,10 +72,31 @@ export default function VehiclesPage() {
             className="block w-full rounded-lg border border-input bg-background pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring"
           />
         </div>
-        <button className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors">
-          <Filter className="size-4" />
-          ตัวกรอง
-        </button>
+        {statusFilter && (
+          <div className="flex items-center gap-2 rounded-lg border border-primary bg-primary/10 px-3 py-2 text-sm text-primary">
+            <Filter className="size-4" />
+            {filterLabel}
+            <button onClick={clearFilter} className="ml-1 hover:text-primary/80">
+              <X className="size-3" />
+            </button>
+          </div>
+        )}
+        <select
+          value={statusFilter}
+          onChange={(e) => {
+            if (e.target.value) {
+              router.push(`/vehicles?status=${e.target.value}`)
+            } else {
+              router.push("/vehicles")
+            }
+          }}
+          className="rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring"
+        >
+          <option value="">ทุกสถานะ</option>
+          {Object.entries(statusMeta).map(([key, meta]) => (
+            <option key={key} value={key}>{meta.label}</option>
+          ))}
+        </select>
       </div>
 
       {loading ? (
@@ -109,10 +144,21 @@ export default function VehiclesPage() {
                   </tr>
                 )
               })}
+              {filtered.length === 0 && (
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-muted-foreground">ไม่มีรายการ</td></tr>
+              )}
             </tbody>
           </table>
         </div>
       )}
     </div>
+  )
+}
+
+export default function VehiclesPage() {
+  return (
+    <Suspense fallback={<div className="p-4 md:p-6"><div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">กำลังโหลด...</div></div>}>
+      <VehiclesContent />
+    </Suspense>
   )
 }

@@ -28,15 +28,15 @@ export function SummaryCards() {
       .then((d) => {
         setCards([
           { label: "รถทั้งหมด", value: String(d.vehicles.total), change: "", trend: "neutral", icon: Truck, color: "text-foreground", href: "/vehicles" },
-          { label: "พร้อมใช้งาน", value: String(d.vehicles.available), change: d.vehicles.total ? `${((d.vehicles.available / d.vehicles.total) * 100).toFixed(1)}%` : "0%", trend: "up", icon: CheckCircle, color: "text-success", href: "/vehicles" },
-          { label: "กำลังซ่อม", value: String(d.vehicles.inRepair), change: "", trend: "neutral", icon: Wrench, color: "text-status-repair", href: "/vehicles" },
-          { label: "รออะไหล่", value: String(d.vehicles.waitingParts), change: "", trend: "neutral", icon: Package, color: "text-status-parts", href: "/vehicles" },
-          { label: "ใกล้รอบซ่อม", value: String(d.dueSoonSchedules), change: "ภายใน 30 วัน", trend: "neutral", icon: Clock, color: "text-status-due", href: "/vehicles" },
-          { label: "เกินรอบซ่อม", value: String(d.overdueSchedules), change: "", trend: "neutral", icon: AlertTriangle, color: "text-status-overdue", href: "/vehicles" },
+          { label: "พร้อมใช้งาน", value: String(d.vehicles.available), change: d.vehicles.total ? `${((d.vehicles.available / d.vehicles.total) * 100).toFixed(1)}%` : "0%", trend: "up", icon: CheckCircle, color: "text-success", href: "/vehicles?status=AVAILABLE" },
+          { label: "กำลังซ่อม", value: String(d.vehicles.inRepair), change: "", trend: "neutral", icon: Wrench, color: "text-status-repair", href: "/vehicles?status=IN_REPAIR" },
+          { label: "รออะไหล่", value: String(d.vehicles.waitingParts), change: "", trend: "neutral", icon: Package, color: "text-status-parts", href: "/vehicles?status=WAITING_PARTS" },
+          { label: "ใกล้รอบซ่อม", value: String(d.dueSoonSchedules), change: "ภายใน 30 วัน", trend: "neutral", icon: Clock, color: "text-status-due", href: "/maintenance-plans" },
+          { label: "เกินรอบซ่อม", value: String(d.overdueSchedules), change: "", trend: "neutral", icon: AlertTriangle, color: "text-status-overdue", href: "/maintenance-plans" },
           { label: "รออนุมัติ", value: String(d.pendingRepairs), change: "รอการดำเนินการ", trend: "neutral", icon: FileText, color: "text-info", href: "/vehicles" },
-          { label: "งานซ่อมค้าง", value: String(d.workOrders.inProgress), change: "", trend: "neutral", icon: Ban, color: "text-destructive", href: "/vehicles" },
-          { label: "ค่าอะไหล่สะสม", value: `฿${(d.monthlyCost / 1000).toFixed(0)}K`, change: "", trend: "neutral", icon: DollarSign, color: "text-foreground", href: "/vehicles" },
-          { label: "อะไหล่ใกล้หมด", value: String(d.lowStockCount), change: "ต้องสั่งเพิ่ม", trend: "neutral", icon: AlertTriangle, color: "text-destructive", href: "/vehicles" },
+          { label: "งานซ่อมค้าง", value: String(d.workOrders.inProgress), change: "", trend: "neutral", icon: Ban, color: "text-destructive", href: "/vehicles?status=IN_REPAIR" },
+          { label: "ค่าอะไหล่สะสม", value: `฿${(d.monthlyCost / 1000).toFixed(0)}K`, change: "", trend: "neutral", icon: DollarSign, color: "text-foreground", href: "/parts" },
+          { label: "อะไหล่ใกล้หมด", value: String(d.lowStockCount), change: "ต้องสั่งเพิ่ม", trend: "neutral", icon: AlertTriangle, color: "text-destructive", href: "/parts" },
         ])
         setLoading(false)
       })
