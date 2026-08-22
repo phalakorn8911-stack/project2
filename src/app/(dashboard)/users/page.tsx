@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Users as UsersIcon, Shield, UserCheck, UserX } from "lucide-react"
+import { Users as UsersIcon, Shield, UserCheck, UserX, Pencil, Save, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const roleLabels: Record<string, string> = {
@@ -17,13 +17,48 @@ const roleLabels: Record<string, string> = {
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState({ rank: "", firstName: "", lastName: "" })
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
+    fetchUsers()
+  }, [])
+
+  const fetchUsers = () => {
     fetch("/api/users")
       .then((r) => r.json())
       .then((data) => { setUsers(data); setLoading(false) })
       .catch(() => setLoading(false))
-  }, [])
+  }
+
+  const handleEdit = (u: any) => {
+    setEditingId(u.id)
+    setEditForm({ rank: u.rank ?? "", firstName: u.firstName ?? "", lastName: u.lastName ?? "" })
+  }
+
+  const handleSave = async () => {
+    if (!editingId) return
+    setSaving(true)
+    try {
+      await fetch(`/api/users/${editingId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editForm),
+      })
+      fetchUsers()
+      setEditingId(null)
+    } catch (err) {
+      console.error("Save error:", err)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setEditingId(null)
+    setEditForm({ rank: "", firstName: "", lastName: "" })
+  }
 
   return (
     <div className="p-4 md:p-6 space-y-4">
@@ -41,23 +76,39 @@ export default function UsersPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">ชื่อ</th>
+                <th className="px-4 py-3 font-medium">ยศ</th>
+                <th className="px-3 py-3 font-medium">ชื่อ-นามสกุล</th>
                 <th className="px-3 py-3 font-medium">อีเมล</th>
                 <th className="px-3 py-3 font-medium">บทบาท</th>
                 <th className="px-3 py-3 font-medium">หน่วยงาน</th>
-                <th className="px-4 py-3 font-medium">สถานะ</th>
+                <th className="px-3 py-3 font-medium">สถานะ</th>
+                <th className="px-4 py-3 font-medium text-right">จัดการ</th>
               </tr>
             </thead>
             <tbody>
               {users.map((u) => (
                 <tr key={u.id} className="border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="flex size-8 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                        <UsersIcon className="size-4" />
+                  <td className="px-4 py-3 text-card-foreground">
+                    {editingId === u.id ? (
+                      <input type="text" value={editForm.rank} onChange={(e) => setEditForm({ ...editForm, rank: e.target.value })} className="block w-full rounded-lg border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring" />
+                    ) : (
+                      u.rank || "-"
+                    )}
+                  </td>
+                  <td className="px-3 py-3">
+                    {editingId === u.id ? (
+                      <div className="flex items-center gap-1">
+                        <input type="text" value={editForm.firstName} onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })} placeholder="ชื่อ" className="block w-20 rounded-lg border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring" />
+                        <input type="text" value={editForm.lastName} onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })} placeholder="นามสกุล" className="block w-24 rounded-lg border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring" />
                       </div>
-                      <span className="font-medium text-card-foreground">{u.name}</span>
-                    </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <div className="flex size-8 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                          <UsersIcon className="size-4" />
+                        </div>
+                        <span className="font-medium text-card-foreground">{u.name}</span>
+                      </div>
+                    )}
                   </td>
                   <td className="px-3 py-3 text-muted-foreground">{u.email}</td>
                   <td className="px-3 py-3">
@@ -75,6 +126,22 @@ export default function UsersPage() {
                       {u.status === "ACTIVE" ? <UserCheck className="size-3" /> : <UserX className="size-3" />}
                       {u.status === "ACTIVE" ? "ใช้งาน" : "ระงับ"}
                     </span>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {editingId === u.id ? (
+                      <div className="inline-flex items-center gap-1">
+                        <button onClick={handleSave} disabled={saving} className="inline-flex items-center justify-center size-7 rounded-lg text-success hover:bg-success/10 transition-colors" title="บันทึก">
+                          <Save className="size-3.5" />
+                        </button>
+                        <button onClick={handleCancel} className="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-muted transition-colors" title="ยกเลิก">
+                          <X className="size-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={() => handleEdit(u)} className="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="แก้ไข">
+                        <Pencil className="size-3.5" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

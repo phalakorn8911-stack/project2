@@ -41,26 +41,33 @@ async function main() {
   // ---- Users ----
   const hashed = await bcrypt.hash("1234", 10)
   const userSpecs = [
-    { tag: "admin", email: "admin@army.mail", name: "สมชาย ใจดี", roleName: "admin", unitId: unit3.id },
-    { tag: "commander", email: "commander@army.mail", name: "ประยุทธ์ ศักดิ์สิทธิ์", roleName: "commander", unitId: unit1.id },
-    { tag: "officer", email: "officer@army.mail", name: "วิเชียร เหลืองาม", roleName: "vehicle_officer", unitId: unit3.id },
-    { tag: "driver1", email: "driver1@army.mail", name: "สมศักดิ์ รักชาติ", roleName: "driver", unitId: unit1.id },
-    { tag: "mechanic1", email: "mechanic1@army.mail", name: "ประสิทธิ์ กล้าหาญ", roleName: "mechanic", unitId: unit3.id },
-    { tag: "headmech", email: "headmech@army.mail", name: "มานพ ทรงพล", roleName: "head_mechanic", unitId: unit3.id },
-    { tag: "parts", email: "parts@army.mail", name: "ไพศาล คลังทรัพย์", roleName: "parts_officer", unitId: unit3.id },
-    { tag: "driver2", email: "driver2@army.mail", name: "ณรงค์ เข้มแข็ง", roleName: "driver", unitId: unit2.id },
-    { tag: "mechanic2", email: "mechanic2@army.mail", name: "สมบูรณ์ มีฝีมือ", roleName: "mechanic", unitId: unit3.id },
+    { tag: "admin", email: "admin@army.mail", rank: "พันตรี", firstName: "สมชาย", lastName: "ใจดี", roleName: "admin", unitId: unit3.id },
+    { tag: "commander", email: "commander@army.mail", rank: "พันโท", firstName: "ประยุทธ์", lastName: "ศักดิ์สิทธิ์", roleName: "commander", unitId: unit1.id },
+    { tag: "officer", email: "officer@army.mail", rank: "ร้อยเอก", firstName: "วิเชียร", lastName: "เหลืองาม", roleName: "vehicle_officer", unitId: unit3.id },
+    { tag: "driver1", email: "driver1@army.mail", rank: "สิบเอก", firstName: "สมศักดิ์", lastName: "รักชาติ", roleName: "driver", unitId: unit1.id },
+    { tag: "mechanic1", email: "mechanic1@army.mail", rank: "จ่าสิบตรี", firstName: "ประสิทธิ์", lastName: "กล้าหาญ", roleName: "mechanic", unitId: unit3.id },
+    { tag: "headmech", email: "headmech@army.mail", rank: "จ่าสิบโท", firstName: "มานพ", lastName: "ทรงพล", roleName: "head_mechanic", unitId: unit3.id },
+    { tag: "parts", email: "parts@army.mail", rank: "สิบโท", firstName: "ไพศาล", lastName: "คลังทรัพย์", roleName: "parts_officer", unitId: unit3.id },
+    { tag: "driver2", email: "driver2@army.mail", rank: "สิบตรี", firstName: "ณรงค์", lastName: "เข้มแข็ง", roleName: "driver", unitId: unit2.id },
+    { tag: "mechanic2", email: "mechanic2@army.mail", rank: "จ่าสิบเอก", firstName: "สมบูรณ์", lastName: "มีฝีมือ", roleName: "mechanic", unitId: unit3.id },
   ]
   const users: Record<string, { id: string }> = {}
   for (const s of userSpecs) {
     const existing = await prisma.user.findUnique({ where: { email: s.email } })
     if (existing) {
+      await prisma.user.update({
+        where: { id: existing.id },
+        data: { rank: s.rank, firstName: s.firstName, lastName: s.lastName, name: `${s.firstName} ${s.lastName}` },
+      })
       users[s.tag] = existing
     } else {
       users[s.tag] = await prisma.user.create({
         data: {
           email: s.email,
-          name: s.name,
+          name: `${s.firstName} ${s.lastName}`,
+          rank: s.rank,
+          firstName: s.firstName,
+          lastName: s.lastName,
           password: hashed,
           role: { connect: { id: roleData[s.roleName].id } },
           unit: { connect: { id: s.unitId } },

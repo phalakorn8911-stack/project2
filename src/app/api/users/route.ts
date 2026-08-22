@@ -14,6 +14,9 @@ export async function GET() {
       users.map((u) => ({
         id: u.id,
         name: u.name,
+        rank: u.rank,
+        firstName: u.firstName,
+        lastName: u.lastName,
         email: u.email,
         role: u.role.name,
         unit: u.unit?.name ?? "-",

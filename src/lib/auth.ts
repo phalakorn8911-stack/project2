@@ -37,6 +37,9 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           role: user.role.name,
           unitId: user.unitId,
+          rank: user.rank,
+          firstName: user.firstName,
+          lastName: user.lastName,
         }
       },
     }),
@@ -47,6 +50,9 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id
         token.role = user.role
         token.unitId = user.unitId
+        token.rank = user.rank
+        token.firstName = user.firstName
+        token.lastName = user.lastName
       }
       return token
     },
@@ -55,6 +61,9 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string
         session.user.role = token.role as string
         session.user.unitId = token.unitId as string | undefined
+        session.user.rank = token.rank as string | undefined
+        session.user.firstName = token.firstName as string | undefined
+        session.user.lastName = token.lastName as string | undefined
       }
       return session
     },
