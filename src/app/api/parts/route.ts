@@ -33,7 +33,29 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { name, partNumber, categoryId, stockQuantity, minimumQuantity, unitMeasure, unitPrice, vendorId } = await request.json()
+    const body = await request.json()
+
+    // Batch create: { items: [...parts] }
+    if (Array.isArray(body.items)) {
+      const items = body.items.slice(0, 20)
+      const created = await prisma.part.createMany({
+        data: items.map((p: any) => ({
+          name: p.name,
+          partNumber: p.partNumber,
+          categoryId: p.categoryId,
+          stockQuantity: p.stockQuantity ?? 0,
+          minimumQuantity: p.minimumQuantity ?? 0,
+          unitMeasure: p.unitMeasure ?? "ชิ้น",
+          unitPrice: p.unitPrice ?? 0,
+          vendorId: p.vendorId || null,
+        })),
+        skipDuplicates: true,
+      })
+      return NextResponse.json({ created: created.count })
+    }
+
+    // Single create (legacy)
+    const { name, partNumber, categoryId, stockQuantity, minimumQuantity, unitMeasure, unitPrice, vendorId } = body
 
     if (!name || !partNumber || !categoryId || !unitMeasure) {
       return NextResponse.json({ error: "Name, part number, category, and unit are required" }, { status: 400 })

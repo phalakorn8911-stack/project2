@@ -12,6 +12,8 @@ import {
   Save,
   Minus,
   PlusIcon,
+  ListPlus,
+  Rows3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -78,6 +80,9 @@ export default function PartsPage() {
   const [adjustValue, setAdjustValue] = useState<string>("1");
   const [deleteTarget, setDeleteTarget] = useState<Part | null>(null);
   const [loading, setLoading] = useState(false);
+  const [batchMode, setBatchMode] = useState(false);
+  const [batchItems, setBatchItems] = useState<Omit<Part, "id">[]>([{ ...defaultForm }]);
+  const [saving, setSaving] = useState(false);
 
   const fetchParts = async () => {
     setLoading(true);
@@ -110,7 +115,59 @@ export default function PartsPage() {
   const openAdd = () => {
     setEditingPart(null);
     setForm(defaultForm);
+    setBatchMode(false);
+    setBatchItems([{ ...defaultForm }]);
     setShowForm(true);
+  };
+
+  const openBatchAdd = () => {
+    setEditingPart(null);
+    setForm(defaultForm);
+    setBatchMode(true);
+    setBatchItems([{ ...defaultForm }]);
+    setShowForm(true);
+  };
+
+  const addBatchRow = () => {
+    if (batchItems.length < 20) {
+      setBatchItems([...batchItems, { ...defaultForm }]);
+    }
+  };
+
+  const removeBatchRow = (index: number) => {
+    if (batchItems.length > 1) {
+      setBatchItems(batchItems.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateBatchItem = (index: number, field: keyof Omit<Part, "id">, value: any) => {
+    const updated = [...batchItems];
+    updated[index] = { ...updated[index], [field]: value };
+    setBatchItems(updated);
+  };
+
+  const handleBatchSave = async () => {
+    const validItems = batchItems.filter(
+      (item) => item.name?.trim() && item.partNumber?.trim()
+    );
+    if (validItems.length === 0) return;
+
+    setSaving(true);
+    try {
+      await fetch("/api/parts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: validItems }),
+      });
+      setShowForm(false);
+      setBatchMode(false);
+      setBatchItems([{ ...defaultForm }]);
+      fetchParts();
+    } catch {
+      console.error("Failed to batch save parts");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const openEdit = (part: Part) => {
@@ -203,13 +260,22 @@ export default function PartsPage() {
             </p>
           </div>
         </div>
-        <button
-          onClick={openAdd}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          เพิ่มอะไหล่
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={openBatchAdd}
+            className="flex items-center gap-2 px-4 py-2 bg-card border border-border text-card-foreground rounded-lg hover:bg-muted transition-colors"
+          >
+            <ListPlus className="h-4 w-4" />
+            เพิ่มหลายรายการ
+          </button>
+          <button
+            onClick={openAdd}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            เพิ่มอะไหล่
+          </button>
+        </div>
       </div>
 
       <div className="relative">
@@ -354,15 +420,20 @@ export default function PartsPage() {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-card border border-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-xl">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-xl">
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h2 className="text-lg font-semibold">
-                {editingPart ? "แก้ไขอะไหล่" : "เพิ่มอะไหล่ใหม่"}
+                {batchMode
+                  ? `เพิ่มอะไหล่หลายรายการ (${batchItems.length}/20)`
+                  : editingPart
+                    ? "แก้ไขอะไหล่"
+                    : "เพิ่มอะไหล่ใหม่"}
               </h2>
               <button
                 onClick={() => {
                   setShowForm(false);
                   setEditingPart(null);
+                  setBatchMode(false);
                 }}
                 className="p-1 rounded-lg hover:bg-muted transition-colors"
               >
@@ -371,123 +442,243 @@ export default function PartsPage() {
             </div>
 
             <div className="p-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1.5">ชื่ออะไหล่ *</label>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder="ระบุชื่ออะไหล่"
-                />
-              </div>
+              {!batchMode ? (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">ชื่ออะไหล่ *</label>
+                    <input
+                      type="text"
+                      value={form.name}
+                      onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                      className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      placeholder="ระบุชื่ออะไหล่"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1.5">รหัสอะไหล่ *</label>
-                <input
-                  type="text"
-                  value={form.partNumber}
-                  onChange={(e) => setForm((f) => ({ ...f, partNumber: e.target.value }))}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder="ระบุรหัสอะไหล่"
-                />
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">รหัสอะไหล่ *</label>
+                    <input
+                      type="text"
+                      value={form.partNumber}
+                      onChange={(e) => setForm((f) => ({ ...f, partNumber: e.target.value }))}
+                      className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      placeholder="ระบุรหัสอะไหล่"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1.5">หมวดหมู่</label>
-                <select
-                  value={form.categoryId}
-                  onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                >
-                  <option value="">เลือกหมวดหมู่</option>
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">หมวดหมู่</label>
+                    <select
+                      value={form.categoryId}
+                      onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
+                      className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    >
+                      <option value="">เลือกหมวดหมู่</option>
+                      {CATEGORIES.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5">สต็อกปัจจุบัน</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.stockQuantity}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            stockQuantity: Math.max(0, parseInt(e.target.value, 10) || 0),
+                          }))
+                        }
+                        className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5">สต็อกขั้นต่ำ</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.minimumQuantity}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            minimumQuantity: Math.max(0, parseInt(e.target.value, 10) || 0),
+                          }))
+                        }
+                        className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5">หน่วยนับ</label>
+                      <input
+                        type="text"
+                        value={form.unitMeasure}
+                        onChange={(e) => setForm((f) => ({ ...f, unitMeasure: e.target.value }))}
+                        className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        placeholder="ชิ้น, ลิตร, ขวด..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5">ราคา/หน่วย (บาท)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        value={form.unitPrice}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            unitPrice: parseFloat(e.target.value) || 0,
+                          }))
+                        }
+                        className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-4">
+                  {batchItems.map((item, idx) => (
+                    <div key={idx} className="border border-border rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">รายการที่ {idx + 1}</span>
+                        {batchItems.length > 1 && (
+                          <button
+                            onClick={() => removeBatchRow(idx)}
+                            className="p-1 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium mb-1.5">ชื่ออะไหล่ *</label>
+                          <input
+                            type="text"
+                            value={item.name}
+                            onChange={(e) => updateBatchItem(idx, "name", e.target.value)}
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            placeholder="ระบุชื่ออะไหล่"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1.5">รหัสอะไหล่ *</label>
+                          <input
+                            type="text"
+                            value={item.partNumber}
+                            onChange={(e) => updateBatchItem(idx, "partNumber", e.target.value)}
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            placeholder="ระบุรหัสอะไหล่"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1.5">หมวดหมู่</label>
+                          <select
+                            value={item.categoryId}
+                            onChange={(e) => updateBatchItem(idx, "categoryId", e.target.value)}
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                          >
+                            <option value="">เลือกหมวดหมู่</option>
+                            {CATEGORIES.map((cat) => (
+                              <option key={cat.id} value={cat.id}>
+                                {cat.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1.5">สต็อกปัจจุบัน</label>
+                          <input
+                            type="number"
+                            min={0}
+                            value={item.stockQuantity}
+                            onChange={(e) =>
+                              updateBatchItem(idx, "stockQuantity", Math.max(0, parseInt(e.target.value, 10) || 0))
+                            }
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1.5">สต็อกขั้นต่ำ</label>
+                          <input
+                            type="number"
+                            min={0}
+                            value={item.minimumQuantity}
+                            onChange={(e) =>
+                              updateBatchItem(idx, "minimumQuantity", Math.max(0, parseInt(e.target.value, 10) || 0))
+                            }
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1.5">หน่วยนับ</label>
+                          <input
+                            type="text"
+                            value={item.unitMeasure}
+                            onChange={(e) => updateBatchItem(idx, "unitMeasure", e.target.value)}
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            placeholder="ชิ้น, ลิตร, ขวด..."
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1.5">ราคา/หน่วย (บาท)</label>
+                          <input
+                            type="number"
+                            min={0}
+                            step={0.01}
+                            value={item.unitPrice}
+                            onChange={(e) =>
+                              updateBatchItem(idx, "unitPrice", parseFloat(e.target.value) || 0)
+                            }
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">สต็อกปัจจุบัน</label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.stockQuantity}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        stockQuantity: Math.max(0, parseInt(e.target.value, 10) || 0),
-                      }))
-                    }
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  />
+                  {batchItems.length < 20 && (
+                    <button
+                      onClick={addBatchRow}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border border-dashed border-border hover:bg-muted/50 transition-colors"
+                    >
+                      <Plus className="h-4 w-4" />
+                      เพิ่มรายการ (สูงสุด 20)
+                    </button>
+                  )}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">สต็อกขั้นต่ำ</label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.minimumQuantity}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        minimumQuantity: Math.max(0, parseInt(e.target.value, 10) || 0),
-                      }))
-                    }
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">หน่วยนับ</label>
-                  <input
-                    type="text"
-                    value={form.unitMeasure}
-                    onChange={(e) => setForm((f) => ({ ...f, unitMeasure: e.target.value }))}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    placeholder="ชิ้น, ลิตร, ขวด..."
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">ราคา/หน่วย (บาท)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={form.unitPrice}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        unitPrice: parseFloat(e.target.value) || 0,
-                      }))
-                    }
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  />
-                </div>
-              </div>
+              )}
 
               <div className="flex items-center gap-3 pt-4 border-t border-border">
                 <button
                   onClick={() => {
                     setShowForm(false);
                     setEditingPart(null);
+                    setBatchMode(false);
                   }}
                   className="flex-1 px-4 py-2.5 text-sm font-medium rounded-lg border border-border hover:bg-muted transition-colors"
                 >
                   ยกเลิก
                 </button>
                 <button
-                  onClick={handleSave}
-                  disabled={!form.name?.trim() || !form.partNumber?.trim()}
+                  onClick={batchMode ? handleBatchSave : handleSave}
+                  disabled={
+                    batchMode
+                      ? batchItems.filter((i) => i.name?.trim() && i.partNumber?.trim()).length === 0
+                      : !form.name?.trim() || !form.partNumber?.trim()
+                  }
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Save className="h-4 w-4" />
-                  {editingPart ? "บันทึกการแก้ไข" : "เพิ่มอะไหล่"}
+                  {batchMode ? "บันทึกรายการทั้งหมด" : editingPart ? "บันทึกการแก้ไข" : "เพิ่มอะไหล่"}
                 </button>
               </div>
             </div>
