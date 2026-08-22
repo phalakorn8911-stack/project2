@@ -16,6 +16,7 @@ import {
   Users,
   UserCog,
   Tags,
+  Building,
   ChevronLeft,
   type LucideIcon,
 } from "lucide-react"
@@ -31,6 +32,7 @@ const mainNav: NavItem[] = [
   { label: "แดชบอร์ด", href: "/dashboard", icon: LayoutDashboard },
   { label: "ยานพาหนะ", href: "/vehicles", icon: Truck },
   { label: "ประเภทรถ", href: "/vehicle-types", icon: Tags },
+  { label: "หน่วยงาน", href: "/units", icon: Building },
   { label: "คนขับรถ", href: "/drivers", icon: UserCog },
   { label: "แผนซ่อมบำรุง", href: "/maintenance-plans", icon: ClipboardCheck },
   { label: "ใบงานซ่อม", href: "/work-orders", icon: Wrench },
