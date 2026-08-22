@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { ClipboardCheck, Clock, AlertTriangle, Pencil, Trash2, X, Save } from "lucide-react"
+import { ClipboardCheck, Clock, AlertTriangle, Pencil, Trash2, X, Save, Plus, Truck, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface MaintenancePlan {
@@ -22,6 +22,25 @@ interface VehicleType {
   name: string
 }
 
+interface Vehicle {
+  id: string
+  registrationNumber: string
+  model: string
+}
+
+interface PlanSchedule {
+  id: string
+  vehicleId: string
+  registrationNumber: string
+  model: string
+  vehicleType: string
+  lastPerformedDate: string | null
+  lastPerformedMileage: number | null
+  nextDueDate: string | null
+  nextDueMileage: number | null
+  status: string
+}
+
 interface PlanForm {
   name: string
   vehicleTypeId: string
@@ -38,6 +57,13 @@ const emptyForm: PlanForm = {
   intervalHours: "",
 }
 
+const scheduleStatusLabels: Record<string, { label: string; className: string }> = {
+  PENDING: { label: "รอดำเนินการ", className: "text-muted-foreground bg-muted" },
+  DUE_SOON: { label: "ใกล้ถึงกำหนด", className: "text-status-due bg-status-due/10" },
+  OVERDUE: { label: "เกินกำหนด", className: "text-status-overdue bg-status-overdue/10" },
+  COMPLETED: { label: "เสร็จแล้ว", className: "text-success bg-success/10" },
+}
+
 export default function MaintenancePlansPage() {
   const [plans, setPlans] = useState<MaintenancePlan[]>([])
   const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([])
@@ -47,6 +73,13 @@ export default function MaintenancePlansPage() {
   const [form, setForm] = useState<PlanForm>(emptyForm)
   const [saving, setSaving] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<MaintenancePlan | null>(null)
+  const [selectedPlan, setSelectedPlan] = useState<MaintenancePlan | null>(null)
+  const [planSchedules, setPlanSchedules] = useState<PlanSchedule[]>([])
+  const [loadingSchedules, setLoadingSchedules] = useState(false)
+  const [showAddVehicle, setShowAddVehicle] = useState(false)
+  const [availableVehicles, setAvailableVehicles] = useState<Vehicle[]>([])
+  const [selectedVehicleId, setSelectedVehicleId] = useState("")
+  const [addSaving, setAddSaving] = useState(false)
 
   const fetchPlans = async () => {
     try {
@@ -157,6 +190,63 @@ export default function MaintenancePlansPage() {
 
   const getVehicleTypeName = (id: string) => {
     return vehicleTypes.find((vt) => vt.id === id)?.name ?? ""
+  }
+
+  const fetchPlanSchedules = async (planId: string) => {
+    setLoadingSchedules(true)
+    try {
+      const res = await fetch(`/api/maintenance-schedules?planId=${planId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setPlanSchedules(data)
+      }
+    } catch (e) {
+      console.error("Failed to fetch schedules", e)
+    } finally {
+      setLoadingSchedules(false)
+    }
+  }
+
+  const fetchAvailableVehicles = async (planId: string) => {
+    try {
+      const plan = plans.find((p) => p.id === planId)
+      if (!plan) return
+      const res = await fetch(`/api/vehicles`)
+      if (res.ok) {
+        const allVehicles = await res.json()
+        const assignedIds = planSchedules.map((s) => s.vehicleId)
+        setAvailableVehicles(allVehicles.filter((v: Vehicle) => !assignedIds.includes(v.id)))
+      }
+    } catch (e) {
+      console.error("Failed to fetch vehicles", e)
+    }
+  }
+
+  const handleAddVehicle = async () => {
+    if (!selectedPlan || !selectedVehicleId) return
+    setAddSaving(true)
+    try {
+      const res = await fetch("/api/maintenance-schedules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId: selectedPlan.id, vehicleId: selectedVehicleId }),
+      })
+      if (res.ok) {
+        setSelectedVehicleId("")
+        setShowAddVehicle(false)
+        fetchPlanSchedules(selectedPlan.id)
+        fetchPlans()
+      }
+    } catch (e) {
+      console.error("Failed to add vehicle", e)
+    } finally {
+      setAddSaving(false)
+    }
+  }
+
+  const openPlanDetail = (plan: MaintenancePlan) => {
+    setSelectedPlan(plan)
+    fetchPlanSchedules(plan.id)
   }
 
   if (loading) {
@@ -445,11 +535,100 @@ export default function MaintenancePlansPage() {
                         <span>เกินกำหนด</span>
                       </div>
                     )}
+                    <button
+                      onClick={() => openPlanDetail(plan)}
+                      className="ml-auto inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
+                    >
+                      ดูรายละเอียด
+                      <ChevronRight className="size-3" />
+                    </button>
                   </div>
                 </>
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {selectedPlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="rounded-xl border border-border bg-card p-6 shadow-lg max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-semibold">{selectedPlan.name}</h3>
+                <p className="text-sm text-muted-foreground">{selectedPlan.vehicleType}</p>
+              </div>
+              <button onClick={() => { setSelectedPlan(null); setShowAddVehicle(false); setAvailableVehicles([]) }} className="text-muted-foreground hover:text-foreground">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-muted-foreground">รถในแผน {planSchedules.length} คัน</p>
+              <button
+                onClick={() => { setShowAddVehicle(true); fetchAvailableVehicles(selectedPlan.id) }}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                <Plus className="size-3" />
+                เพิ่มรถ
+              </button>
+            </div>
+
+            {showAddVehicle && (
+              <div className="flex items-center gap-2 mb-4 p-3 rounded-lg border border-border bg-muted/30">
+                <select
+                  value={selectedVehicleId}
+                  onChange={(e) => setSelectedVehicleId(e.target.value)}
+                  className="flex-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                >
+                  <option value="">-- เลือกรถ --</option>
+                  {availableVehicles.map((v) => (
+                    <option key={v.id} value={v.id}>{v.registrationNumber} - {v.model}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleAddVehicle}
+                  disabled={!selectedVehicleId || addSaving}
+                  className={cn("rounded-lg bg-primary px-3 py-1.5 text-xs text-primary-foreground transition-colors", (!selectedVehicleId || addSaving) ? "opacity-50 cursor-not-allowed" : "hover:bg-primary/90")}
+                >
+                  {addSaving ? "กำลังเพิ่ม..." : "เพิ่ม"}
+                </button>
+                <button onClick={() => setShowAddVehicle(false)} className="text-muted-foreground hover:text-foreground">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+
+            {loadingSchedules ? (
+              <p className="text-sm text-muted-foreground text-center py-8">กำลังโหลด...</p>
+            ) : planSchedules.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">ยังไม่มีรถในแผนนี้</p>
+            ) : (
+              <div className="space-y-2">
+                {planSchedules.map((s) => {
+                  const st = scheduleStatusLabels[s.status] ?? scheduleStatusLabels.PENDING
+                  return (
+                    <div key={s.id} className="flex items-center justify-between rounded-lg border border-border p-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex size-8 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                          <Truck className="size-4" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">{s.registrationNumber}</p>
+                          <p className="text-xs text-muted-foreground">{s.model}</p>
+                        </div>
+                      </div>
+                      <div className="text-right text-xs text-muted-foreground">
+                        {s.lastPerformedDate && <p>ทำล่าสุด: {new Date(s.lastPerformedDate).toLocaleDateString("th-TH")}</p>}
+                        {s.nextDueDate ? <p>รอบถัดไป: {new Date(s.nextDueDate).toLocaleDateString("th-TH")}</p> : <p>รอบถัดไป: ยังไม่กำหนด</p>}
+                        <span className={cn("inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium mt-1", st.className)}>{st.label}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
