@@ -18,6 +18,7 @@ export async function GET() {
       workOrders.map((wo) => ({
         id: wo.id,
         wo: wo.woNumber,
+        vehicleId: wo.vehicleId,
         vehicle: wo.vehicle.registrationNumber,
         issue: wo.repairRequest?.symptoms ?? "ไม่ระบุ",
         urgency: wo.repairRequest?.urgency ?? "MEDIUM",

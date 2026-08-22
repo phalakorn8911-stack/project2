@@ -1,10 +1,11 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 
-type DueMaintenance = { vehicle: string; model: string; type: string; dueDate: string; status: string; statusColor: string }
-type UrgentRepair = { vehicle: string; issue: string; priority: string; priorityColor: string; assignedTo: string }
+type DueMaintenance = { vehicleId: string; vehicle: string; model: string; type: string; dueDate: string; status: string; statusColor: string }
+type UrgentRepair = { vehicleId: string; vehicle: string; issue: string; priority: string; priorityColor: string; assignedTo: string }
 type LowStock = { part: string; code: string; stock: number; min: number; status: string; statusColor: string }
 
 function Badge({ label, className }: { label: string; className: string }) {
@@ -16,6 +17,7 @@ function Badge({ label, className }: { label: string; className: string }) {
 }
 
 export function DataTables() {
+  const router = useRouter()
   const [dueMaintenance, setDueMaintenance] = useState<DueMaintenance[]>([])
   const [urgentRepairs, setUrgentRepairs] = useState<UrgentRepair[]>([])
   const [lowStockParts, setLowStockParts] = useState<LowStock[]>([])
@@ -44,6 +46,7 @@ export function DataTables() {
           .filter((wo: any) => wo.status === "IN_PROGRESS" || wo.urgency === "EMERGENCY")
           .slice(0, 5)
           .map((wo: any) => ({
+            vehicleId: wo.vehicleId || "",
             vehicle: wo.vehicle,
             issue: wo.issue,
             priority: wo.urgency === "EMERGENCY" ? "สูงมาก" : wo.urgency === "HIGH" ? "สูง" : "ปานกลาง",
@@ -75,7 +78,7 @@ export function DataTables() {
             </thead>
             <tbody className="border-t border-border">
               {dueMaintenance.map((row, i) => (
-                <tr key={i} className="border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors">
+                <tr key={i} className="border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => router.push(`/vehicles/${row.vehicleId}`)}>
                   <td className="px-5 py-2.5 font-medium text-card-foreground">{row.vehicle}</td>
                   <td className="px-3 py-2.5 text-muted-foreground text-[13px]">{row.type}</td>
                   <td className="px-3 py-2.5 text-muted-foreground text-[13px]">{row.dueDate}</td>
@@ -109,7 +112,7 @@ export function DataTables() {
             </thead>
             <tbody className="border-t border-border">
               {urgentRepairs.map((row, i) => (
-                <tr key={i} className="border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors">
+                <tr key={i} className="border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => row.vehicleId && router.push(`/vehicles/${row.vehicleId}`)}>
                   <td className="px-5 py-2.5 font-medium text-card-foreground">{row.vehicle}</td>
                   <td className="px-3 py-2.5 text-muted-foreground text-[13px] max-w-[140px] truncate">{row.issue}</td>
                   <td className="px-3 py-2.5"><Badge label={row.priority} className={row.priorityColor} /></td>

@@ -13,6 +13,7 @@ export async function GET() {
     })
 
     const result = schedules.map((s) => ({
+      vehicleId: s.vehicleId,
       vehicle: s.vehicle.registrationNumber,
       model: s.vehicle.model,
       type: s.plan.name,
