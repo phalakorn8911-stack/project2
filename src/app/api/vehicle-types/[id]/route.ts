@@ -6,18 +6,29 @@ import { prisma } from "@/lib/prisma"
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const { name } = await request.json()
-
-    if (!name) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 })
-    }
+    const body = await request.json()
 
     const type = await prisma.vehicleType.update({
       where: { id },
-      data: { name },
+      data: {
+        ...(body.name !== undefined && { name: body.name }),
+        ...(body.description !== undefined && { description: body.description }),
+        ...(body.fuelType !== undefined && { fuelType: body.fuelType }),
+        ...(body.weight !== undefined && { weight: body.weight }),
+        ...(body.seatingCapacity !== undefined && { seatingCapacity: body.seatingCapacity }),
+        ...(body.engineSpec !== undefined && { engineSpec: body.engineSpec }),
+      },
     })
 
-    return NextResponse.json({ id: type.id, name: type.name })
+    return NextResponse.json({
+      id: type.id,
+      name: type.name,
+      description: type.description,
+      fuelType: type.fuelType,
+      weight: type.weight,
+      seatingCapacity: type.seatingCapacity,
+      engineSpec: type.engineSpec,
+    })
   } catch (error) {
     console.error("Update vehicle type error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

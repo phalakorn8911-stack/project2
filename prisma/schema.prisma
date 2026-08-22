@@ -195,6 +195,11 @@ model VehicleDriver {
 model VehicleType {
   id               String            @id @default(uuid()) @db.Uuid
   name             String
+  description      String?           @map("description")
+  fuelType         String?           @map("fuel_type")
+  weight           String?           @map("weight")
+  seatingCapacity  Int?              @map("seating_capacity")
+  engineSpec       String?           @map("engine_spec")
   vehicles         Vehicle[]
   maintenancePlans MaintenancePlan[]
 

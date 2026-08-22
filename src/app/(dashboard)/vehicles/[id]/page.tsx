@@ -63,6 +63,15 @@ export default function VehicleDetailPage() {
   const [vehicleTypes, setVehicleTypes] = useState<{ id: string; name: string }[]>([])
   const [saving, setSaving] = useState(false)
   const [showDriverPicker, setShowDriverPicker] = useState(false)
+  const [editingRR, setEditingRR] = useState<string | null>(null)
+  const [editRRSymptoms, setEditRRSymptoms] = useState("")
+  const [editRRStatus, setEditRRStatus] = useState("")
+  const [editingMS, setEditingMS] = useState<string | null>(null)
+  const [editMSNextDate, setEditMSNextDate] = useState("")
+  const [editMSNextMileage, setEditMSNextMileage] = useState("")
+  const [editMSStatus, setEditMSStatus] = useState("")
+  const [editMSLastDate, setEditMSLastDate] = useState("")
+  const [editMSLastMileage, setEditMSLastMileage] = useState("")
 
   useEffect(() => {
     fetchVehicle()
@@ -176,6 +185,43 @@ export default function VehicleDetailPage() {
       fetchVehicle()
     } catch (err) {
       console.error("Unassign error:", err)
+    }
+  }
+
+  const handleSaveRepairRequest = async (id: string) => {
+    try {
+      await fetch(`/api/repair-requests/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          symptoms: editRRSymptoms || undefined,
+          status: editRRStatus || undefined,
+        }),
+      })
+      setEditingRR(null)
+      fetchVehicle()
+    } catch (err) {
+      console.error("Update repair request error:", err)
+    }
+  }
+
+  const handleSaveMaintenanceSchedule = async (id: string) => {
+    try {
+      await fetch(`/api/maintenance-schedules/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lastPerformedDate: editMSLastDate || undefined,
+          lastPerformedMileage: editMSLastMileage ? Number(editMSLastMileage) : undefined,
+          nextDueDate: editMSNextDate || undefined,
+          nextDueMileage: editMSNextMileage ? Number(editMSNextMileage) : undefined,
+          status: editMSStatus || undefined,
+        }),
+      })
+      setEditingMS(null)
+      fetchVehicle()
+    } catch (err) {
+      console.error("Update maintenance schedule error:", err)
     }
   }
 
@@ -451,19 +497,45 @@ export default function VehicleDetailPage() {
             ) : (
               (vehicle.repairRequests ?? []).map((rr: any) => {
                 const urg = urgencyLabels[rr.urgency] ?? urgencyLabels.MEDIUM
+                const isEditing = editingRR === rr.id
                 return (
                   <div key={rr.id} className="rounded-lg border border-border p-3">
                     <div className="flex items-start justify-between mb-1">
                       <span className="text-xs font-mono text-muted-foreground">{rr.requestNumber}</span>
-                      <span className={cn("inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium", urg.className)}>
-                        {urg.label}
-                      </span>
+                      <div className="flex items-center gap-1">
+                        <span className={cn("inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium", urg.className)}>
+                          {urg.label}
+                        </span>
+                        {!isEditing && (
+                          <button onClick={() => { setEditingRR(rr.id); setEditRRSymptoms(rr.symptoms); setEditRRStatus(rr.status) }} className="p-1 text-muted-foreground hover:text-info">
+                            <Pencil className="size-3" />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <p className="text-sm text-card-foreground">{rr.symptoms}</p>
-                    <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                      <span>{rr.systemCategory}</span>
-                      {rr.workOrder && <span>• WO: {rr.workOrder.woNumber}</span>}
-                    </div>
+                    {isEditing ? (
+                      <div className="space-y-2 mt-2">
+                        <textarea value={editRRSymptoms} onChange={(e) => setEditRRSymptoms(e.target.value)} className="w-full px-2 py-1.5 text-sm border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50" rows={2} />
+                        <select value={editRRStatus} onChange={(e) => setEditRRStatus(e.target.value)} className="w-full px-2 py-1.5 text-sm border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50">
+                          <option value="PENDING">รอดำเนินการ</option>
+                          <option value="IN_PROGRESS">กำลังดำเนินการ</option>
+                          <option value="COMPLETED">เสร็จแล้ว</option>
+                          <option value="CANCELLED">ยกเลิก</option>
+                        </select>
+                        <div className="flex justify-end gap-1">
+                          <button onClick={() => setEditingRR(null)} className="px-2 py-1 text-xs border border-border rounded-lg hover:bg-muted">ยกเลิก</button>
+                          <button onClick={() => handleSaveRepairRequest(rr.id)} className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded-lg hover:opacity-90">บันทึก</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-sm text-card-foreground">{rr.symptoms}</p>
+                        <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                          <span>{rr.systemCategory}</span>
+                          {rr.workOrder && <span>• WO: {rr.workOrder.woNumber}</span>}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )
               })
@@ -482,18 +554,61 @@ export default function VehicleDetailPage() {
             ) : (
               (vehicle.maintenanceSchedules ?? []).map((ms: any) => {
                 const sStatus = scheduleStatusLabels[ms.status] ?? scheduleStatusLabels.PENDING
+                const isEditing = editingMS === ms.id
                 return (
                   <div key={ms.id} className="rounded-lg border border-border p-3">
                     <div className="flex items-start justify-between mb-1">
                       <span className="text-sm font-medium text-card-foreground">{ms.planName}</span>
-                      <span className={cn("inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium", sStatus.className)}>
-                        {sStatus.label}
-                      </span>
+                      <div className="flex items-center gap-1">
+                        <span className={cn("inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium", sStatus.className)}>
+                          {sStatus.label}
+                        </span>
+                        {!isEditing && (
+                          <button onClick={() => { setEditingMS(ms.id); setEditMSLastDate(ms.lastPerformedDate ? new Date(ms.lastPerformedDate).toISOString().split("T")[0] : ""); setEditMSLastMileage(ms.lastPerformedMileage?.toString() ?? ""); setEditMSNextDate(ms.nextDueDate ? new Date(ms.nextDueDate).toISOString().split("T")[0] : ""); setEditMSNextMileage(ms.nextDueMileage?.toString() ?? ""); setEditMSStatus(ms.status) }} className="p-1 text-muted-foreground hover:text-info">
+                            <Pencil className="size-3" />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground space-y-0.5 mt-1">
-                      {ms.lastPerformedDate && <p>ทำครั้งล่าสุด: {new Date(ms.lastPerformedDate).toLocaleDateString("th-TH")}</p>}
-                      {ms.nextDueDate ? <p>รอบถัดไป: {new Date(ms.nextDueDate).toLocaleDateString("th-TH")}</p> : <p>รอบถัดไป: ยังไม่กำหนด</p>}
-                    </div>
+                    {isEditing ? (
+                      <div className="space-y-2 mt-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] text-muted-foreground">วันที่ทำครั้งล่าสุด</label>
+                            <input type="date" value={editMSLastDate} onChange={(e) => setEditMSLastDate(e.target.value)} className="w-full px-2 py-1 text-xs border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50" />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-muted-foreground">เลขไมล์ล่าสุด</label>
+                            <input type="number" value={editMSLastMileage} onChange={(e) => setEditMSLastMileage(e.target.value)} className="w-full px-2 py-1 text-xs border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] text-muted-foreground">วันที่รอบถัดไป</label>
+                            <input type="date" value={editMSNextDate} onChange={(e) => setEditMSNextDate(e.target.value)} className="w-full px-2 py-1 text-xs border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50" />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-muted-foreground">เลขไมล์รอบถัดไป</label>
+                            <input type="number" value={editMSNextMileage} onChange={(e) => setEditMSNextMileage(e.target.value)} className="w-full px-2 py-1 text-xs border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50" />
+                          </div>
+                        </div>
+                        <select value={editMSStatus} onChange={(e) => setEditMSStatus(e.target.value)} className="w-full px-2 py-1.5 text-sm border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50">
+                          <option value="PENDING">รอดำเนินการ</option>
+                          <option value="DUE_SOON">ใกล้ถึงกำหนด</option>
+                          <option value="OVERDUE">เกินกำหนด</option>
+                          <option value="COMPLETED">เสร็จแล้ว</option>
+                        </select>
+                        <div className="flex justify-end gap-1">
+                          <button onClick={() => setEditingMS(null)} className="px-2 py-1 text-xs border border-border rounded-lg hover:bg-muted">ยกเลิก</button>
+                          <button onClick={() => handleSaveMaintenanceSchedule(ms.id)} className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded-lg hover:opacity-90">บันทึก</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-xs text-muted-foreground space-y-0.5 mt-1">
+                        {ms.lastPerformedDate && <p>ทำครั้งล่าสุด: {new Date(ms.lastPerformedDate).toLocaleDateString("th-TH")}</p>}
+                        {ms.nextDueDate ? <p>รอบถัดไป: {new Date(ms.nextDueDate).toLocaleDateString("th-TH")}</p> : <p>รอบถัดไป: ยังไม่กำหนด</p>}
+                      </div>
+                    )}
                   </div>
                 )
               })

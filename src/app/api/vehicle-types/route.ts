@@ -10,7 +10,15 @@ export async function GET() {
     })
 
     return NextResponse.json(
-      types.map((t) => ({ id: t.id, name: t.name }))
+      types.map((t) => ({
+        id: t.id,
+        name: t.name,
+        description: t.description,
+        fuelType: t.fuelType,
+        weight: t.weight,
+        seatingCapacity: t.seatingCapacity,
+        engineSpec: t.engineSpec,
+      }))
     )
   } catch (error) {
     console.error("Vehicle types API error:", error)
@@ -20,17 +28,32 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { name } = await request.json()
+    const { name, description, fuelType, weight, seatingCapacity, engineSpec } = await request.json()
 
     if (!name) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 })
     }
 
     const type = await prisma.vehicleType.create({
-      data: { name },
+      data: {
+        name,
+        ...(description !== undefined && { description }),
+        ...(fuelType !== undefined && { fuelType }),
+        ...(weight !== undefined && { weight }),
+        ...(seatingCapacity !== undefined && { seatingCapacity }),
+        ...(engineSpec !== undefined && { engineSpec }),
+      },
     })
 
-    return NextResponse.json({ id: type.id, name: type.name })
+    return NextResponse.json({
+      id: type.id,
+      name: type.name,
+      description: type.description,
+      fuelType: type.fuelType,
+      weight: type.weight,
+      seatingCapacity: type.seatingCapacity,
+      engineSpec: type.engineSpec,
+    })
   } catch (error) {
     console.error("Create vehicle type error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
