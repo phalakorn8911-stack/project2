@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Search, Plus, Pencil, Trash2, X, Save } from "lucide-react"
+import { Search, Plus, Pencil, Trash2, X, Save, Camera } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Driver {
@@ -9,10 +9,11 @@ interface Driver {
   rank: string
   firstName: string
   lastName: string
+  photoUrl: string | null
   vehicles: { id: string; registrationNumber: string; brand: string; model: string }[]
 }
 
-const emptyForm = { rank: "", firstName: "", lastName: "" }
+const emptyForm = { rank: "", firstName: "", lastName: "", photoUrl: "" }
 
 export default function DriversPage() {
   const [drivers, setDrivers] = useState<Driver[]>([])
@@ -69,7 +70,7 @@ export default function DriversPage() {
 
   const handleEdit = (d: Driver) => {
     setEditingId(d.id)
-    setForm({ rank: d.rank, firstName: d.firstName, lastName: d.lastName })
+    setForm({ rank: d.rank, firstName: d.firstName, lastName: d.lastName, photoUrl: d.photoUrl ?? "" })
     setShowForm(true)
   }
 
@@ -128,7 +129,7 @@ export default function DriversPage() {
               <X className="size-4" />
             </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">ยศ</label>
               <input
@@ -158,6 +159,27 @@ export default function DriversPage() {
                 placeholder="นามสกุล"
                 className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring"
               />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">URL รูปภาพ</label>
+              <input
+                type="text"
+                value={form.photoUrl}
+                onChange={(e) => setForm({ ...form, photoUrl: e.target.value })}
+                placeholder="https://example.com/photo.jpg"
+                className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring"
+              />
+              {form.photoUrl && (
+                <div className="mt-2 flex items-center gap-3">
+                  <img
+                    src={form.photoUrl}
+                    alt="ตัวอย่างรูป"
+                    className="size-10 rounded-full object-cover border border-border"
+                    onError={(e) => { e.currentTarget.style.display = "none" }}
+                  />
+                  <span className="text-xs text-muted-foreground">ตัวอย่างรูป</span>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex justify-end gap-2 mt-4">
@@ -190,6 +212,7 @@ export default function DriversPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                  <th className="px-4 py-3 font-medium">รูป</th>
                   <th className="px-4 py-3 font-medium">ยศ</th>
                   <th className="px-3 py-3 font-medium">ชื่อ-นามสกุล</th>
                   <th className="px-3 py-3 font-medium">รถที่รับผิดชอบ</th>
@@ -199,13 +222,26 @@ export default function DriversPage() {
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
                       ไม่พบข้อมูล
                     </td>
                   </tr>
                 ) : (
                   filtered.map((d) => (
                     <tr key={d.id} className="border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors">
+                      <td className="px-4 py-3">
+                        {d.photoUrl ? (
+                          <img
+                            src={d.photoUrl}
+                            alt={`${d.firstName} ${d.lastName}`}
+                            className="size-9 rounded-full object-cover border border-border"
+                          />
+                        ) : (
+                          <div className="size-9 rounded-full bg-muted flex items-center justify-center">
+                            <Camera className="size-4 text-muted-foreground" />
+                          </div>
+                        )}
+                      </td>
                       <td className="px-4 py-3 text-card-foreground">{d.rank}</td>
                       <td className="px-3 py-3 font-medium text-card-foreground">{d.firstName} {d.lastName}</td>
                       <td className="px-3 py-3 text-muted-foreground">
