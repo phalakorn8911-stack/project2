@@ -2,21 +2,28 @@ export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import bcrypt from "bcryptjs"
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
     const body = await request.json()
 
+    const updateData: any = {}
+    if (body.rank !== undefined) updateData.rank = body.rank
+    if (body.firstName !== undefined) updateData.firstName = body.firstName
+    if (body.lastName !== undefined) updateData.lastName = body.lastName
+    if (body.name !== undefined) updateData.name = body.name
+    if (body.email !== undefined) updateData.email = body.email
+    if (body.roleId !== undefined) updateData.roleId = body.roleId
+    if (body.unitId !== undefined) updateData.unitId = body.unitId
+    if (body.password && body.password.trim()) {
+      updateData.password = await bcrypt.hash(body.password, 10)
+    }
+
     const user = await prisma.user.update({
       where: { id },
-      data: {
-        ...(body.rank !== undefined && { rank: body.rank }),
-        ...(body.firstName !== undefined && { firstName: body.firstName }),
-        ...(body.lastName !== undefined && { lastName: body.lastName }),
-        ...(body.name !== undefined && { name: body.name }),
-        ...(body.email !== undefined && { email: body.email }),
-      },
+      data: updateData,
     })
 
     return NextResponse.json({
