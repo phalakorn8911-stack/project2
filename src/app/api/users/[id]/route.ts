@@ -13,12 +13,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (body.rank !== undefined) updateData.rank = body.rank
     if (body.firstName !== undefined) updateData.firstName = body.firstName
     if (body.lastName !== undefined) updateData.lastName = body.lastName
-    if (body.name !== undefined) updateData.name = body.name
     if (body.email !== undefined) updateData.email = body.email
     if (body.roleId !== undefined) updateData.roleId = body.roleId
     if (body.unitId !== undefined) updateData.unitId = body.unitId
     if (body.password && body.password.trim()) {
       updateData.password = await bcrypt.hash(body.password, 10)
+    }
+
+    // Auto-sync name from firstName/lastName
+    if (body.firstName !== undefined || body.lastName !== undefined) {
+      const current = await prisma.user.findUnique({ where: { id } })
+      const fn = body.firstName !== undefined ? body.firstName : (current?.firstName ?? "")
+      const ln = body.lastName !== undefined ? body.lastName : (current?.lastName ?? "")
+      updateData.name = `${fn} ${ln}`.trim() || current?.name || ""
     }
 
     const user = await prisma.user.update({
