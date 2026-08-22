@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { Shield } from "lucide-react"
 import { SummaryCards } from "@/components/dashboard/summary-cards"
 import { ChartsSection } from "@/components/dashboard/charts-section"
 import { ReadinessSection } from "@/components/dashboard/readiness-section"
@@ -19,12 +20,17 @@ export default function DashboardPage() {
   }, [])
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-foreground">ภาพรวมระบบ</h2>
-        <p className="text-sm text-muted-foreground">
-          ข้อมูลสถานะยานพาหนะและงานซ่อมบำรุงทั้งหมด
-        </p>
+    <div className="p-4 md:p-6 space-y-6">
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-primary/10">
+          <Shield className="h-6 w-6 text-primary" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-foreground tracking-tight">ภาพรวมระบบ</h2>
+          <p className="text-sm text-muted-foreground">
+            ข้อมูลสถานะยานพาหนะและงานซ่อมบำรุงทั้งหมด
+          </p>
+        </div>
       </div>
 
       <SummaryCards />
