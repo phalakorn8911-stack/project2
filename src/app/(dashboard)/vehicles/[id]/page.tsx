@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Truck, Calendar, Gauge, Fuel, Upload, X, ImagePlus, Star, Trash2, Pencil, Save, UserPlus, UserMinus, ChevronLeft, ChevronRight, User } from "lucide-react"
+import { ArrowLeft, Truck, Calendar, Gauge, Fuel, Upload, X, ImagePlus, Star, Trash2, Pencil, Save, UserPlus, UserMinus, ChevronLeft, ChevronRight, User, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const statusMeta: Record<string, { label: string; className: string }> = {
@@ -82,9 +82,18 @@ export default function VehicleDetailPage() {
   const [editMSStatus, setEditMSStatus] = useState("")
   const [editMSLastDate, setEditMSLastDate] = useState("")
   const [editMSLastMileage, setEditMSLastMileage] = useState("")
+  const [histories, setHistories] = useState<any[]>([])
+  const [showHistoryForm, setShowHistoryForm] = useState(false)
+  const [editingHistoryId, setEditingHistoryId] = useState<string | null>(null)
+  const [historyForm, setHistoryForm] = useState({
+    licensePlate: "", engineNumber: "", receivedDate: "",
+    receivedFrom: "", withdrawer: "", engineCc: "",
+    horsepower: "", totalQuantity: 0, maintenanceDetails: ""
+  })
 
   useEffect(() => {
     fetchVehicle()
+    fetchHistories()
     fetch("/api/drivers").then((r) => r.json()).then((d) => setAllDrivers(d)).catch(() => {})
     fetch("/api/vehicle-types").then((r) => r.json()).then((d) => setVehicleTypes(d)).catch(() => {})
   }, [params.id])
@@ -105,6 +114,63 @@ export default function VehicleDetailPage() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
+  }
+
+  const fetchHistories = () => {
+    fetch(`/api/vehicle-histories?vehicleId=${params.id}`)
+      .then((r) => r.json())
+      .then((data) => setHistories(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }
+
+  const handleSaveHistory = async () => {
+    try {
+      if (editingHistoryId) {
+        await fetch(`/api/vehicle-histories/${editingHistoryId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(historyForm),
+        })
+      } else {
+        await fetch("/api/vehicle-histories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...historyForm, vehicleId: params.id }),
+        })
+      }
+      fetchHistories()
+      setShowHistoryForm(false)
+      setEditingHistoryId(null)
+      setHistoryForm({ licensePlate: "", engineNumber: "", receivedDate: "", receivedFrom: "", withdrawer: "", engineCc: "", horsepower: "", totalQuantity: 0, maintenanceDetails: "" })
+    } catch (err) {
+      console.error("Save history error:", err)
+    }
+  }
+
+  const handleDeleteHistory = async (id: string) => {
+    if (!confirm("ต้องการลบประวัติรายการนี้?")) return
+    try {
+      await fetch(`/api/vehicle-histories/${id}`, { method: "DELETE" })
+      fetchHistories()
+    } catch (err) {
+      console.error("Delete history error:", err)
+    }
+  }
+
+  const handleEditHistory = (h: any) => {
+    setEditingHistoryId(h.id)
+    setHistoryForm({
+      licensePlate: h.licensePlate ?? "",
+      engineNumber: h.engineNumber ?? "",
+      receivedDate: h.receivedDate ? new Date(h.receivedDate).toISOString().split("T")[0] : "",
+      receivedFrom: h.receivedFrom ?? "",
+      withdrawer: h.withdrawer ?? "",
+      engineCc: h.engineCc ?? "",
+      horsepower: h.horsepower ?? "",
+      totalQuantity: h.totalQuantity ?? 0,
+      maintenanceDetails: h.maintenanceDetails ?? "",
+    })
+    setShowHistoryForm(true)
   }
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -685,6 +751,104 @@ export default function VehicleDetailPage() {
               })
             )}
           </div>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card">
+        <div className="px-5 pt-5 pb-3 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-card-foreground">ประวัติรถ</h3>
+            <p className="text-xs text-muted-foreground">{histories.length} รายการ</p>
+          </div>
+          <button
+            onClick={() => { setShowHistoryForm(true); setEditingHistoryId(null); setHistoryForm({ licensePlate: "", engineNumber: "", receivedDate: "", receivedFrom: "", withdrawer: "", engineCc: "", horsepower: "", totalQuantity: 0, maintenanceDetails: "" }) }}
+            className="inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+          >
+            + เพิ่ม
+          </button>
+        </div>
+
+        {showHistoryForm && (
+          <div className="mx-5 mb-4 rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+            <h4 className="text-xs font-semibold text-card-foreground">{editingHistoryId ? "แก้ไขประวัติ" : "เพิ่มประวัติใหม่"}</h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] text-muted-foreground mb-1">ป้ายทะเบียนรถ</label>
+                <input type="text" value={historyForm.licensePlate} onChange={(e) => setHistoryForm({ ...historyForm, licensePlate: e.target.value })} className="w-full px-2 py-1.5 text-xs border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50" />
+              </div>
+              <div>
+                <label className="block text-[10px] text-muted-foreground mb-1">หมายเลขเครื่องยนต์</label>
+                <input type="text" value={historyForm.engineNumber} onChange={(e) => setHistoryForm({ ...historyForm, engineNumber: e.target.value })} className="w-full px-2 py-1.5 text-xs border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50" />
+              </div>
+              <div>
+                <label className="block text-[10px] text-muted-foreground mb-1">เบิกรับเมื่อวันที่</label>
+                <input type="date" value={historyForm.receivedDate} onChange={(e) => setHistoryForm({ ...historyForm, receivedDate: e.target.value })} className="w-full px-2 py-1.5 text-xs border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50" />
+              </div>
+              <div>
+                <label className="block text-[10px] text-muted-foreground mb-1">รับจากหน่วย</label>
+                <input type="text" value={historyForm.receivedFrom} onChange={(e) => setHistoryForm({ ...historyForm, receivedFrom: e.target.value })} className="w-full px-2 py-1.5 text-xs border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50" />
+              </div>
+              <div>
+                <label className="block text-[10px] text-muted-foreground mb-1">ผู้เบิกรับ</label>
+                <input type="text" value={historyForm.withdrawer} onChange={(e) => setHistoryForm({ ...historyForm, withdrawer: e.target.value })} className="w-full px-2 py-1.5 text-xs border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50" />
+              </div>
+              <div>
+                <label className="block text-[10px] text-muted-foreground mb-1">ขนาดเครื่องยนต์ CC</label>
+                <input type="text" value={historyForm.engineCc} onChange={(e) => setHistoryForm({ ...historyForm, engineCc: e.target.value })} className="w-full px-2 py-1.5 text-xs border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50" />
+              </div>
+              <div>
+                <label className="block text-[10px] text-muted-foreground mb-1">ขนาดแรงม้า</label>
+                <input type="text" value={historyForm.horsepower} onChange={(e) => setHistoryForm({ ...historyForm, horsepower: e.target.value })} className="w-full px-2 py-1.5 text-xs border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50" />
+              </div>
+              <div>
+                <label className="block text-[10px] text-muted-foreground mb-1">จำนวน (คัน)</label>
+                <input type="number" value={historyForm.totalQuantity} onChange={(e) => setHistoryForm({ ...historyForm, totalQuantity: Number(e.target.value) })} className="w-full px-2 py-1.5 text-xs border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-[10px] text-muted-foreground mb-1">รายละเอียดการซ่อมบำรุง</label>
+              <textarea value={historyForm.maintenanceDetails} onChange={(e) => setHistoryForm({ ...historyForm, maintenanceDetails: e.target.value })} rows={3} className="w-full px-2 py-1.5 text-xs border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50" />
+            </div>
+            <div className="flex justify-end gap-1">
+              <button onClick={() => { setShowHistoryForm(false); setEditingHistoryId(null) }} className="px-2 py-1 text-xs border border-border rounded-lg hover:bg-muted">ยกเลิก</button>
+              <button onClick={handleSaveHistory} className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded-lg hover:opacity-90">บันทึก</button>
+            </div>
+          </div>
+        )}
+
+        <div className="px-5 pb-5 space-y-3">
+          {histories.length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-4">ไม่มีประวัติ</p>
+          ) : (
+            histories.map((h) => (
+              <div key={h.id} className="rounded-lg border border-border p-3">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-medium text-card-foreground">ทะเบียน: {h.licensePlate || "-"}</span>
+                    {h.engineNumber && <span className="text-[10px] text-muted-foreground">| เครื่อง: {h.engineNumber}</span>}
+                    {h.engineCc && <span className="text-[10px] text-muted-foreground">| {h.engineCc} CC</span>}
+                    {h.horsepower && <span className="text-[10px] text-muted-foreground">| {h.horsepower} แรงม้า</span>}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => handleEditHistory(h)} className="p-1 text-muted-foreground hover:text-info"><Pencil className="size-3" /></button>
+                    <button onClick={() => handleDeleteHistory(h.id)} className="p-1 text-muted-foreground hover:text-destructive"><Trash2 className="size-3" /></button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+                  {h.receivedDate && <p>เบิกรับ: {new Date(h.receivedDate).toLocaleDateString("th-TH")}</p>}
+                  {h.receivedFrom && <p>รับจาก: {h.receivedFrom}</p>}
+                  {h.withdrawer && <p>ผู้เบิก: {h.withdrawer}</p>}
+                  {h.totalQuantity > 0 && <p>จำนวน: {h.totalQuantity} คัน</p>}
+                </div>
+                {h.maintenanceDetails && (
+                  <p className="text-[11px] text-muted-foreground mt-2 border-t border-border pt-2">{h.maintenanceDetails}</p>
+                )}
+                {h.createdBy && (
+                  <p className="text-[10px] text-muted-foreground mt-1">บันทึกโดย: {h.createdBy}</p>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
