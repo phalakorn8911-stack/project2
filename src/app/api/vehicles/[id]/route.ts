@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { Client } from "pg"
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -13,9 +14,6 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         vehicleType: true,
         photos: {
           orderBy: { id: "desc" },
-        },
-        drivers: {
-          include: { driver: true },
         },
         repairRequests: {
           include: { workOrder: true },
@@ -32,6 +30,20 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     if (!vehicle) {
       return NextResponse.json({ error: "Vehicle not found" }, { status: 404 })
     }
+
+    const pg = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+    })
+    await pg.connect()
+    const driversResult = await pg.query(
+      `SELECT d.id, d.rank, d.first_name, d.last_name, d.photo_url
+       FROM vehicle_drivers vd
+       JOIN drivers d ON d.id = vd.driver_id
+       WHERE vd.vehicle_id = $1`,
+      [id]
+    )
+    await pg.end()
 
     return NextResponse.json({
       id: vehicle.id,
@@ -51,12 +63,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         photoUrl: p.photoUrl,
         isPrimary: p.isPrimary,
       })),
-      drivers: vehicle.drivers.map((vd) => ({
-        id: vd.driver.id,
-        rank: vd.driver.rank,
-        firstName: vd.driver.firstName,
-        lastName: vd.driver.lastName,
-        photoUrl: vd.driver.photoUrl,
+      drivers: driversResult.rows.map((d) => ({
+        id: d.id,
+        rank: d.rank,
+        firstName: d.first_name,
+        lastName: d.last_name,
+        photoUrl: d.photo_url,
       })),
       repairRequests: vehicle.repairRequests.map((rr) => ({
         id: rr.id,

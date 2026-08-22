@@ -1,32 +1,48 @@
 export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { Client } from "pg"
 
 export async function GET() {
   try {
-    const drivers = await prisma.driver.findMany({
-      include: {
-        vehicles: {
-          include: { vehicle: { select: { registrationNumber: true, brand: true, model: true } } },
-        },
-      },
-      orderBy: { rank: "asc" },
+    const pg = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
     })
+    await pg.connect()
+
+    const driversResult = await pg.query(
+      `SELECT d.id, d.rank, d.first_name, d.last_name, d.photo_url
+       FROM drivers d ORDER BY d.rank ASC`
+    )
+
+    const vehiclesResult = await pg.query(
+      `SELECT vd.driver_id, v.id as vehicle_id, v."registrationNumber", v.brand, v.model
+       FROM vehicle_drivers vd
+       JOIN vehicles v ON v.id = vd.vehicle_id`
+    )
+
+    await pg.end()
+
+    const vehicleMap = new Map<string, any[]>()
+    for (const row of vehiclesResult.rows) {
+      if (!vehicleMap.has(row.driver_id)) vehicleMap.set(row.driver_id, [])
+      vehicleMap.get(row.driver_id)!.push({
+        id: row.vehicle_id,
+        registrationNumber: row.registrationNumber,
+        brand: row.brand,
+        model: row.model,
+      })
+    }
 
     return NextResponse.json(
-      drivers.map((d) => ({
+      driversResult.rows.map((d) => ({
         id: d.id,
         rank: d.rank,
-        firstName: d.firstName,
-        lastName: d.lastName,
-        photoUrl: d.photoUrl,
-        vehicles: d.vehicles.map((vd) => ({
-          id: vd.vehicleId,
-          registrationNumber: vd.vehicle.registrationNumber,
-          brand: vd.vehicle.brand,
-          model: vd.vehicle.model,
-        })),
+        firstName: d.first_name,
+        lastName: d.last_name,
+        photoUrl: d.photo_url,
+        vehicles: vehicleMap.get(d.id) ?? [],
       }))
     )
   } catch (error) {
@@ -43,16 +59,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    const driver = await prisma.driver.create({
-      data: { rank, firstName, lastName, photoUrl: photoUrl || null },
+    const pg = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
     })
+    await pg.connect()
+    const result = await pg.query(
+      `INSERT INTO drivers (id, rank, first_name, last_name, photo_url)
+       VALUES (gen_random_uuid(), $1, $2, $3, $4)
+       RETURNING id, rank, first_name, last_name, photo_url`,
+      [rank, firstName, lastName, photoUrl || null]
+    )
+    await pg.end()
 
+    const d = result.rows[0]
     return NextResponse.json({
-      id: driver.id,
-      rank: driver.rank,
-      firstName: driver.firstName,
-      lastName: driver.lastName,
-      photoUrl: driver.photoUrl,
+      id: d.id,
+      rank: d.rank,
+      firstName: d.first_name,
+      lastName: d.last_name,
+      photoUrl: d.photo_url,
     })
   } catch (error) {
     console.error("Create driver error:", error)
