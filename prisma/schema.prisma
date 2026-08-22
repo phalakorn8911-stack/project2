@@ -176,6 +176,7 @@ model Driver {
   rank      String  @map("rank")
   firstName String  @map("first_name")
   lastName  String  @map("last_name")
+  photoUrl  String? @map("photo_url")
   vehicles  VehicleDriver[]
 
   @@map("drivers")

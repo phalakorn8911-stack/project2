@@ -56,6 +56,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         rank: vd.driver.rank,
         firstName: vd.driver.firstName,
         lastName: vd.driver.lastName,
+        photoUrl: vd.driver.photoUrl,
       })),
       repairRequests: vehicle.repairRequests.map((rr) => ({
         id: rr.id,

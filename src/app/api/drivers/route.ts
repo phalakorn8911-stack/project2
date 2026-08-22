@@ -20,6 +20,7 @@ export async function GET() {
         rank: d.rank,
         firstName: d.firstName,
         lastName: d.lastName,
+        photoUrl: d.photoUrl,
         vehicles: d.vehicles.map((vd) => ({
           id: vd.vehicleId,
           registrationNumber: vd.vehicle.registrationNumber,
@@ -36,14 +37,14 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { rank, firstName, lastName } = await request.json()
+    const { rank, firstName, lastName, photoUrl } = await request.json()
 
     if (!rank || !firstName || !lastName) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
     const driver = await prisma.driver.create({
-      data: { rank, firstName, lastName },
+      data: { rank, firstName, lastName, photoUrl: photoUrl || null },
     })
 
     return NextResponse.json({
@@ -51,6 +52,7 @@ export async function POST(request: Request) {
       rank: driver.rank,
       firstName: driver.firstName,
       lastName: driver.lastName,
+      photoUrl: driver.photoUrl,
     })
   } catch (error) {
     console.error("Create driver error:", error)

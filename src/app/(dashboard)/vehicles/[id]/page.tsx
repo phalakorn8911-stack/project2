@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Truck, Calendar, Gauge, Fuel, Upload, X, ImagePlus, Star, Trash2, Pencil, Save, UserPlus, UserMinus, ChevronLeft, ChevronRight } from "lucide-react"
+import { ArrowLeft, Truck, Calendar, Gauge, Fuel, Upload, X, ImagePlus, Star, Trash2, Pencil, Save, UserPlus, UserMinus, ChevronLeft, ChevronRight, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const statusMeta: Record<string, { label: string; className: string }> = {
@@ -41,6 +41,7 @@ interface DriverInfo {
   rank: string
   firstName: string
   lastName: string
+  photoUrl: string | null
 }
 
 export default function VehicleDetailPage() {
@@ -389,9 +390,18 @@ export default function VehicleDetailPage() {
             <div className="space-y-2">
               {drivers.map((d) => (
                 <div key={d.id} className="flex items-center justify-between rounded-lg border border-border p-3">
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">{d.rank}</span>{" "}
-                    <span className="font-medium text-card-foreground">{d.firstName} {d.lastName}</span>
+                  <div className="flex items-center gap-3">
+                    {d.photoUrl ? (
+                      <img src={d.photoUrl} alt={d.firstName} className="size-10 rounded-full object-cover" />
+                    ) : (
+                      <div className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                        <User className="size-5" />
+                      </div>
+                    )}
+                    <div className="text-sm">
+                      <span className="text-muted-foreground">{d.rank}</span>{" "}
+                      <span className="font-medium text-card-foreground">{d.firstName} {d.lastName}</span>
+                    </div>
                   </div>
                   <button onClick={() => handleUnassignDriver(d.id)} className="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors" title="เลิกมอบหมาย">
                     <UserMinus className="size-3.5" />
