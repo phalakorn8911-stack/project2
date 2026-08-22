@@ -17,3 +17,22 @@ export async function GET() {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+
+export async function POST(request: Request) {
+  try {
+    const { name } = await request.json()
+
+    if (!name) {
+      return NextResponse.json({ error: "Name is required" }, { status: 400 })
+    }
+
+    const type = await prisma.vehicleType.create({
+      data: { name },
+    })
+
+    return NextResponse.json({ id: type.id, name: type.name })
+  } catch (error) {
+    console.error("Create vehicle type error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
