@@ -11,6 +11,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       include: {
         unit: true,
         vehicleType: true,
+        photos: {
+          orderBy: { id: "desc" },
+        },
         repairRequests: {
           include: { workOrder: true },
           orderBy: { requestNumber: "desc" },
@@ -39,6 +42,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       status: vehicle.status,
       unit: vehicle.unit.name,
       vehicleType: vehicle.vehicleType.name,
+      photos: vehicle.photos.map((p) => ({
+        id: p.id,
+        photoUrl: p.photoUrl,
+        isPrimary: p.isPrimary,
+      })),
       repairRequests: vehicle.repairRequests.map((rr) => ({
         id: rr.id,
         requestNumber: rr.requestNumber,

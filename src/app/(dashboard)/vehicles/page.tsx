@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Search, Plus, Filter } from "lucide-react"
+import { Search, Plus, Filter, Truck } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const statusMeta: Record<string, { label: string; className: string }> = {
@@ -71,6 +71,7 @@ export default function VehiclesPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">รูป</th>
                 <th className="px-4 py-3 font-medium">ทะเบียน</th>
                 <th className="px-3 py-3 font-medium">รุ่น</th>
                 <th className="px-3 py-3 font-medium">ปี</th>
@@ -85,6 +86,15 @@ export default function VehiclesPage() {
                 const status = statusMeta[v.status] ?? { label: v.status, className: "text-muted-foreground bg-muted" }
                 return (
                   <tr key={v.id} onClick={() => window.location.href = `/vehicles/${v.id}`} className="border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer">
+                    <td className="px-4 py-3">
+                      {v.thumbnail ? (
+                        <img src={v.thumbnail} alt={v.reg} className="size-10 rounded-lg object-cover" />
+                      ) : (
+                        <div className="size-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
+                          <Truck className="size-5" />
+                        </div>
+                      )}
+                    </td>
                     <td className="px-4 py-3 font-medium text-card-foreground">{v.reg}</td>
                     <td className="px-3 py-3 text-card-foreground">{v.brand} {v.model}</td>
                     <td className="px-3 py-3 text-muted-foreground">{v.year}</td>

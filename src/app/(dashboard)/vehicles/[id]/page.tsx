@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Truck, Calendar, Gauge, Fuel } from "lucide-react"
+import { ArrowLeft, Truck, Calendar, Gauge, Fuel, Upload, X, ImagePlus, Star, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const statusMeta: Record<string, { label: string; className: string }> = {
@@ -30,18 +30,84 @@ const scheduleStatusLabels: Record<string, { label: string; className: string }>
   COMPLETED: { label: "เสร็จแล้ว", className: "text-success bg-success/10" },
 }
 
+interface Photo {
+  id: string
+  photoUrl: string
+  isPrimary: boolean
+}
+
 export default function VehicleDetailPage() {
   const params = useParams()
   const router = useRouter()
   const [vehicle, setVehicle] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [photos, setPhotos] = useState<Photo[]>([])
+  const [uploading, setUploading] = useState(false)
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetch(`/api/vehicles/${params.id}`)
       .then((r) => r.json())
-      .then((data) => { setVehicle(data); setLoading(false) })
+      .then((data) => {
+        setVehicle(data)
+        setPhotos(data.photos ?? [])
+        setLoading(false)
+      })
       .catch(() => setLoading(false))
   }, [params.id])
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("vehicleId", params.id as string)
+    formData.append("isPrimary", photos.length === 0 ? "true" : "false")
+
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: formData })
+      if (res.ok) {
+        const newPhoto = await res.json()
+        setPhotos((prev) => [newPhoto, ...prev])
+      }
+    } catch (err) {
+      console.error("Upload failed:", err)
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ""
+    }
+  }
+
+  const handleDelete = async (photoId: string) => {
+    if (!confirm("ต้องการลบรูปนี้?")) return
+    try {
+      const res = await fetch(`/api/upload?id=${photoId}`, { method: "DELETE" })
+      if (res.ok) {
+        setPhotos((prev) => prev.filter((p) => p.id !== photoId))
+        if (selectedPhoto === photoId) setSelectedPhoto(null)
+      }
+    } catch (err) {
+      console.error("Delete failed:", err)
+    }
+  }
+
+  const handleSetPrimary = async (photoId: string) => {
+    try {
+      await fetch(`/api/upload`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photoId, vehicleId: params.id }),
+      })
+      setPhotos((prev) =>
+        prev.map((p) => ({ ...p, isPrimary: p.id === photoId }))
+      )
+    } catch (err) {
+      console.error("Set primary failed:", err)
+    }
+  }
 
   if (loading) {
     return (
@@ -64,6 +130,7 @@ export default function VehicleDetailPage() {
   }
 
   const status = statusMeta[vehicle.status] ?? { label: vehicle.status, className: "text-muted-foreground bg-muted" }
+  const primaryPhoto = photos.find((p) => p.isPrimary) ?? photos[0]
 
   return (
     <div className="p-4 md:p-6 space-y-4">
@@ -77,9 +144,17 @@ export default function VehicleDetailPage() {
       <div className="rounded-xl border border-border bg-card p-5">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-              <Truck className="size-6" />
-            </div>
+            {primaryPhoto ? (
+              <img
+                src={primaryPhoto.photoUrl}
+                alt={vehicle.registrationNumber}
+                className="size-12 rounded-xl object-cover"
+              />
+            ) : (
+              <div className="flex size-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                <Truck className="size-6" />
+              </div>
+            )}
             <div>
               <h2 className="text-lg font-semibold text-foreground">{vehicle.registrationNumber}</h2>
               <p className="text-sm text-muted-foreground">{vehicle.brand} {vehicle.model}</p>
@@ -107,6 +182,100 @@ export default function VehicleDetailPage() {
             <Fuel className="size-4 text-muted-foreground" />
             <div><p className="text-muted-foreground">เชื้อเพลิง</p><p className="font-medium text-card-foreground">{vehicle.fuelType}</p></div>
           </div>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card">
+        <div className="px-5 pt-5 pb-3 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-card-foreground">รูปภาพยานพาหนะ</h3>
+            <p className="text-xs text-muted-foreground">{photos.length} รูป</p>
+          </div>
+          <label
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-lg bg-info/10 px-3 py-1.5 text-xs font-medium text-info cursor-pointer hover:bg-info/20 transition-colors",
+              uploading && "opacity-50 pointer-events-none"
+            )}
+          >
+            <Upload className="size-3.5" />
+            {uploading ? "กำลังอัปโหลด..." : "เพิ่มรูป"}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleUpload}
+            />
+          </label>
+        </div>
+        <div className="px-5 pb-5">
+          {photos.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+              <ImagePlus className="size-10 mb-2" />
+              <p className="text-xs">ยังไม่มีรูปภาพ</p>
+              <p className="text-xs">กด &quot;เพิ่มรูป&quot; เพื่ออัปโหลดรูปแรก</p>
+            </div>
+          ) : (
+            <>
+              {selectedPhoto && (
+                <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setSelectedPhoto(null)}>
+                  <div className="relative max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
+                    <img
+                      src={photos.find((p) => p.id === selectedPhoto)?.photoUrl}
+                      alt="Vehicle photo"
+                      className="w-full rounded-xl object-contain max-h-[80vh]"
+                    />
+                    <button
+                      onClick={() => setSelectedPhoto(null)}
+                      className="absolute top-2 right-2 size-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70"
+                    >
+                      <X className="size-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {photos.map((photo) => (
+                  <div
+                    key={photo.id}
+                    className="group relative aspect-square rounded-lg overflow-hidden border border-border cursor-pointer"
+                    onClick={() => setSelectedPhoto(photo.id)}
+                  >
+                    <img
+                      src={photo.photoUrl}
+                      alt="Vehicle"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2">
+                      {!photo.isPrimary && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleSetPrimary(photo.id) }}
+                          className="size-7 rounded-full bg-white/90 text-foreground flex items-center justify-center hover:bg-white"
+                          title="ตั้งเป็นรูปหลัก"
+                        >
+                          <Star className="size-3.5" />
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDelete(photo.id) }}
+                        className="size-7 rounded-full bg-white/90 text-destructive flex items-center justify-center hover:bg-white"
+                        title="ลบรูป"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    </div>
+                    {photo.isPrimary && (
+                      <div className="absolute top-1.5 left-1.5">
+                        <span className="inline-flex items-center rounded-full bg-info px-1.5 py-0.5 text-[9px] font-medium text-white">
+                          หลัก
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
 

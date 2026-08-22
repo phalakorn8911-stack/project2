@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma"
 export async function GET() {
   try {
     const vehicles = await prisma.vehicle.findMany({
-      include: { unit: true, vehicleType: true },
+      include: { unit: true, vehicleType: true, photos: true },
       orderBy: { registrationNumber: "asc" },
     })
 
@@ -21,6 +21,7 @@ export async function GET() {
         unit: v.unit.name,
         status: v.status,
         mileage: v.currentMileage.toLocaleString(),
+        thumbnail: v.photos.find((p) => p.isPrimary)?.photoUrl ?? v.photos[0]?.photoUrl ?? null,
       }))
     )
   } catch (error) {
