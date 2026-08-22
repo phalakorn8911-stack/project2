@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Search, Plus, Pencil, Trash2, X, Save, Camera } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -13,7 +13,7 @@ interface Driver {
   vehicles: { id: string; registrationNumber: string; brand: string; model: string }[]
 }
 
-const emptyForm = { rank: "", firstName: "", lastName: "", photoUrl: "" }
+const emptyForm = { rank: "", firstName: "", lastName: "" }
 
 export default function DriversPage() {
   const [drivers, setDrivers] = useState<Driver[]>([])
@@ -23,10 +23,21 @@ export default function DriversPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetchDrivers()
   }, [])
+
+  useEffect(() => {
+    return () => {
+      if (photoPreview && photoPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(photoPreview)
+      }
+    }
+  }, [photoPreview])
 
   const fetchDrivers = () => {
     fetch("/api/drivers")
@@ -44,6 +55,7 @@ export default function DriversPage() {
   const handleSave = async () => {
     setSaving(true)
     try {
+      let driverId = editingId
       if (editingId) {
         await fetch(`/api/drivers/${editingId}`, {
           method: "PATCH",
@@ -51,16 +63,31 @@ export default function DriversPage() {
           body: JSON.stringify(form),
         })
       } else {
-        await fetch("/api/drivers", {
+        const res = await fetch("/api/drivers", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
         })
+        const data = await res.json()
+        driverId = data.id
       }
+
+      if (photoFile && driverId) {
+        const formData = new FormData()
+        formData.append("file", photoFile)
+        formData.append("driverId", driverId)
+        await fetch("/api/upload-driver-photo", {
+          method: "POST",
+          body: formData,
+        })
+      }
+
       fetchDrivers()
       setShowForm(false)
       setEditingId(null)
       setForm(emptyForm)
+      setPhotoFile(null)
+      setPhotoPreview(null)
     } catch (err) {
       console.error("Save error:", err)
     } finally {
@@ -70,7 +97,9 @@ export default function DriversPage() {
 
   const handleEdit = (d: Driver) => {
     setEditingId(d.id)
-    setForm({ rank: d.rank, firstName: d.firstName, lastName: d.lastName, photoUrl: d.photoUrl ?? "" })
+    setForm({ rank: d.rank, firstName: d.firstName, lastName: d.lastName })
+    setPhotoFile(null)
+    setPhotoPreview(d.photoUrl ?? null)
     setShowForm(true)
   }
 
@@ -84,10 +113,34 @@ export default function DriversPage() {
     }
   }
 
+  const handleDeletePhoto = async () => {
+    if (!editingId) return
+    try {
+      await fetch(`/api/upload-driver-photo?driverId=${editingId}`, { method: "DELETE" })
+      setPhotoFile(null)
+      setPhotoPreview(null)
+      fetchDrivers()
+    } catch (err) {
+      console.error("Delete photo error:", err)
+    }
+  }
+
   const handleCancel = () => {
     setShowForm(false)
     setEditingId(null)
     setForm(emptyForm)
+    setPhotoFile(null)
+    setPhotoPreview(null)
+  }
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPhotoFile(file)
+    if (photoPreview && photoPreview.startsWith("blob:")) {
+      URL.revokeObjectURL(photoPreview)
+    }
+    setPhotoPreview(URL.createObjectURL(file))
   }
 
   return (
@@ -98,7 +151,7 @@ export default function DriversPage() {
           <p className="text-sm text-muted-foreground">รายชื่อผู้รับผิดชอบยานพาหนะ {drivers.length} คน</p>
         </div>
         <button
-          onClick={() => { setShowForm(true); setEditingId(null); setForm(emptyForm) }}
+          onClick={() => { setShowForm(true); setEditingId(null); setForm(emptyForm); setPhotoFile(null); setPhotoPreview(null) }}
           className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
         >
           <Plus className="size-4" />
@@ -161,21 +214,40 @@ export default function DriversPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1">URL รูปภาพ</label>
-              <input
-                type="text"
-                value={form.photoUrl}
-                onChange={(e) => setForm({ ...form, photoUrl: e.target.value })}
-                placeholder="https://example.com/photo.jpg"
-                className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring"
-              />
-              {form.photoUrl && (
+              <label className="block text-xs font-medium text-muted-foreground mb-1">รูปภาพ</label>
+              <div className="flex items-center gap-3">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                >
+                  <Camera className="size-3.5" />
+                  {photoPreview ? "เปลี่ยนรูป" : "เลือกรูป"}
+                </button>
+                {editingId && photoPreview && (
+                  <button
+                    type="button"
+                    onClick={handleDeletePhoto}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-background px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                  >
+                    <Trash2 className="size-3.5" />
+                    ลบรูป
+                  </button>
+                )}
+              </div>
+              {photoPreview && (
                 <div className="mt-2 flex items-center gap-3">
                   <img
-                    src={form.photoUrl}
+                    src={photoPreview}
                     alt="ตัวอย่างรูป"
                     className="size-10 rounded-full object-cover border border-border"
-                    onError={(e) => { e.currentTarget.style.display = "none" }}
                   />
                   <span className="text-xs text-muted-foreground">ตัวอย่างรูป</span>
                 </div>
