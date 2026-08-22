@@ -90,7 +90,18 @@ export default function PartsPage() {
       const res = await fetch("/api/parts");
       if (res.ok) {
         const data = await res.json();
-        setParts(Array.isArray(data) ? data : data.parts ?? []);
+        const list = Array.isArray(data) ? data : data.parts ?? [];
+        setParts(list.map((p: any) => ({
+          id: p.id,
+          name: p.name ?? "",
+          partNumber: p.partNumber ?? p.code ?? "",
+          categoryId: p.categoryId ?? "",
+          stockQuantity: p.stockQuantity ?? p.stock ?? 0,
+          minimumQuantity: p.minimumQuantity ?? p.min ?? 0,
+          unitMeasure: p.unitMeasure ?? p.unit ?? "ชิ้น",
+          unitPrice: p.unitPrice ?? p.price ?? 0,
+          vendorId: p.vendorId ?? "",
+        })));
       }
     } catch {
       console.error("Failed to fetch parts");
