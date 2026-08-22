@@ -15,6 +15,7 @@ export async function GET() {
         id: p.id,
         name: p.name,
         vehicleType: p.vehicleType.name,
+        vehicleTypeId: p.vehicleTypeId,
         intervalMonths: p.intervalMonths,
         intervalHours: p.intervalHours,
         intervalMileage: p.intervalMileage,
@@ -25,6 +26,31 @@ export async function GET() {
     )
   } catch (error) {
     console.error("Maintenance Plans API error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const { name, vehicleTypeId, intervalMonths, intervalMileage, intervalHours } = await request.json()
+
+    if (!name || !vehicleTypeId) {
+      return NextResponse.json({ error: "Name and vehicle type are required" }, { status: 400 })
+    }
+
+    const plan = await prisma.maintenancePlan.create({
+      data: {
+        name,
+        vehicleTypeId,
+        ...(intervalMonths !== undefined && intervalMonths !== null && { intervalMonths }),
+        ...(intervalMileage !== undefined && intervalMileage !== null && { intervalMileage }),
+        ...(intervalHours !== undefined && intervalHours !== null && { intervalHours }),
+      },
+    })
+
+    return NextResponse.json({ id: plan.id, name: plan.name })
+  } catch (error) {
+    console.error("Create maintenance plan error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
