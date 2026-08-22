@@ -129,7 +129,7 @@ export default function PartsPage() {
   };
 
   const handleSave = async () => {
-    if (!form.name.trim() || !form.partNumber.trim()) return;
+    if (!form.name?.trim() || !form.partNumber?.trim()) return;
 
     try {
       if (editingPart) {
@@ -483,7 +483,7 @@ export default function PartsPage() {
                 </button>
                 <button
                   onClick={handleSave}
-                  disabled={!form.name.trim() || !form.partNumber.trim()}
+                  disabled={!form.name?.trim() || !form.partNumber?.trim()}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Save className="h-4 w-4" />
