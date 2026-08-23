@@ -10,7 +10,7 @@ async function findUserByEmail(email: string) {
   })
   await pg.connect()
   const result = await pg.query(
-    `SELECT u.id, u.email, u.password, u.name, u.rank, u."firstName", u."lastName", u.status, u."unitId",
+    `SELECT u.id, u.email, u.password, u.name, u.rank, u.first_name, u.last_name, u.status, u."unitId",
             r.name as role_name
      FROM users u
      JOIN roles r ON r.id = u."roleId"
@@ -53,8 +53,8 @@ export const authOptions: NextAuthOptions = {
           role: user.role_name,
           unitId: user.unitId,
           rank: user.rank,
-          firstName: user.firstName,
-          lastName: user.lastName,
+          firstName: user.first_name,
+          lastName: user.last_name,
         }
       },
     }),
