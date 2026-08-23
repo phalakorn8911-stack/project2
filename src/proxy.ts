@@ -2,12 +2,18 @@ import { NextResponse } from "next/server"
 import { getToken } from "next-auth/jwt"
 
 export async function proxy(request: Request) {
+  const url = new URL(request.url)
+
+  if (url.pathname.startsWith("/api/auth") || url.pathname.startsWith("/login")) {
+    return NextResponse.next()
+  }
+
   const token = await getToken({ req: request as any, secret: process.env.NEXTAUTH_SECRET })
 
   if (!token) {
-    const url = new URL("/login", request.url)
-    url.searchParams.set("callbackUrl", request.url)
-    return NextResponse.redirect(url)
+    const redirectUrl = new URL("/login", request.url)
+    redirectUrl.searchParams.set("callbackUrl", request.url)
+    return NextResponse.redirect(redirectUrl)
   }
 
   return NextResponse.next()
