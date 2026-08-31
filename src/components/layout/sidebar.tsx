@@ -60,7 +60,7 @@ export function Sidebar() {
     >
       <div className="flex h-14 items-center gap-3 border-b border-sidebar-border px-4">
         <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
-          สบ.
+          ยนต.
         </div>
         {!collapsed && (
           <span className="text-sm font-semibold text-sidebar-foreground truncate">
