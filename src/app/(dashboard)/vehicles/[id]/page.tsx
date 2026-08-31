@@ -67,6 +67,7 @@ export default function VehicleDetailPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [editing, setEditing] = useState(false)
   const [editReg, setEditReg] = useState("")
+  const [editBrand, setEditBrand] = useState("")
   const [editModel, setEditModel] = useState("")
   const [editYear, setEditYear] = useState(0)
   const [editMileage, setEditMileage] = useState(0)
@@ -111,6 +112,7 @@ export default function VehicleDetailPage() {
         setPhotos(data.photos ?? [])
         setDrivers(data.drivers ?? [])
         setEditReg(data.registrationNumber)
+        setEditBrand(data.brand ?? "")
         setEditModel(data.model)
         setEditYear(data.year)
         setEditMileage(data.currentMileage)
@@ -236,7 +238,7 @@ export default function VehicleDetailPage() {
       await fetch(`/api/vehicles/${params.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ registrationNumber: editReg, model: editModel, year: editYear, currentMileage: editMileage, vehicleTypeId: editVehicleTypeId, status: editStatus }),
+        body: JSON.stringify({ registrationNumber: editReg, brand: editBrand, model: editModel, year: editYear, currentMileage: editMileage, vehicleTypeId: editVehicleTypeId, status: editStatus }),
       })
       fetchVehicle()
       setEditing(false)
@@ -422,6 +424,10 @@ export default function VehicleDetailPage() {
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">หมายเลขทะเบียน</label>
                 <input type="text" value={editReg} onChange={(e) => setEditReg(e.target.value)} className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring" />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">ยี่ห้อ</label>
+                <input type="text" value={editBrand} onChange={(e) => setEditBrand(e.target.value)} className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring" />
               </div>
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">รุ่น</label>

@@ -102,6 +102,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       where: { id },
       data: {
         ...(body.registrationNumber !== undefined && { registrationNumber: body.registrationNumber }),
+        ...(body.brand !== undefined && { brand: body.brand }),
         ...(body.model !== undefined && { model: body.model }),
         ...(body.year !== undefined && { year: body.year }),
         ...(body.currentMileage !== undefined && { currentMileage: body.currentMileage }),

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
 
 const roleAccess: Record<string, string[]> = {
@@ -16,14 +17,14 @@ const roleAccess: Record<string, string[]> = {
   ],
 }
 
-export async function proxy(request: Request) {
+export async function middleware(request: NextRequest) {
   const url = new URL(request.url)
 
   if (url.pathname.startsWith("/api/auth") || url.pathname.startsWith("/login")) {
     return NextResponse.next()
   }
 
-  const token = await getToken({ req: request as any, secret: process.env.NEXTAUTH_SECRET })
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
 
   if (!token) {
     const redirectUrl = new URL("/login", request.url)
