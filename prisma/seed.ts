@@ -27,14 +27,19 @@ async function main() {
   })
 
   // ---- Roles ----
-  const roleNames = ["admin", "commander", "vehicle_officer", "driver", "mechanic", "head_mechanic", "parts_officer"]
   const roleData: Record<string, { id: string; name: string }> = {}
+  const roleNames = ["admin", "mechanic", "driver"]
+  const roleDesc: Record<string, string> = {
+    admin: "ผู้ดูแลระบบ/ผู้บังคับบัญชา - เข้าดู แก้ไข และสั่งการได้ทั้งหมดของระบบ",
+    mechanic: "ช่างซ่อม - เข้าระบบ แก้ไขงานในส่วนของช่าง",
+    driver: "พลขับ - เข้าส่วนพลขับ แจ้งอาการเสียของรถให้ช่างซ่อม",
+  }
   for (const name of roleNames) {
     const existing = await prisma.role.findUnique({ where: { name } })
     if (existing) {
       roleData[name] = existing
     } else {
-      roleData[name] = await prisma.role.create({ data: { name } })
+      roleData[name] = await prisma.role.create({ data: { name, description: roleDesc[name] } })
     }
   }
 
@@ -42,12 +47,11 @@ async function main() {
   const hashed = await bcrypt.hash("1234", 10)
   const userSpecs = [
     { tag: "admin", email: "admin@army.mail", rank: "พันตรี", firstName: "สมชาย", lastName: "ใจดี", roleName: "admin", unitId: unit3.id },
-    { tag: "commander", email: "commander@army.mail", rank: "พันโท", firstName: "ประยุทธ์", lastName: "ศักดิ์สิทธิ์", roleName: "commander", unitId: unit1.id },
-    { tag: "officer", email: "officer@army.mail", rank: "ร้อยเอก", firstName: "วิเชียร", lastName: "เหลืองาม", roleName: "vehicle_officer", unitId: unit3.id },
+    { tag: "commander", email: "commander@army.mail", rank: "พันโท", firstName: "ประยุทธ์", lastName: "ศักดิ์สิทธิ์", roleName: "admin", unitId: unit1.id },
     { tag: "driver1", email: "driver1@army.mail", rank: "สิบเอก", firstName: "สมศักดิ์", lastName: "รักชาติ", roleName: "driver", unitId: unit1.id },
     { tag: "mechanic1", email: "mechanic1@army.mail", rank: "จ่าสิบตรี", firstName: "ประสิทธิ์", lastName: "กล้าหาญ", roleName: "mechanic", unitId: unit3.id },
-    { tag: "headmech", email: "headmech@army.mail", rank: "จ่าสิบโท", firstName: "มานพ", lastName: "ทรงพล", roleName: "head_mechanic", unitId: unit3.id },
-    { tag: "parts", email: "parts@army.mail", rank: "สิบโท", firstName: "ไพศาล", lastName: "คลังทรัพย์", roleName: "parts_officer", unitId: unit3.id },
+    { tag: "headmech", email: "headmech@army.mail", rank: "จ่าสิบโท", firstName: "มานพ", lastName: "ทรงพล", roleName: "admin", unitId: unit3.id },
+    { tag: "parts", email: "parts@army.mail", rank: "สิบโท", firstName: "ไพศาล", lastName: "คลังทรัพย์", roleName: "mechanic", unitId: unit3.id },
     { tag: "driver2", email: "driver2@army.mail", rank: "สิบตรี", firstName: "ณรงค์", lastName: "เข้มแข็ง", roleName: "driver", unitId: unit2.id },
     { tag: "mechanic2", email: "mechanic2@army.mail", rank: "จ่าสิบเอก", firstName: "สมบูรณ์", lastName: "มีฝีมือ", roleName: "mechanic", unitId: unit3.id },
   ]
