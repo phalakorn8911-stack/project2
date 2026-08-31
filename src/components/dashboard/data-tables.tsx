@@ -47,11 +47,11 @@ export function DataTables() {
           .slice(0, 5)
           .map((wo: any) => ({
             vehicleId: wo.vehicleId || "",
-            vehicle: wo.vehicle,
-            issue: wo.issue,
+            vehicle: wo.vehicleRegistration,
+            issue: wo.issueDescription,
             priority: wo.urgency === "EMERGENCY" ? "สูงมาก" : wo.urgency === "HIGH" ? "สูง" : "ปานกลาง",
             priorityColor: wo.urgency === "EMERGENCY" || wo.urgency === "HIGH" ? "text-destructive bg-destructive/10" : "text-status-parts bg-status-parts/10",
-            assignedTo: wo.mechanic,
+            assignedTo: wo.mechanicName,
           }))
       )
     }).catch(() => {})

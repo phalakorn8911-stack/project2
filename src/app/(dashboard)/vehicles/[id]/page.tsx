@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { ArrowLeft, Truck, Calendar, Gauge, Fuel, Upload, X, ImagePlus, Star, Trash2, Pencil, Save, UserPlus, UserMinus, ChevronLeft, ChevronRight, User, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -55,6 +56,7 @@ interface DriverInfo {
 export default function VehicleDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const { data: session } = useSession()
   const [vehicle, setVehicle] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [photos, setPhotos] = useState<Photo[]>([])
@@ -90,6 +92,9 @@ export default function VehicleDetailPage() {
     receivedFrom: "", withdrawer: "", engineCc: "",
     horsepower: "", totalQuantity: 0, maintenanceDetails: ""
   })
+  const [showRRForm, setShowRRForm] = useState(false)
+  const [rrForm, setRrForm] = useState({ symptoms: "", systemCategory: "", urgency: "MEDIUM", mileage: 0 })
+  const [savingRR, setSavingRR] = useState(false)
 
   useEffect(() => {
     fetchVehicle()
@@ -279,6 +284,34 @@ export default function VehicleDetailPage() {
       fetchVehicle()
     } catch (err) {
       console.error("Update repair request error:", err)
+    }
+  }
+
+  const handleCreateRepairRequest = async () => {
+    if (!rrForm.symptoms.trim() || !rrForm.systemCategory) return
+    setSavingRR(true)
+    try {
+      const res = await fetch("/api/repair-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          vehicleId: params.id,
+          requesterId: (session?.user as any)?.id,
+          symptoms: rrForm.symptoms,
+          systemCategory: rrForm.systemCategory,
+          urgency: rrForm.urgency,
+          mileage: rrForm.mileage || vehicle?.currentMileage || 0,
+        }),
+      })
+      if (res.ok) {
+        setShowRRForm(false)
+        setRrForm({ symptoms: "", systemCategory: "", urgency: "MEDIUM", mileage: 0 })
+        fetchVehicle()
+      }
+    } catch (err) {
+      console.error("Create repair request error:", err)
+    } finally {
+      setSavingRR(false)
     }
   }
 
@@ -619,10 +652,47 @@ export default function VehicleDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-xl border border-border bg-card">
-          <div className="px-5 pt-5 pb-3">
-            <h3 className="text-sm font-semibold text-card-foreground">ประวัติแจ้งซ่อม</h3>
-            <p className="text-xs text-muted-foreground">{(vehicle.repairRequests ?? []).length} รายการ</p>
+          <div className="px-5 pt-5 pb-3 flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-card-foreground">ประวัติแจ้งซ่อม</h3>
+              <p className="text-xs text-muted-foreground">{(vehicle.repairRequests ?? []).length} รายการ</p>
+            </div>
+            <button onClick={() => setShowRRForm(!showRRForm)} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+              <Plus className="size-3" />
+              แจ้งซ่อม
+            </button>
           </div>
+          {showRRForm && (
+            <div className="px-5 pb-3">
+              <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <select value={rrForm.systemCategory} onChange={(e) => setRrForm({ ...rrForm, systemCategory: e.target.value })} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs">
+                    <option value="">เลือกระบบ</option>
+                    <option value="เครื่องยนต์">เครื่องยนต์</option>
+                    <option value="เกียร์">เกียร์</option>
+                    <option value="เบรก">เบรก</option>
+                    <option value="ไฟฟ้า">ไฟฟ้า</option>
+                    <option value="ช่วงล่าง">ช่วงล่าง</option>
+                    <option value="อื่นๆ">อื่นๆ</option>
+                  </select>
+                  <select value={rrForm.urgency} onChange={(e) => setRrForm({ ...rrForm, urgency: e.target.value })} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs">
+                    <option value="LOW">ปกติ</option>
+                    <option value="MEDIUM">ปานกลาง</option>
+                    <option value="HIGH">สูง</option>
+                    <option value="EMERGENCY">ด่วนมาก</option>
+                  </select>
+                </div>
+                <textarea value={rrForm.symptoms} onChange={(e) => setRrForm({ ...rrForm, symptoms: e.target.value })} placeholder="อาการเสีย..." className="w-full rounded-lg border border-border bg-background px-2 py-1.5 text-xs resize-none h-16" />
+                <input type="number" value={rrForm.mileage || ""} onChange={(e) => setRrForm({ ...rrForm, mileage: Number(e.target.value) })} placeholder={`เลขไมล์ปัจจุบัน (${vehicle?.currentMileage ?? 0})`} className="w-full rounded-lg border border-border bg-background px-2 py-1.5 text-xs" />
+                <div className="flex justify-end gap-2">
+                  <button onClick={() => setShowRRForm(false)} className="px-2 py-1 text-xs border border-border rounded-lg hover:bg-muted">ยกเลิก</button>
+                  <button onClick={handleCreateRepairRequest} disabled={savingRR || !rrForm.symptoms.trim() || !rrForm.systemCategory} className={cn("px-2 py-1 text-xs bg-primary text-primary-foreground rounded-lg hover:opacity-90", (savingRR || !rrForm.symptoms.trim() || !rrForm.systemCategory) && "opacity-50 pointer-events-none")}>
+                    {savingRR ? "กำลังบันทึก..." : "บันทึก"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="px-5 pb-5 space-y-3">
             {(vehicle.repairRequests ?? []).length === 0 ? (
               <p className="text-xs text-muted-foreground text-center py-4">ไม่มีประวัติ</p>

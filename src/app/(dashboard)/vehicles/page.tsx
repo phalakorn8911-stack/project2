@@ -185,7 +185,7 @@ function VehiclesContent() {
               {filtered.map((v) => {
                 const status = statusMeta[v.status] ?? { label: v.status, className: "text-muted-foreground bg-muted" }
                 return (
-                  <tr key={v.id} onClick={() => window.location.href = `/vehicles/${v.id}`} className="border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer">
+                  <tr key={v.id} onClick={() => router.push(`/vehicles/${v.id}`)} className="border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer">
                     <td className="px-4 py-3">
                       {v.thumbnail ? (
                         <img src={v.thumbnail} alt={v.reg} className="size-10 rounded-lg object-cover" />
