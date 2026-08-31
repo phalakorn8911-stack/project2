@@ -46,11 +46,13 @@ export async function POST(request: Request) {
     })
     await pg.connect()
 
+    const id = crypto.randomUUID()
     const result = await pg.query(
-      `INSERT INTO "vehicles" ("registrationNumber", "brand", "model", "year", "vehicleTypeId", "unitId", "fuelType", "currentMileage", "status", "engineHours")
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `INSERT INTO "vehicles" ("id", "registrationNumber", "brand", "model", "year", "vehicleTypeId", "unitId", "fuelType", "currentMileage", "status", "engineHours")
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING "id"`,
       [
+        id,
         registrationNumber,
         brand,
         model,
