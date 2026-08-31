@@ -42,8 +42,8 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/notifications").then((r) => r.json()),
-      fetch("/api/parts/alerts").then((r) => r.json()),
+      fetch("/api/notifications").then((r) => (r.ok ? r.json() : [])),
+      fetch("/api/parts/alerts").then((r) => (r.ok ? r.json() : { lowStock: [] })),
     ])
       .then(([notifData, alertData]) => {
         setNotifications(Array.isArray(notifData) ? notifData : [])

@@ -33,10 +33,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const schedule = await prisma.maintenanceSchedule.update({
       where: { id },
       data: {
-        ...(body.lastPerformedDate !== undefined && { lastPerformedDate: new Date(body.lastPerformedDate) }),
-        ...(body.lastPerformedMileage !== undefined && { lastPerformedMileage: body.lastPerformedMileage }),
-        ...(body.nextDueDate !== undefined && { nextDueDate: new Date(body.nextDueDate) }),
-        ...(body.nextDueMileage !== undefined && { nextDueMileage: body.nextDueMileage }),
+        ...(body.lastPerformedDate && { lastPerformedDate: new Date(body.lastPerformedDate) }),
+        ...(body.lastPerformedMileage !== undefined && body.lastPerformedMileage !== null && { lastPerformedMileage: body.lastPerformedMileage }),
+        ...(body.nextDueDate && { nextDueDate: new Date(body.nextDueDate) }),
+        ...(body.nextDueMileage !== undefined && body.nextDueMileage !== null && { nextDueMileage: body.nextDueMileage }),
         ...(body.status !== undefined && { status: body.status }),
       },
       include: {

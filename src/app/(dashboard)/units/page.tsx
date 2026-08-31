@@ -5,7 +5,7 @@ import { Search, Plus, Pencil, Trash2, X, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Unit {
-  id: number;
+  id: string;
   name: string;
   description: string;
   vehicleCount: number;
@@ -17,8 +17,8 @@ export default function UnitsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const [form, setForm] = useState({ name: "", description: "" });
   const [editForm, setEditForm] = useState({ name: "", description: "" });
@@ -58,7 +58,7 @@ export default function UnitsPage() {
     }
   };
 
-  const handleUpdate = async (id: number) => {
+  const handleUpdate = async (id: string) => {
     if (!editForm.name.trim()) return;
     try {
       const res = await fetch(`/api/units/${id}`, {
@@ -75,7 +75,7 @@ export default function UnitsPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     try {
       const res = await fetch(`/api/units/${id}`, {
         method: "DELETE",
