@@ -24,6 +24,23 @@ function VehiclesContent() {
   const [search, setSearch] = useState("")
   const [vehicles, setVehicles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [vehicleTypes, setVehicleTypes] = useState<any[]>([])
+  const [units, setUnits] = useState<any[]>([])
+  const [saving, setSaving] = useState(false)
+  const [formError, setFormError] = useState("")
+
+  const [form, setForm] = useState({
+    registrationNumber: "",
+    brand: "",
+    model: "",
+    year: new Date().getFullYear(),
+    vehicleTypeId: "",
+    unitId: "",
+    fuelType: "Diesel",
+    currentMileage: 0,
+    status: "AVAILABLE",
+  })
 
   useEffect(() => {
     fetch("/api/vehicles")
@@ -31,6 +48,54 @@ function VehiclesContent() {
       .then((data) => { setVehicles(data); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
+
+  const openForm = async () => {
+    setFormError("")
+    setForm({
+      registrationNumber: "",
+      brand: "",
+      model: "",
+      year: new Date().getFullYear(),
+      vehicleTypeId: "",
+      unitId: "",
+      fuelType: "Diesel",
+      currentMileage: 0,
+      status: "AVAILABLE",
+    })
+    const [vtRes, uRes] = await Promise.all([
+      fetch("/api/vehicle-types").then((r) => r.json()),
+      fetch("/api/units").then((r) => r.json()),
+    ])
+    setVehicleTypes(vtRes)
+    setUnits(uRes)
+    if (vtRes.length > 0) setForm((f) => ({ ...f, vehicleTypeId: vtRes[0].id }))
+    if (uRes.length > 0) setForm((f) => ({ ...f, unitId: uRes[0].id }))
+    setShowForm(true)
+  }
+
+  const handleSubmit = async () => {
+    setSaving(true)
+    setFormError("")
+    try {
+      const res = await fetch("/api/vehicles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setFormError(data.error || "เกิดข้อผิดพลาด")
+        setSaving(false)
+        return
+      }
+      setShowForm(false)
+      const updated = await fetch("/api/vehicles").then((r) => r.json())
+      setVehicles(updated)
+    } catch {
+      setFormError("เชื่อมต่อไม่ได้")
+    }
+    setSaving(false)
+  }
 
   const filtered = vehicles.filter(
     (v) =>
@@ -55,7 +120,7 @@ function VehiclesContent() {
             {statusFilter ? `กรองโดย: ${filterLabel} (${filtered.length} คัน)` : `รายการยานพาหนะทั้งหมด ${vehicles.length} คัน`}
           </p>
         </div>
-        <button className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+        <button onClick={openForm} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
           <Plus className="size-4" />
           เพิ่มยานพาหนะ
         </button>
@@ -149,6 +214,85 @@ function VehiclesContent() {
               )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-card rounded-xl border border-border shadow-xl w-full max-w-lg mx-4 p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-card-foreground">เพิ่มยานพาหนะ</h3>
+              <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground">
+                <X className="size-5" />
+              </button>
+            </div>
+
+            {formError && (
+              <div className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{formError}</div>
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-card-foreground mb-1">ทะเบียน *</label>
+                <input type="text" value={form.registrationNumber} onChange={(e) => setForm({ ...form, registrationNumber: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" placeholder="เช่น พล-0049" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-card-foreground mb-1">ยี่ห้อ *</label>
+                <input type="text" value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" placeholder="เช่น REO" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-card-foreground mb-1">รุ่น *</label>
+                <input type="text" value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" placeholder="เช่น M35" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-card-foreground mb-1">ปี *</label>
+                <input type="number" value={form.year} onChange={(e) => setForm({ ...form, year: parseInt(e.target.value) || 0 })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-card-foreground mb-1">เชื้อเพลิง</label>
+                <select value={form.fuelType} onChange={(e) => setForm({ ...form, fuelType: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50">
+                  <option value="Diesel">ดีเซล</option>
+                  <option value="Gasoline">เบนซิน</option>
+                  <option value="Electric">ไฟฟ้า</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-card-foreground mb-1">ประเภทรถ *</label>
+                <select value={form.vehicleTypeId} onChange={(e) => setForm({ ...form, vehicleTypeId: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50">
+                  {vehicleTypes.map((vt) => (
+                    <option key={vt.id} value={vt.id}>{vt.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-card-foreground mb-1">หน่วย *</label>
+                <select value={form.unitId} onChange={(e) => setForm({ ...form, unitId: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50">
+                  {units.map((u) => (
+                    <option key={u.id} value={u.id}>{u.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-card-foreground mb-1">เลขไมล์</label>
+                <input type="number" value={form.currentMileage} onChange={(e) => setForm({ ...form, currentMileage: parseInt(e.target.value) || 0 })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-card-foreground mb-1">สถานะ</label>
+                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50">
+                  {Object.entries(statusMeta).map(([key, meta]) => (
+                    <option key={key} value={key}>{meta.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg border border-input text-sm hover:bg-muted transition-colors">ยกเลิก</button>
+              <button onClick={handleSubmit} disabled={saving || !form.registrationNumber || !form.brand || !form.model} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
+                {saving ? "กำลังบันทึก..." : "บันทึก"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
