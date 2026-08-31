@@ -64,7 +64,7 @@ export function Sidebar() {
         </div>
         {!collapsed && (
           <span className="text-sm font-semibold text-sidebar-foreground truncate">
-            ระบบยานพาหนะ
+            สถานภาพยานยนต์ ร.153 พัน.3
           </span>
         )}
       </div>

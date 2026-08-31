@@ -39,8 +39,8 @@ export default function LoginPage() {
           <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <Truck className="size-6" />
           </div>
-          <h1 className="text-xl font-semibold text-foreground">ระบบบริหารยานพาหนะ</h1>
-          <p className="text-sm text-muted-foreground mt-1">Smart Army Vehicle Maintenance Dashboard</p>
+          <h1 className="text-xl font-semibold text-foreground">สถานภาพยานยนต์ ร.153 พัน.3</h1>
+          <p className="text-sm text-muted-foreground mt-1">Vehicle Maintenance Management System</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

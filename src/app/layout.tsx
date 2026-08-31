@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ระบบบริหารจัดการยานพาหนะกองทัพ",
-  description: "Smart Army Vehicle Maintenance Dashboard",
+  title: "สถานภาพยานยนต์ ร.153 พัน.3",
+  description: "Vehicle Maintenance Management System - ร.153 พัน.3",
 };
 
 export default function RootLayout({

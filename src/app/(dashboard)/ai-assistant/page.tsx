@@ -8,7 +8,7 @@ type Message = { role: "user" | "ai"; content: string }
 
 export default function AiAssistantPage() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: "ai", content: "สวัสดีครับ ผมเป็นผู้ช่วย AI สำหรับระบบบริหารยานพาหนะ สามารถสอบถามข้อมูลเกี่ยวกับสถานะรถ งานซ่อม หรืออะไหล่ได้เลยครับ" },
+    { role: "ai", content: "สวัสดีครับ ผมเป็นผู้ช่วย AI สำหรับสถานภาพยานยนต์ ร.153 พัน.3 สามารถสอบถามข้อมูลเกี่ยวกับสถานะรถ งานซ่อม หรืออะไหล่ได้เลยครับ" },
   ])
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
@@ -38,7 +38,7 @@ export default function AiAssistantPage() {
     <div className="flex flex-col h-full p-4 md:p-6">
       <div className="mb-4">
         <h2 className="text-lg font-semibold text-foreground">ผู้ช่วย AI</h2>
-        <p className="text-sm text-muted-foreground">ถาม-ตอบเกี่ยวกับระบบยานพาหนะ (ข้อมูลจากฐานข้อมูลจริง)</p>
+        <p className="text-sm text-muted-foreground">ถาม-ตอบเกี่ยวกับสถานภาพยานยนต์ ร.153 พัน.3 (ข้อมูลจากฐานข้อมูลจริง)</p>
       </div>
 
       <div className="flex-1 overflow-y-auto rounded-xl border border-border bg-card p-4 space-y-4 mb-4">
