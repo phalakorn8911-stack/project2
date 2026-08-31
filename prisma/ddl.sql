@@ -91,6 +91,9 @@ CREATE TABLE IF NOT EXISTS "users" (
   "email"      TEXT        NOT NULL UNIQUE,
   "password"   TEXT        NOT NULL,
   "name"       TEXT        NOT NULL,
+  "rank"       TEXT,
+  "first_name" TEXT,
+  "last_name"  TEXT,
   "roleId"     UUID        NOT NULL REFERENCES "roles"("id"),
   "unitId"     UUID        REFERENCES "units"("id"),
   "status"     "UserStatus" NOT NULL DEFAULT 'ACTIVE',
@@ -364,6 +367,47 @@ CREATE TABLE IF NOT EXISTS "audit_logs" (
 
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON "audit_logs"("userId");
 CREATE INDEX IF NOT EXISTS idx_audit_logs_entity ON "audit_logs"("entityType", "entityId");
+
+CREATE TABLE IF NOT EXISTS "vehicle_histories" (
+  "id"                  UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  "vehicle_id"          UUID        NOT NULL REFERENCES "vehicles"("id"),
+  "license_plate"       TEXT,
+  "engine_number"       TEXT,
+  "received_date"       TIMESTAMPTZ,
+  "received_from"       TEXT,
+  "withdrawer"          TEXT,
+  "engine_cc"           TEXT,
+  "horsepower"          TEXT,
+  "total_quantity"      INTEGER     NOT NULL DEFAULT 0,
+  "maintenance_details" TEXT,
+  "created_by"          UUID        REFERENCES "users"("id"),
+  "created_at"          TIMESTAMPTZ NOT NULL DEFAULT now(),
+  "updated_at"          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_vehicle_histories_vehicle_id ON "vehicle_histories"("vehicle_id");
+
+CREATE TABLE IF NOT EXISTS "drivers" (
+  "id"          UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
+  "rank"        TEXT    NOT NULL,
+  "first_name"  TEXT    NOT NULL,
+  "last_name"   TEXT    NOT NULL,
+  "phone"       TEXT,
+  "license_type" TEXT,
+  "photo_url"   TEXT,
+  "status"      "UserStatus" NOT NULL DEFAULT 'ACTIVE',
+  "unit_id"     UUID    REFERENCES "units"("id"),
+  "created_at"  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  "updated_at"  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS "vehicle_drivers" (
+  "id"          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  "vehicle_id"  UUID        NOT NULL REFERENCES "vehicles"("id") ON DELETE CASCADE,
+  "driver_id"   UUID        NOT NULL REFERENCES "drivers"("id") ON DELETE CASCADE,
+  "assigned_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE("vehicle_id", "driver_id")
+);
 
 -- ============================================================
 -- 4. Trigger
