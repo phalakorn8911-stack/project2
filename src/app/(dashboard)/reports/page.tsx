@@ -1,20 +1,17 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { FileText, Printer, Truck, Wrench, Package, ClipboardCheck, TrendingUp, TrendingDown } from "lucide-react"
+import { FileText, Printer, Truck, Wrench, Package, ClipboardCheck, TrendingUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export default function ReportsPage() {
   const [dashData, setDashData] = useState<any>(null)
-  const [readinessData, setReadinessData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/dashboard").then((r) => r.json()),
-      fetch("/api/readiness").then((r) => r.json()),
-    ])
-      .then(([d, r]) => { setDashData(d); setReadinessData(r); setLoading(false) })
+    fetch("/api/dashboard")
+      .then((r) => r.json())
+      .then((d) => { setDashData(d); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
 
@@ -95,22 +92,6 @@ export default function ReportsPage() {
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">รออนุมัติซ่อม</span><span className="font-medium text-info">{dashData.pendingRepairs} รายการ</span></div>
               </div>
             </div>
-
-            {readinessData && (
-              <div className="rounded-xl border border-border bg-card p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <TrendingUp className="size-5 text-success" />
-                  <h3 className="text-sm font-semibold text-card-foreground">ค่าความพร้อม (Readiness)</h3>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm"><span className="text-muted-foreground">ค่าเฉลี่ยรวม</span><span className="font-medium text-card-foreground">{readinessData.overall}%</span></div>
-                  <div className="flex justify-between text-sm"><span className="text-muted-foreground">ดีเยี่ยม (≥90%)</span><span className="font-medium text-success">{readinessData.summary?.excellent ?? 0} คัน</span></div>
-                  <div className="flex justify-between text-sm"><span className="text-muted-foreground">ดี (70-89%)</span><span className="font-medium text-info">{readinessData.summary?.good ?? 0} คัน</span></div>
-                  <div className="flex justify-between text-sm"><span className="text-muted-foreground">พอใช้ (50-69%)</span><span className="font-medium text-status-parts">{readinessData.summary?.fair ?? 0} คัน</span></div>
-                  <div className="flex justify-between text-sm"><span className="text-muted-foreground">ต่ำกว่าเกณฑ์ (&lt;50%)</span><span className="font-medium text-destructive">{readinessData.summary?.poor ?? 0} คัน</span></div>
-                </div>
-              </div>
-            )}
           </div>
         </>
       )}
