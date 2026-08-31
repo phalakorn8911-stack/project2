@@ -33,8 +33,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background p-4">
-      <div className="w-full max-w-sm">
+    <div className="flex min-h-dvh items-center justify-center p-4" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%233a4a3a' stroke-width='0.5' opacity='0.06'%3E%3Cpath d='M30 140 L30 125 L40 120 L55 120 L60 115 L70 115 L75 120 L90 120 L95 125 L95 140'/%3E%3Ccircle cx='40' cy='145' r='5'/%3E%3Ccircle cx='55' cy='145' r='5'/%3E%3Ccircle cx='80' cy='145' r='5'/%3E%3Ccircle cx='90' cy='145' r='5'/%3E%3Crect x='60' y='115' width='10' height='5' rx='1'/%3E%3Cpath d='M140 135 L140 125 L145 120 L175 120 L180 125 L180 135'/%3E%3Ccircle cx='148' cy='140' r='4'/%3E%3Ccircle cx='160' cy='140' r='4'/%3E%3Ccircle cx='172' cy='140' r='4'/%3E%3Cline x1='160' y1='125' x2='160' y2='105'/%3E%3Ccircle cx='160' cy='103' r='3'/%3E%3Cpath d='M30 60 L30 50 L40 45 L60 45 L65 50 L65 60'/%3E%3Ccircle cx='38' cy='64' r='4'/%3E%3Ccircle cx='55' cy='64' r='4'/%3E%3Cpath d='M140 55 L140 45 L145 40 L165 40 L170 45 L170 55'/%3E%3Ccircle cx='148' cy='60' r='4'/%3E%3Ccircle cx='162' cy='60' r='4'/%3E%3Cline x1='140' y1='48' x2='170' y2='48'/%3E%3Cpath d='M100 80 L102 86 L108 86 L103 90 L105 96 L100 92 L95 96 L97 90 L92 86 L98 86 Z'/%3E%3C/g%3E%3C/svg%3E")`, backgroundRepeat: "repeat", backgroundSize: "200px 200px" }}>
+      <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-lg p-8">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <Truck className="size-6" />
