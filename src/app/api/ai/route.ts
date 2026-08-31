@@ -3,21 +3,16 @@ export const dynamic = "force-dynamic"
 import { NextResponse } from "next/server"
 import { Client } from "pg"
 
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-})
-
-async function getClient() {
-  if (client._connected === false) await client.connect()
-  return client
-}
-
 export async function POST(request: Request) {
   try {
     const { question } = await request.json()
     const q = (question ?? "").toLowerCase()
-    const c = await getClient()
+
+    const pg = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+    })
+    await pg.connect()
 
     const [
       totalResult,
@@ -28,14 +23,16 @@ export async function POST(request: Request) {
       overdueResult,
       dueSoonResult,
     ] = await Promise.all([
-      c.query(`SELECT COUNT(*)::int AS cnt FROM "vehicles"`),
-      c.query(`SELECT "status", COUNT(*)::int AS cnt FROM "vehicles" GROUP BY "status"`),
-      c.query(`SELECT "status", COUNT(*)::int AS cnt FROM "work_orders" GROUP BY "status"`),
-      c.query(`SELECT COUNT(*)::int AS cnt FROM "repair_requests" WHERE "status" = 'PENDING'`),
-      c.query(`SELECT "name", "stockQuantity", "minimumQuantity" FROM "parts" WHERE "stockQuantity" <= "minimumQuantity" ORDER BY "stockQuantity" ASC LIMIT 10`),
-      c.query(`SELECT COUNT(*)::int AS cnt FROM "maintenance_schedules" WHERE "status" = 'OVERDUE'`),
-      c.query(`SELECT COUNT(*)::int AS cnt FROM "maintenance_schedules" WHERE "status" = 'DUE_SOON'`),
+      pg.query(`SELECT COUNT(*)::int AS cnt FROM "vehicles"`),
+      pg.query(`SELECT "status", COUNT(*)::int AS cnt FROM "vehicles" GROUP BY "status"`),
+      pg.query(`SELECT "status", COUNT(*)::int AS cnt FROM "work_orders" GROUP BY "status"`),
+      pg.query(`SELECT COUNT(*)::int AS cnt FROM "repair_requests" WHERE "status" = 'PENDING'`),
+      pg.query(`SELECT "name", "stockQuantity", "minimumQuantity" FROM "parts" WHERE "stockQuantity" <= "minimumQuantity" ORDER BY "stockQuantity" ASC LIMIT 10`),
+      pg.query(`SELECT COUNT(*)::int AS cnt FROM "maintenance_schedules" WHERE "status" = 'OVERDUE'`),
+      pg.query(`SELECT COUNT(*)::int AS cnt FROM "maintenance_schedules" WHERE "status" = 'DUE_SOON'`),
     ])
+
+    await pg.end()
 
     const totalVehicles = totalResult.rows[0].cnt
 
@@ -48,8 +45,8 @@ export async function POST(request: Request) {
     const pendingRepairs = pendingRepairsResult.rows[0].cnt
     const lowStockParts = lowStockResult.rows.map((r) => ({
       name: r.name,
-      stockQuantity: r.stock_quantity,
-      minimumQuantity: r.minimum_quantity,
+      stockQuantity: r.stockQuantity,
+      minimumQuantity: r.minimumQuantity,
     }))
     const overdueSchedules = overdueResult.rows[0].cnt
     const dueSoonSchedules = dueSoonResult.rows[0].cnt
