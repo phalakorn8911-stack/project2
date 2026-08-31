@@ -116,3 +116,32 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params
+
+    const pg = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+    })
+    await pg.connect()
+
+    await pg.query(`DELETE FROM vehicle_drivers WHERE vehicle_id = $1`, [id])
+    await pg.query(`DELETE FROM vehicle_photos WHERE vehicle_id = $1`, [id])
+    await pg.query(`DELETE FROM stock_movements WHERE "partId" IN (SELECT id FROM parts WHERE "vehicleId" = $1)`, [id])
+    await pg.query(`DELETE FROM work_order_parts WHERE "workOrderId" IN (SELECT id FROM work_orders WHERE "vehicleId" = $1)`, [id])
+    await pg.query(`DELETE FROM work_order_tasks WHERE "workOrderId" IN (SELECT id FROM work_orders WHERE "vehicleId" = $1)`, [id])
+    await pg.query(`DELETE FROM work_orders WHERE "vehicleId" = $1`, [id])
+    await pg.query(`DELETE FROM repair_requests WHERE "vehicleId" = $1`, [id])
+    await pg.query(`DELETE FROM maintenance_schedules WHERE "vehicleId" = $1`, [id])
+    await pg.query(`DELETE FROM vehicles WHERE id = $1`, [id])
+
+    await pg.end()
+
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    console.error("Delete vehicle error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}

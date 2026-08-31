@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { Client } from "pg"
 
 export async function GET() {
   try {
@@ -28,6 +29,46 @@ export async function GET() {
     )
   } catch (error) {
     console.error("Work Orders API error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const { vehicleId, supervisorId, repairRequestId, mechanicId, issueDescription } = await request.json()
+
+    if (!vehicleId || !supervisorId) {
+      return NextResponse.json({ error: "vehicleId and supervisorId are required" }, { status: 400 })
+    }
+
+    const pg = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+    })
+    await pg.connect()
+
+    const countResult = await pg.query(`SELECT COUNT(*)::int as cnt FROM "work_orders"`)
+    const nextNum = countResult.rows[0].cnt + 1
+    const year = new Date().getFullYear()
+    const woNumber = `WO-${year}-${String(nextNum).padStart(3, "0")}`
+
+    const id = crypto.randomUUID()
+    const result = await pg.query(
+      `INSERT INTO "work_orders" ("id", "woNumber", "vehicleId", "supervisorId", "repairRequestId", "mechanicId", "status")
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING "id", "woNumber"`,
+      [id, woNumber, vehicleId, supervisorId, repairRequestId || null, mechanicId || null, "OPEN"]
+    )
+
+    if (repairRequestId) {
+      await pg.query(`UPDATE "repair_requests" SET "status" = 'WORK_ORDER_CREATED' WHERE id = $1`, [repairRequestId])
+    }
+
+    await pg.end()
+
+    return NextResponse.json({ id: result.rows[0].id, woNumber: result.rows[0].woNumber, message: "สร้างใบสั่งซ่อมสำเร็จ" }, { status: 201 })
+  } catch (error: any) {
+    console.error("Create work order error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

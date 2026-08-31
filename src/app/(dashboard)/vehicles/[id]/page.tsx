@@ -287,6 +287,16 @@ export default function VehicleDetailPage() {
     }
   }
 
+  const handleDeleteVehicle = async () => {
+    if (!confirm("ต้องการลบยานพาหนะนี้? การลบไม่สามารถย้อนกลับได้")) return
+    try {
+      const res = await fetch(`/api/vehicles/${params.id}`, { method: "DELETE" })
+      if (res.ok) router.push("/vehicles")
+    } catch (err) {
+      console.error("Delete vehicle error:", err)
+    }
+  }
+
   const handleCreateRepairRequest = async () => {
     if (!rrForm.symptoms.trim() || !rrForm.systemCategory) return
     setSavingRR(true)
@@ -388,6 +398,12 @@ export default function VehicleDetailPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {!editing && (
+              <button onClick={handleDeleteVehicle} className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/30 px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10 transition-colors">
+                <Trash2 className="size-3" />
+                ลบ
+              </button>
+            )}
             {!editing && (
               <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted transition-colors">
                 <Pencil className="size-3" />
