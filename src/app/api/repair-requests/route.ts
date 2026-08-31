@@ -1,0 +1,42 @@
+export const dynamic = "force-dynamic"
+
+import { NextResponse } from "next/server"
+import { Client } from "pg"
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    const { vehicleId, requesterId, symptoms, systemCategory, urgency, mileage, photoUrl } = body
+
+    if (!vehicleId || !requesterId || !symptoms || !systemCategory) {
+      return NextResponse.json({ error: "กรุณากรอกข้อมูลที่จำเป็น" }, { status: 400 })
+    }
+
+    const pg = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+    })
+    await pg.connect()
+
+    // สร้าง requestNumber อัตโนมัติ
+    const countResult = await pg.query(`SELECT COUNT(*)::int as cnt FROM "repair_requests"`)
+    const nextNum = countResult.rows[0].cnt + 1
+    const year = new Date().getFullYear()
+    const requestNumber = `RR-${year}-${String(nextNum).padStart(3, "0")}`
+
+    const id = crypto.randomUUID()
+    const result = await pg.query(
+      `INSERT INTO "repair_requests" ("id", "requestNumber", "vehicleId", "requesterId", "symptoms", "systemCategory", "urgency", "mileage", "status", "photoUrl")
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       RETURNING "id", "requestNumber"`,
+      [id, requestNumber, vehicleId, requesterId, symptoms, systemCategory, urgency || "MEDIUM", mileage || 0, "PENDING", photoUrl || null]
+    )
+
+    await pg.end()
+
+    return NextResponse.json({ id: result.rows[0].id, requestNumber: result.rows[0].requestNumber, message: "สร้างใบแจ้งซ่อมสำเร็จ" }, { status: 201 })
+  } catch (error: any) {
+    console.error("Repair request create error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}

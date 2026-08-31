@@ -63,7 +63,6 @@ export default function ReportsPage() {
               </div>
               <div className="space-y-3">
                 <ReportRow label="พร้อมใช้งาน" value={dashData.vehicles.available} total={totalVehicles} color="bg-success" />
-                <ReportRow label="กำลังใช้งาน" value={dashData.vehicles.inRepair} total={totalVehicles} color="bg-info" />
                 <ReportRow label="กำลังซ่อม" value={dashData.vehicles.inRepair} total={totalVehicles} color="bg-status-repair" />
                 <ReportRow label="รออะไหล่" value={dashData.vehicles.waitingParts} total={totalVehicles} color="bg-status-parts" />
                 <ReportRow label="ใกล้ถึงกำหนด" value={dashData.vehicles.dueSoon} total={totalVehicles} color="bg-status-due" />

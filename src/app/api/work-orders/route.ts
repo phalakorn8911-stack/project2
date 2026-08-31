@@ -17,12 +17,12 @@ export async function GET() {
     return NextResponse.json(
       workOrders.map((wo) => ({
         id: wo.id,
-        wo: wo.woNumber,
+        woNumber: wo.woNumber,
         vehicleId: wo.vehicleId,
-        vehicle: wo.vehicle.registrationNumber,
-        issue: wo.repairRequest?.symptoms ?? "ไม่ระบุ",
+        vehicleRegistration: wo.vehicle.registrationNumber,
+        issueDescription: wo.repairRequest?.symptoms ?? "ไม่ระบุ",
         urgency: wo.repairRequest?.urgency ?? "MEDIUM",
-        mechanic: wo.mechanic?.name ?? "-",
+        mechanicName: wo.mechanic?.name ?? "-",
         status: wo.status,
       }))
     )
