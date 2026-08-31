@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, Plus, X } from "lucide-react"
 
 type WorkOrderStatus = "OPEN" | "IN_PROGRESS" | "WAITING_PARTS" | "COMPLETED"
 
@@ -37,16 +37,23 @@ const columns: { key: WorkOrderStatus; title: string }[] = [
   { key: "COMPLETED", title: "ซ่อมเสร็จ" },
 ]
 
-const urgencyColor: Record<string, string> = {
-  สูง: "bg-red-100 text-red-700",
-  ปานกลาง: "bg-yellow-100 text-yellow-700",
-  ต่ำ: "bg-gray-100 text-gray-700",
+const urgencyConfig: Record<string, { label: string; color: string }> = {
+  EMERGENCY: { label: "ด่วนมาก", color: "bg-red-500 text-white" },
+  HIGH: { label: "สูง", color: "bg-red-100 text-red-700" },
+  MEDIUM: { label: "ปานกลาง", color: "bg-yellow-100 text-yellow-700" },
+  LOW: { label: "ปกติ", color: "bg-gray-100 text-gray-700" },
 }
 
 export default function WorkOrdersPage() {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const [showForm, setShowForm] = useState(false)
+  const [vehicles, setVehicles] = useState<any[]>([])
+  const [mechanics, setMechanics] = useState<any[]>([])
+  const [repairRequests, setRepairRequests] = useState<any[]>([])
+  const [form, setForm] = useState({ vehicleId: "", supervisorId: "", repairRequestId: "", mechanicId: "" })
+  const [saving, setSaving] = useState(false)
 
   const fetchWorkOrders = async () => {
     try {
@@ -62,7 +69,34 @@ export default function WorkOrdersPage() {
 
   useEffect(() => {
     fetchWorkOrders()
+    fetch("/api/vehicles").then((r) => r.json()).then((d) => setVehicles(Array.isArray(d) ? d : d.vehicles ?? [])).catch(() => {})
+    fetch("/api/users").then((r) => r.json()).then((d) => {
+      const list = Array.isArray(d) ? d : d.users ?? []
+      setMechanics(list.filter((u: any) => u.roleName === "mechanic" || u.role === "mechanic"))
+    }).catch(() => {})
+    fetch("/api/repair-requests").then((r) => r.json()).then((d) => setRepairRequests(Array.isArray(d) ? d : [])).catch(() => {})
   }, [])
+
+  const handleCreate = async () => {
+    if (!form.vehicleId || !form.supervisorId) return
+    setSaving(true)
+    try {
+      const res = await fetch("/api/work-orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      })
+      if (res.ok) {
+        setShowForm(false)
+        setForm({ vehicleId: "", supervisorId: "", repairRequestId: "", mechanicId: "" })
+        fetchWorkOrders()
+      }
+    } catch (error) {
+      console.error("Create work order error:", error)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const updateStatus = async (id: string, newStatus: WorkOrderStatus) => {
     try {
@@ -84,7 +118,39 @@ export default function WorkOrdersPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">ใบงานซ่อม</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">ใบงานซ่อม</h1>
+        <button onClick={() => setShowForm(!showForm)} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+          <Plus className="size-4" />
+          สร้างใบสั่งซ่อม
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="mb-6 rounded-xl border border-primary/30 bg-primary/5 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold">สร้างใบสั่งซ่อมใหม่</h3>
+            <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground"><X className="size-4" /></button>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <select value={form.vehicleId} onChange={(e) => setForm({ ...form, vehicleId: e.target.value })} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs">
+              <option value="">เลือกรถ</option>
+              {vehicles.map((v: any) => <option key={v.id} value={v.id}>{v.reg ?? v.registrationNumber} - {v.model}</option>)}
+            </select>
+            <select value={form.supervisorId} onChange={(e) => setForm({ ...form, supervisorId: e.target.value })} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs">
+              <option value="">เลือกผู้ดูแล</option>
+              {mechanics.map((m: any) => <option key={m.id} value={m.id}>{m.name ?? `${m.firstName} ${m.lastName}`}</option>)}
+            </select>
+            <select value={form.repairRequestId} onChange={(e) => setForm({ ...form, repairRequestId: e.target.value })} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs">
+              <option value="">ใบแจ้งซ่อม (ถ้ามี)</option>
+              {repairRequests.filter((r: any) => r.status === "PENDING").map((r: any) => <option key={r.id} value={r.id}>{r.requestNumber} - {r.symptoms?.substring(0, 30)}</option>)}
+            </select>
+            <button onClick={handleCreate} disabled={saving || !form.vehicleId || !form.supervisorId} className={cn("rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90", (saving || !form.vehicleId || !form.supervisorId) && "opacity-50 pointer-events-none")}>
+              {saving ? "กำลังบันทึก..." : "บันทึก"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <p className="text-sm text-muted-foreground">กำลังโหลด...</p>
@@ -149,14 +215,17 @@ export default function WorkOrdersPage() {
                       <span
                         className={cn(
                           "text-xs rounded-full px-2 py-0.5",
-                          urgencyColor[wo.urgency] || "bg-gray-100 text-gray-700"
+                          urgencyConfig[wo.urgency]?.color || "bg-gray-100 text-gray-700"
                         )}
                       >
-                        {wo.urgency}
+                        {urgencyConfig[wo.urgency]?.label ?? wo.urgency}
                       </span>
                     </div>
                   </div>
                 ))}
+                {getOrdersByStatus(col.key).length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-4">ไม่มีรายการ</p>
+                )}
               </div>
             </div>
           ))}

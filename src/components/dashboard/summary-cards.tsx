@@ -25,6 +25,7 @@ export function SummaryCards({ data }: { data?: any }) {
 
   useEffect(() => {
     const build = (d: any) => {
+      if (!d?.vehicles || !d?.workOrders) { setLoading(false); return }
       setCards([
         { label: "รถทั้งหมด", value: String(d.vehicles.total), change: "", trend: "neutral", icon: Truck, color: "text-primary", bgColor: "bg-primary/10", href: "/vehicles" },
         { label: "พร้อมใช้งาน", value: String(d.vehicles.available), change: d.vehicles.total ? `${((d.vehicles.available / d.vehicles.total) * 100).toFixed(1)}%` : "0%", trend: "up", icon: CheckCircle, color: "text-success", bgColor: "bg-success/10", href: "/vehicles?status=AVAILABLE" },
