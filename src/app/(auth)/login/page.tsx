@@ -92,9 +92,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-6 text-xs text-muted-foreground text-center">
-          รหัสผ่านทดสอบ: 1234
-        </p>
       </div>
     </div>
   )

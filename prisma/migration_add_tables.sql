@@ -1,9 +1,12 @@
 -- ============================================================
 -- Migration: เพิ่ม tables ที่ขาดหาย (vehicle_histories, drivers, vehicle_drivers)
--- รันใน Supabase SQL Editor หลังจาก DDL หลักแล้ว
+-- ============================================================
+-- *** หมายเหตุ: ddl.sql มี table เหล่านี้ครบแล้ว ***
+-- *** รัน ddl.sql + seed.sql แทนได้เลย ***
+-- *** ไฟล์นี้ใช้เฉพาะเมื่อรัน ddl.sql ไปแล้วแต่ tables ยังขาด ***
 -- ============================================================
 
--- 1. vehicle_histories
+-- 1. vehicle_histories (ถ้ายังไม่มี)
 CREATE TABLE IF NOT EXISTS "vehicle_histories" (
   "id"                  UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   "vehicle_id"          UUID        NOT NULL REFERENCES "vehicles"("id"),
@@ -23,7 +26,7 @@ CREATE TABLE IF NOT EXISTS "vehicle_histories" (
 
 CREATE INDEX IF NOT EXISTS idx_vehicle_histories_vehicle_id ON "vehicle_histories"("vehicle_id");
 
--- 2. drivers
+-- 2. drivers (ถ้ายังไม่มี)
 CREATE TABLE IF NOT EXISTS "drivers" (
   "id"           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   "rank"         TEXT        NOT NULL,
@@ -38,7 +41,7 @@ CREATE TABLE IF NOT EXISTS "drivers" (
   "updated_at"   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- 3. vehicle_drivers
+-- 3. vehicle_drivers (ถ้ายังไม่มี)
 CREATE TABLE IF NOT EXISTS "vehicle_drivers" (
   "id"          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   "vehicle_id"  UUID        NOT NULL REFERENCES "vehicles"("id") ON DELETE CASCADE,
