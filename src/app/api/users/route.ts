@@ -88,11 +88,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "อีเมลนี้ถูกใช้แล้ว" }, { status: 400 })
     }
 
-    const adminCount = await prisma.user.count({
-      where: { role: { name: "admin" } },
-    })
-    if (adminCount >= 2) {
-      return NextResponse.json({ error: "สามารถเพิ่ม admin ได้สูงสุด 2 คนเท่านั้น" }, { status: 400 })
+    const role = await prisma.role.findUnique({ where: { id: roleId } })
+    if (role?.name === "admin") {
+      const adminCount = await prisma.user.count({
+        where: { role: { name: "admin" } },
+      })
+      if (adminCount >= 2) {
+        return NextResponse.json({ error: "สามารถเพิ่ม admin ได้สูงสุด 2 คนเท่านั้น" }, { status: 400 })
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)

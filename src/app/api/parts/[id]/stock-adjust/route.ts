@@ -6,7 +6,7 @@ import { Client } from "pg"
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const { adjustment, reason, performedBy } = await request.json()
+    const { adjustment, reason, performedById } = await request.json()
 
     if (adjustment === undefined || typeof adjustment !== "number") {
       return NextResponse.json({ error: "Adjustment value is required" }, { status: 400 })
@@ -34,15 +34,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     const movementId = crypto.randomUUID()
     await pg.query(
-      `INSERT INTO "stock_movements" ("id", "partId", "movementType", "quantity", "referenceId", "notes")
+      `INSERT INTO "stock_movements" ("id", "partId", "movementType", "quantity", "referenceId", "performedById")
        VALUES ($1, $2, $3, $4, $5, $6)`,
       [
         movementId,
         id,
-        adjustment > 0 ? "RECEIVED" : "CONSUMED",
+        adjustment > 0 ? "IN" : "OUT",
         Math.abs(adjustment),
         null,
-        reason || null,
+        performedById || null,
       ]
     )
 

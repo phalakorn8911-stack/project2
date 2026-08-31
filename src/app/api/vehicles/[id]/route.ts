@@ -83,7 +83,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         id: ms.id,
         planName: ms.plan.name,
         lastPerformedDate: ms.lastPerformedDate?.toISOString() ?? null,
+        lastPerformedMileage: ms.lastPerformedMileage ?? null,
         nextDueDate: ms.nextDueDate?.toISOString() ?? null,
+        nextDueMileage: ms.nextDueMileage ?? null,
         status: ms.status,
       })),
     })
@@ -130,7 +132,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
     await pg.query(`DELETE FROM vehicle_drivers WHERE vehicle_id = $1`, [id])
     await pg.query(`DELETE FROM vehicle_photos WHERE vehicle_id = $1`, [id])
-    await pg.query(`DELETE FROM stock_movements WHERE "partId" IN (SELECT id FROM parts WHERE "vehicleId" = $1)`, [id])
     await pg.query(`DELETE FROM work_order_parts WHERE "workOrderId" IN (SELECT id FROM work_orders WHERE "vehicleId" = $1)`, [id])
     await pg.query(`DELETE FROM work_order_tasks WHERE "workOrderId" IN (SELECT id FROM work_orders WHERE "vehicleId" = $1)`, [id])
     await pg.query(`DELETE FROM work_orders WHERE "vehicleId" = $1`, [id])

@@ -3,6 +3,29 @@ export const dynamic = "force-dynamic"
 import { NextResponse } from "next/server"
 import { Client } from "pg"
 
+export async function GET() {
+  try {
+    const pg = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+    })
+    await pg.connect()
+    const result = await pg.query(
+      `SELECT rr.id, rr."requestNumber", rr."vehicleId", rr."requesterId", rr.symptoms,
+              rr."systemCategory", rr.urgency, rr.mileage, rr.status, rr."photoUrl",
+              v."registrationNumber" as "vehicleName"
+       FROM "repair_requests" rr
+       LEFT JOIN vehicles v ON v.id = rr."vehicleId"
+       ORDER BY rr."requestNumber" DESC`
+    )
+    await pg.end()
+    return NextResponse.json(result.rows)
+  } catch (error) {
+    console.error("Repair requests API error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
