@@ -12,6 +12,9 @@ TRUNCATE TABLE
   notifications,
   stock_movements,
   parts,
+  vehicle_histories,
+  vehicle_drivers,
+  drivers,
   vehicles,
   vehicle_types,
   maintenance_plans,
@@ -57,16 +60,16 @@ ON CONFLICT ("name") DO NOTHING;
 -- ============================================================
 -- 3. ผู้ใช้ (Users) — รหัสผ่าน: 1234 (bcrypt hash $2b$10$...)
 -- ============================================================
-INSERT INTO "users" ("id", "email", "password", "name", "roleId", "unitId", "status", "createdAt", "updatedAt") VALUES
-  ('30000001-0000-4000-8000-000000000001', 'admin@army.mail',      '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'สมชาย ใจดี',       '20000001-0000-4000-8000-000000000001', '10000001-0000-4000-8000-000000000003', 'ACTIVE', now(), now()),
-  ('30000001-0000-4000-8000-000000000002', 'commander@army.mail',  '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'ประยุทธ์ ศักดิ์สิทธิ์', '20000001-0000-4000-8000-000000000002', '10000001-0000-4000-8000-000000000001', 'ACTIVE', now(), now()),
-  ('30000001-0000-4000-8000-000000000003', 'officer@army.mail',    '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'วิเชียร เหลืองาม',   '20000001-0000-4000-8000-000000000003', '10000001-0000-4000-8000-000000000003', 'ACTIVE', now(), now()),
-  ('30000001-0000-4000-8000-000000000004', 'driver1@army.mail',    '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'สมศักดิ์ รักชาติ',    '20000001-0000-4000-8000-000000000004', '10000001-0000-4000-8000-000000000001', 'ACTIVE', now(), now()),
-  ('30000001-0000-4000-8000-000000000005', 'mechanic1@army.mail',  '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'ประสิทธิ์ กล้าหาญ',  '20000001-0000-4000-8000-000000000005', '10000001-0000-4000-8000-000000000003', 'ACTIVE', now(), now()),
-  ('30000001-0000-4000-8000-000000000006', 'headmech@army.mail',   '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'มานพ ทรงพล',       '20000001-0000-4000-8000-000000000006', '10000001-0000-4000-8000-000000000003', 'ACTIVE', now(), now()),
-  ('30000001-0000-4000-8000-000000000007', 'parts@army.mail',      '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'ไพศาล คลังทรัพย์',   '20000001-0000-4000-8000-000000000007', '10000001-0000-4000-8000-000000000003', 'ACTIVE', now(), now()),
-  ('30000001-0000-4000-8000-000000000008', 'driver2@army.mail',    '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'ณรงค์ เข้มแข็ง',     '20000001-0000-4000-8000-000000000004', '10000001-0000-4000-8000-000000000002', 'ACTIVE', now(), now()),
-  ('30000001-0000-4000-8000-000000000009', 'mechanic2@army.mail',  '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'สมบูรณ์ มีฝีมือ',     '20000001-0000-4000-8000-000000000005', '10000001-0000-4000-8000-000000000003', 'ACTIVE', now(), now())
+INSERT INTO "users" ("id", "email", "password", "name", "rank", "first_name", "last_name", "roleId", "unitId", "status", "createdAt", "updatedAt") VALUES
+  ('30000001-0000-4000-8000-000000000001', 'admin@army.mail',      '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'สมชาย ใจดี',       'พันตรี',     'สมชาย', 'ใจดี',       '20000001-0000-4000-8000-000000000001', '10000001-0000-4000-8000-000000000003', 'ACTIVE', now(), now()),
+  ('30000001-0000-4000-8000-000000000002', 'commander@army.mail',  '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'ประยุทธ์ ศักดิ์สิทธิ์', 'พันโท',     'ประยุทธ์', 'ศักดิ์สิทธิ์', '20000001-0000-4000-8000-000000000002', '10000001-0000-4000-8000-000000000001', 'ACTIVE', now(), now()),
+  ('30000001-0000-4000-8000-000000000003', 'officer@army.mail',    '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'วิเชียร เหลืองาม',   'ร้อยเอก',    'วิเชียร', 'เหลืองาม',   '20000001-0000-4000-8000-000000000003', '10000001-0000-4000-8000-000000000003', 'ACTIVE', now(), now()),
+  ('30000001-0000-4000-8000-000000000004', 'driver1@army.mail',    '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'สมศักดิ์ รักชาติ',    'สิบเอก',     'สมศักดิ์', 'รักชาติ',    '20000001-0000-4000-8000-000000000004', '10000001-0000-4000-8000-000000000001', 'ACTIVE', now(), now()),
+  ('30000001-0000-4000-8000-000000000005', 'mechanic1@army.mail',  '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'ประสิทธิ์ กล้าหาญ',  'จ่าสิบตรี',   'ประสิทธิ์', 'กล้าหาญ',   '20000001-0000-4000-8000-000000000005', '10000001-0000-4000-8000-000000000003', 'ACTIVE', now(), now()),
+  ('30000001-0000-4000-8000-000000000006', 'headmech@army.mail',   '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'มานพ ทรงพล',       'จ่าสิบโท',    'มานพ', 'ทรงพล',       '20000001-0000-4000-8000-000000000006', '10000001-0000-4000-8000-000000000003', 'ACTIVE', now(), now()),
+  ('30000001-0000-4000-8000-000000000007', 'parts@army.mail',      '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'ไพศาล คลังทรัพย์',   'สิบโท',      'ไพศาล', 'คลังทรัพย์',   '20000001-0000-4000-8000-000000000007', '10000001-0000-4000-8000-000000000003', 'ACTIVE', now(), now()),
+  ('30000001-0000-4000-8000-000000000008', 'driver2@army.mail',    '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'ณรงค์ เข้มแข็ง',     'สิบตรี',      'ณรงค์', 'เข้มแข็ง',     '20000001-0000-4000-8000-000000000004', '10000001-0000-4000-8000-000000000002', 'ACTIVE', now(), now()),
+  ('30000001-0000-4000-8000-000000000009', 'mechanic2@army.mail',  '$2b$10$OGhgKLOnb.QWU4YydjexIuQQSphTeyHGr40oovqIwUWpCXCUpnwTK', 'สมบูรณ์ มีฝีมือ',     'จ่าสิบเอก',   'สมบูรณ์', 'มีฝีมือ',    '20000001-0000-4000-8000-000000000005', '10000001-0000-4000-8000-000000000003', 'ACTIVE', now(), now())
 ON CONFLICT ("email") DO NOTHING;
 
 -- ============================================================
