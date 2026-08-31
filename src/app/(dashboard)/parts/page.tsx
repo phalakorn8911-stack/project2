@@ -34,19 +34,6 @@ interface Category {
   name: string;
 }
 
-const CATEGORIES: Category[] = [
-  { id: "1", name: "เครื่องยนต์" },
-  { id: "2", name: "ระบบเกียร์" },
-  { id: "3", name: "ระบบเบรก" },
-  { id: "4", name: "ระบบไฟฟ้า" },
-  { id: "5", name: "ระบบระบายความร้อน" },
-  { id: "6", name: "ระบบเชื้อเพลิง" },
-  { id: "7", name: "ระบบกันสะเทือน" },
-  { id: "8", name: "ตัวถังและอุปกรณ์ตกแต่ง" },
-  { id: "9", name: "ของเหลวและสารหล่อลื่น" },
-  { id: "10", name: "อื่นๆ" },
-];
-
 const STATUS_CONFIG = {
   critical: { label: "วิกฤติ", color: "bg-red-500/20 text-red-400 border-red-500/30" },
   low: { label: "ใกล้หมด", color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
@@ -83,6 +70,7 @@ export default function PartsPage() {
   const [batchMode, setBatchMode] = useState(false);
   const [batchItems, setBatchItems] = useState<Omit<Part, "id">[]>([{ ...defaultForm }]);
   const [saving, setSaving] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const fetchParts = async () => {
     setLoading(true);
@@ -112,6 +100,7 @@ export default function PartsPage() {
 
   useEffect(() => {
     fetchParts();
+    fetch("/api/part-categories").then((r) => r.json()).then((d) => setCategories(Array.isArray(d) ? d : [])).catch(() => {});
   }, []);
 
   const filteredParts = parts.filter(
@@ -121,7 +110,7 @@ export default function PartsPage() {
   );
 
   const getCategoryName = (id: string) =>
-    CATEGORIES.find((c) => c.id === id)?.name ?? "ไม่ระบุ";
+    categories.find((c) => c.id === id)?.name ?? "ไม่ระบุ";
 
   const openAdd = () => {
     setEditingPart(null);
@@ -473,7 +462,7 @@ export default function PartsPage() {
                       className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                     >
                       <option value="">เลือกหมวดหมู่</option>
-                      {CATEGORIES.map((cat) => (
+                      {categories.map((cat) => (
                         <option key={cat.id} value={cat.id}>
                           {cat.name}
                         </option>
@@ -587,7 +576,7 @@ export default function PartsPage() {
                             className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                           >
                             <option value="">เลือกหมวดหมู่</option>
-                            {CATEGORIES.map((cat) => (
+                            {categories.map((cat) => (
                               <option key={cat.id} value={cat.id}>
                                 {cat.name}
                               </option>

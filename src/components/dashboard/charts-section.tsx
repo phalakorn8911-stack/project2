@@ -35,17 +35,16 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   )
 }
 
-export function ChartsSection() {
+export function ChartsSection({ data: initialData }: { data?: any }) {
   const [mounted, setMounted] = useState(false)
-  const [data, setData] = useState<DashboardData | null>(null)
+  const [data, setData] = useState<DashboardData | null>(initialData ?? null)
 
   useEffect(() => {
     setMounted(true)
-    fetch("/api/dashboard")
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => {})
-  }, [])
+    if (!initialData) {
+      fetch("/api/dashboard").then((r) => r.json()).then(setData).catch(() => {})
+    }
+  }, [initialData])
 
   if (!mounted || !data) {
     return (

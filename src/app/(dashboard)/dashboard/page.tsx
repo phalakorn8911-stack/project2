@@ -33,7 +33,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <SummaryCards />
+      <SummaryCards data={data} />
 
       {data && (
         <VehicleStatusLists
@@ -44,7 +44,7 @@ export default function DashboardPage() {
         />
       )}
 
-      <ChartsSection />
+      <ChartsSection data={data} />
       <DataTables />
       <AiSummary />
     </div>

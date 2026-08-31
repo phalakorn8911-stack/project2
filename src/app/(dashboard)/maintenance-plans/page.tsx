@@ -138,7 +138,7 @@ export default function MaintenancePlansPage() {
   }
 
   const handleSave = async () => {
-    if (!form.name.trim()) return
+    if (!form.name.trim() || !form.vehicleTypeId) return
     setSaving(true)
 
     const body = {
@@ -359,7 +359,7 @@ export default function MaintenancePlansPage() {
             </button>
             <button
               onClick={handleSave}
-              disabled={saving || !form.name.trim()}
+              disabled={saving || !form.name.trim() || !form.vehicleTypeId}
               className={cn(
                 "rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground transition-colors",
                 saving || !form.name.trim() ? "opacity-50 cursor-not-allowed" : "hover:bg-primary/90"
@@ -470,7 +470,7 @@ export default function MaintenancePlansPage() {
                     </button>
                     <button
                       onClick={handleSave}
-                      disabled={saving || !form.name.trim()}
+                      disabled={saving || !form.name.trim() || !form.vehicleTypeId}
                       className={cn(
                         "rounded-lg bg-primary px-3 py-1 text-xs text-primary-foreground transition-colors",
                         saving || !form.name.trim() ? "opacity-50 cursor-not-allowed" : "hover:bg-primary/90"
