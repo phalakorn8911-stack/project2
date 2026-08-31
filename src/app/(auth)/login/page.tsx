@@ -28,7 +28,19 @@ export default function LoginPage() {
       setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง")
       setLoading(false)
     } else {
-      router.push("/dashboard")
+      const res = await fetch("/api/auth/session")
+      const session = await res.json()
+      const role = session?.user?.role
+
+      if (role === "admin") {
+        router.push("/dashboard")
+      } else if (role === "mechanic") {
+        router.push("/work-orders")
+      } else if (role === "driver") {
+        router.push("/vehicles")
+      } else {
+        router.push("/dashboard")
+      }
     }
   }
 

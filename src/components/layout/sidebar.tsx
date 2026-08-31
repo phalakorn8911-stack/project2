@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useSession } from "next-auth/react"
 import {
   LayoutDashboard,
   Truck,
@@ -26,30 +27,35 @@ type NavItem = {
   label: string
   href: string
   icon: LucideIcon
+  roles?: string[]
 }
 
 const mainNav: NavItem[] = [
   { label: "แดชบอร์ด", href: "/dashboard", icon: LayoutDashboard },
   { label: "ยานพาหนะ", href: "/vehicles", icon: Truck },
-  { label: "ประเภทรถ", href: "/vehicle-types", icon: Tags },
-  { label: "หน่วยงาน", href: "/units", icon: Building },
-  { label: "คนขับรถ", href: "/drivers", icon: UserCog },
-  { label: "แผนซ่อมบำรุง", href: "/maintenance-plans", icon: ClipboardCheck },
-  { label: "ใบงานซ่อม", href: "/work-orders", icon: Wrench },
-  { label: "คลังอะไหล่", href: "/parts", icon: Package },
-  { label: "รายงาน", href: "/reports", icon: FileBarChart },
+  { label: "ประเภทรถ", href: "/vehicle-types", icon: Tags, roles: ["admin"] },
+  { label: "หน่วยงาน", href: "/units", icon: Building, roles: ["admin"] },
+  { label: "คนขับรถ", href: "/drivers", icon: UserCog, roles: ["admin", "mechanic"] },
+  { label: "แผนซ่อมบำรุง", href: "/maintenance-plans", icon: ClipboardCheck, roles: ["admin", "mechanic"] },
+  { label: "ใบงานซ่อม", href: "/work-orders", icon: Wrench, roles: ["admin", "mechanic"] },
+  { label: "คลังอะไหล่", href: "/parts", icon: Package, roles: ["admin", "mechanic"] },
+  { label: "รายงาน", href: "/reports", icon: FileBarChart, roles: ["admin", "mechanic"] },
   { label: "ผู้ช่วย AI", href: "/ai-assistant", icon: Bot },
 ]
 
 const secondaryNav: NavItem[] = [
   { label: "การแจ้งเตือน", href: "/notifications", icon: Bell },
-  { label: "จัดการผู้ใช้", href: "/users", icon: Users },
-  { label: "ตั้งค่า", href: "/settings", icon: Settings },
+  { label: "จัดการผู้ใช้", href: "/users", icon: Users, roles: ["admin"] },
+  { label: "ตั้งค่า", href: "/settings", icon: Settings, roles: ["admin"] },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
+  const { data: session } = useSession()
   const [collapsed, setCollapsed] = useState(false)
+  const userRole = (session?.user as any)?.role as string | undefined
+
+  const canSee = (item: NavItem) => !item.roles || item.roles.includes(userRole ?? "")
 
   return (
     <aside
@@ -76,7 +82,7 @@ export function Sidebar() {
               หลัก
             </p>
           )}
-          {mainNav.map((item) => (
+          {mainNav.filter(canSee).map((item) => (
             <NavLink
               key={item.href}
               item={item}
@@ -92,7 +98,7 @@ export function Sidebar() {
               ระบบ
             </p>
           )}
-          {secondaryNav.map((item) => (
+          {secondaryNav.filter(canSee).map((item) => (
             <NavLink
               key={item.href}
               item={item}

@@ -5,13 +5,9 @@ import { Users as UsersIcon, Shield, UserCheck, UserX, Pencil, Save, X, ListPlus
 import { cn } from "@/lib/utils"
 
 const roleLabels: Record<string, string> = {
-  admin: "ผู้ดูแลระบบ",
-  commander: "ผู้บังคับบัญชา",
-  vehicle_officer: "เจ้าหน้าที่ยานยนต์",
-  driver: "พลขับ",
+  admin: "ผู้ดูแลระบบ/ผู้บังคับบัญชา",
   mechanic: "ช่างซ่อม",
-  head_mechanic: "หัวหน้าช่าง",
-  parts_officer: "เจ้าหน้าที่คลังอะไหล่",
+  driver: "พลขับ",
 }
 
 interface UserForm {
