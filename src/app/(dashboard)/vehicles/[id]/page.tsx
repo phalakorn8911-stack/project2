@@ -140,9 +140,9 @@ export default function VehicleDetailPage() {
 
   const fetchHistories = () => {
     fetch(`/api/vehicle-histories?vehicleId=${params.id}`)
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : []))
       .then((data) => setHistories(Array.isArray(data) ? data : []))
-      .catch(() => {})
+      .catch(() => setHistories([]))
   }
 
   const handleSaveHistory = async () => {

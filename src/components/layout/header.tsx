@@ -28,12 +28,12 @@ export function Header() {
 
   useEffect(() => {
     fetch("/api/notifications")
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : []))
       .then((data) => {
-        const list = Array.isArray(data) ? data : data.notifications ?? []
+        const list = Array.isArray(data) ? data : []
         setUnreadCount(list.filter((n: any) => !n.read).length)
       })
-      .catch(() => {})
+      .catch(() => setUnreadCount(0))
   }, [])
 
   useEffect(() => {

@@ -188,24 +188,30 @@ export default function PartsPage() {
     if (!form.name?.trim() || !form.partNumber?.trim()) return;
 
     try {
+      let res: Response
       if (editingPart) {
-        await fetch(`/api/parts/${editingPart.id}`, {
+        res = await fetch(`/api/parts/${editingPart.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
-        });
+        })
       } else {
-        await fetch("/api/parts", {
+        res = await fetch("/api/parts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
-        });
+        })
       }
-      setShowForm(false);
-      setEditingPart(null);
-      fetchParts();
+      if (res.ok) {
+        setShowForm(false)
+        setEditingPart(null)
+        fetchParts()
+      } else {
+        const errData = await res.json().catch(() => ({}))
+        alert(errData.error || "เกิดข้อผิดพลาด")
+      }
     } catch {
-      console.error("Failed to save part");
+      console.error("Failed to save part")
     }
   };
 

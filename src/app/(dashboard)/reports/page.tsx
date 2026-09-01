@@ -10,8 +10,11 @@ export default function ReportsPage() {
 
   useEffect(() => {
     fetch("/api/dashboard")
-      .then((r) => r.json())
-      .then((d) => { setDashData(d); setLoading(false) })
+      .then((r) => {
+        if (!r.ok) { setLoading(false); return null }
+        return r.json()
+      })
+      .then((d) => { if (d) setDashData(d); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
 
@@ -19,6 +22,23 @@ export default function ReportsPage() {
     return (
       <div className="p-4 md:p-6">
         <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">กำลังโหลด...</div>
+      </div>
+    )
+  }
+
+  if (!dashData?.vehicles) {
+    return (
+      <div className="p-4 md:p-6 space-y-6">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">รายงานสถานภาพยานยนต์</h2>
+          <p className="text-sm text-muted-foreground">สรุปรายงานภาพรวมระบบ ร.153 พัน.3</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-8 text-center">
+          <p className="text-sm text-muted-foreground">ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง</p>
+          <button onClick={() => window.location.reload()} className="mt-3 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90">
+            ลองใหม่
+          </button>
+        </div>
       </div>
     )
   }
@@ -77,7 +97,7 @@ export default function ReportsPage() {
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">กำลังซ่อม</span><span className="font-medium text-card-foreground">{dashData.workOrders.inProgress} งาน</span></div>
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">รออะไหล่</span><span className="font-medium text-status-parts">{dashData.workOrders.waitingParts} งาน</span></div>
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">ซ่อมเสร็จ</span><span className="font-medium text-success">{dashData.workOrders.completed} งาน</span></div>
-                <div className="border-t border-border pt-2 mt-2 flex justify-between text-sm"><span className="text-muted-foreground">ค่าอะไหล่สะสม</span><span className="font-medium text-card-foreground">฿{(dashData.monthlyCost ?? 0).toLocaleString()}</span></div>
+                <div className="border-t border-border pt-2 mt-2 flex justify-between text-sm"><span className="text-muted-foreground">ค่าอะไหล่สะสม</span><span className="font-medium text-card-foreground">฿{(dashData.totalPartsCost ?? 0).toLocaleString()}</span></div>
               </div>
             </div>
 

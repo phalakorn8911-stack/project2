@@ -12,6 +12,7 @@ export function AiSummary() {
     setGenerating(true)
     try {
       const res = await fetch("/api/dashboard")
+      if (!res.ok) throw new Error("API error")
       const data = await res.json()
 
       const v = data.vehicles
@@ -47,8 +48,8 @@ export function AiSummary() {
       if (data.lowStockCount > 0) {
         lines.push(`อะไหล่ใกล้หมด ${data.lowStockCount} รายการ ต้องสั่งซื้อ`)
       }
-      if (data.monthlyCost > 0) {
-        lines.push(`ค่าอะไหล่สะสม ${data.monthlyCost.toLocaleString()} บาท`)
+      if (data.totalPartsCost > 0) {
+        lines.push(`ค่าอะไหล่สะสม ${data.totalPartsCost.toLocaleString()} บาท`)
       }
 
       const readyPct = parseFloat(pct)

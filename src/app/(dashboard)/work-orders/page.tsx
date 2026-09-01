@@ -88,13 +88,13 @@ export default function WorkOrdersPage() {
 
   useEffect(() => {
     fetchWorkOrders()
-    fetch("/api/vehicles").then((r) => r.json()).then((d) => setVehicles(Array.isArray(d) ? d : d.vehicles ?? [])).catch(() => {})
-    fetch("/api/users").then((r) => r.json()).then((d) => {
+    fetch("/api/vehicles").then((r) => (r.ok ? r.json() : [])).then((d) => setVehicles(Array.isArray(d) ? d : d.vehicles ?? [])).catch(() => setVehicles([]))
+    fetch("/api/users").then((r) => (r.ok ? r.json() : [])).then((d) => {
       const list = Array.isArray(d) ? d : d.users ?? []
       setMechanics(list.filter((u: any) => u.role === "mechanic"))
       setSupervisors(list.filter((u: any) => u.role === "admin" || u.role === "mechanic"))
     }).catch(() => {})
-    fetch("/api/repair-requests").then((r) => r.json()).then((d) => setRepairRequests(Array.isArray(d) ? d : [])).catch(() => {})
+    fetch("/api/repair-requests").then((r) => (r.ok ? r.json() : [])).then((d) => setRepairRequests(Array.isArray(d) ? d : [])).catch(() => setRepairRequests([]))
   }, [])
 
   const handleCreate = async () => {
