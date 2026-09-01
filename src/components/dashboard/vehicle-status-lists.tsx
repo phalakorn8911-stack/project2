@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Truck, Wrench, Package, Clock, CheckCircle, AlertTriangle } from "lucide-react"
+import { Truck, Wrench, Package, Clock, CheckCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 type Vehicle = {

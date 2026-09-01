@@ -38,7 +38,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    await prisma.maintenancePlan.deleteMany({ where: { vehicleTypeId: id } })
+    const plans = await prisma.maintenancePlan.findMany({ where: { vehicleTypeId: id }, select: { id: true } })
+    const planIds = plans.map((p) => p.id)
+    if (planIds.length > 0) {
+      await prisma.maintenanceSchedule.deleteMany({ where: { planId: { in: planIds } } })
+      await prisma.maintenancePlan.deleteMany({ where: { vehicleTypeId: id } })
+    }
     await prisma.vehicleType.delete({ where: { id } })
     return NextResponse.json({ ok: true })
   } catch (error: any) {

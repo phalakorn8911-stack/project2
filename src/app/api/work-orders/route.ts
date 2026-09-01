@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     const { vehicleId, supervisorId, repairRequestId, mechanicId, issueDescription } = await request.json()
 
     if (!vehicleId || !supervisorId) {
-      return NextResponse.json({ error: "vehicleId and supervisorId are required" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณาเลือกรถและผู้ดูแล" }, { status: 400 })
     }
 
     await pg.connect()

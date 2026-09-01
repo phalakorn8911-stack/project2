@@ -8,6 +8,7 @@ type WorkOrderStatus = "OPEN" | "IN_PROGRESS" | "WAITING_PARTS" | "COMPLETED"
 
 interface WorkOrder {
   id: string
+  vehicleId: string
   woNumber: string
   vehicleRegistration: string
   issueDescription: string

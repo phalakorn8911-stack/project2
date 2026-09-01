@@ -133,6 +133,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
     await pg.query(`DELETE FROM vehicle_drivers WHERE vehicle_id = $1`, [id])
     await pg.query(`DELETE FROM vehicle_photos WHERE vehicle_id = $1`, [id])
+    await pg.query(`DELETE FROM vehicle_documents WHERE "vehicleId" = $1`, [id])
     await pg.query(`DELETE FROM work_order_parts WHERE "workOrderId" IN (SELECT id FROM work_orders WHERE "vehicleId" = $1)`, [id])
     await pg.query(`DELETE FROM work_order_tasks WHERE "workOrderId" IN (SELECT id FROM work_orders WHERE "vehicleId" = $1)`, [id])
     await pg.query(`DELETE FROM work_orders WHERE "vehicleId" = $1`, [id])

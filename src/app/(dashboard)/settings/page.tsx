@@ -200,14 +200,14 @@ export default function SettingsPage() {
                 )}
               >
                 <Plus className="h-4 w-4" />
-                เพิ่ม Admin
+                เพิ่มผู้ดูแลระบบ
               </button>
             </div>
           </div>
 
           {showAddForm && (
             <div className="border border-primary/30 bg-primary/5 rounded-xl p-4 space-y-3">
-              <h3 className="text-sm font-semibold text-foreground">เพิ่ม Admin ใหม่</h3>
+              <h3 className="text-sm font-semibold text-foreground">เพิ่มผู้ดูแลระบบใหม่</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-muted-foreground mb-1">ชื่อ *</label>

@@ -64,7 +64,7 @@ export default function LoginPage() {
             <Truck className="size-6" />
           </div>
           <h1 className="text-xl font-semibold text-foreground">สถานภาพยานยนต์ ร.153 พัน.3</h1>
-          <p className="text-sm text-muted-foreground mt-1">Vehicle Maintenance Management System</p>
+          <p className="text-sm text-muted-foreground mt-1">ระบบจัดการซ่อมบำรุงยานยนต์</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
