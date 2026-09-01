@@ -107,6 +107,16 @@ export default function UsersPage() {
     setEditForm({ rank: "", firstName: "", lastName: "", email: "", roleId: "", unitId: "" })
   }
 
+  const handleDelete = async (id: string) => {
+    if (!confirm("ต้องการลบผู้ใช้นี้?")) return
+    try {
+      const res = await fetch(`/api/users/${id}`, { method: "DELETE" })
+      if (res.ok) fetchUsers()
+    } catch (err) {
+      console.error("Delete error:", err)
+    }
+  }
+
   const openAdd = () => {
     setBatchMode(false)
     setBatchItems([{ ...defaultUserForm }])
@@ -281,9 +291,14 @@ export default function UsersPage() {
                         </button>
                       </div>
                     ) : (
-                      <button onClick={() => handleEdit(u)} className="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="แก้ไข">
-                        <Pencil className="size-3.5" />
-                      </button>
+                      <div className="inline-flex items-center gap-1">
+                        <button onClick={() => handleEdit(u)} className="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="แก้ไข">
+                          <Pencil className="size-3.5" />
+                        </button>
+                        <button onClick={() => handleDelete(u.id)} className="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors" title="ลบ">
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>

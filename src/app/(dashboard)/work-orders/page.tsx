@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
-import { ChevronDown, Plus, X } from "lucide-react"
+import { ChevronDown, Plus, X, Pencil, Trash2 } from "lucide-react"
 
 type WorkOrderStatus = "OPEN" | "IN_PROGRESS" | "WAITING_PARTS" | "COMPLETED"
 
@@ -55,6 +55,8 @@ export default function WorkOrdersPage() {
   const [repairRequests, setRepairRequests] = useState<any[]>([])
   const [form, setForm] = useState({ vehicleId: "", supervisorId: "", repairRequestId: "" })
   const [saving, setSaving] = useState(false)
+  const [editWO, setEditWO] = useState<WorkOrder | null>(null)
+  const [editForm, setEditForm] = useState({ vehicleId: "", supervisorId: "", issueDescription: "", urgency: "MEDIUM" })
 
   const fetchWorkOrders = async () => {
     try {
@@ -111,6 +113,46 @@ export default function WorkOrdersPage() {
       console.error("Failed to update status:", error)
     } finally {
       setOpenDropdown(null)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("ต้องการลบใบงานซ่อมนี้?")) return
+    try {
+      const res = await fetch(`/api/work-orders/${id}`, { method: "DELETE" })
+      if (res.ok) fetchWorkOrders()
+    } catch (error) {
+      console.error("Delete work order error:", error)
+    }
+  }
+
+  const openEdit = (wo: WorkOrder) => {
+    setEditWO(wo)
+    setEditForm({
+      vehicleId: wo.vehicleId || "",
+      supervisorId: "",
+      issueDescription: wo.issueDescription,
+      urgency: wo.urgency,
+    })
+  }
+
+  const handleUpdate = async () => {
+    if (!editWO) return
+    setSaving(true)
+    try {
+      const body: any = { issueDescription: editForm.issueDescription, urgency: editForm.urgency }
+      if (editForm.supervisorId) body.supervisorId = editForm.supervisorId
+      await fetch(`/api/work-orders/${editWO.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
+      setEditWO(null)
+      fetchWorkOrders()
+    } catch (error) {
+      console.error("Update work order error:", error)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -173,7 +215,14 @@ export default function WorkOrdersPage() {
                   >
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-semibold">{wo.woNumber}</span>
-                      <div className="relative">
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => openEdit(wo)} className="p-1 text-muted-foreground hover:text-info transition-colors" title="แก้ไข">
+                          <Pencil className="size-3" />
+                        </button>
+                        <button onClick={() => handleDelete(wo.id)} className="p-1 text-muted-foreground hover:text-destructive transition-colors" title="ลบ">
+                          <Trash2 className="size-3" />
+                        </button>
+                        <div className="relative">
                         <button
                           onClick={() =>
                             setOpenDropdown(openDropdown === wo.id ? null : wo.id)
@@ -203,6 +252,7 @@ export default function WorkOrdersPage() {
                             ))}
                           </div>
                         )}
+                        </div>
                       </div>
                     </div>
                     <p className="text-sm text-muted-foreground mb-1">
@@ -230,6 +280,45 @@ export default function WorkOrdersPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {editWO && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-card rounded-xl border border-border shadow-xl w-full max-w-lg mx-4 p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-card-foreground">แก้ไขใบงาน {editWO.woNumber}</h3>
+              <button onClick={() => setEditWO(null)} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">รายละเอียด</label>
+                <textarea value={editForm.issueDescription} onChange={(e) => setEditForm({ ...editForm, issueDescription: e.target.value })} rows={3} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50" />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">ความเร่งด่วน</label>
+                <select value={editForm.urgency} onChange={(e) => setEditForm({ ...editForm, urgency: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50">
+                  <option value="LOW">ปกติ</option>
+                  <option value="MEDIUM">ปานกลาง</option>
+                  <option value="HIGH">สูง</option>
+                  <option value="EMERGENCY">ด่วนมาก</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">มอบหมายช่าง (ไม่เลือก = ไม่เปลี่ยน)</label>
+                <select value={editForm.supervisorId} onChange={(e) => setEditForm({ ...editForm, supervisorId: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50">
+                  <option value="">ไม่เปลี่ยน</option>
+                  {mechanics.map((m: any) => <option key={m.id} value={m.id}>{m.name ?? `${m.firstName} ${m.lastName}`}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button onClick={() => setEditWO(null)} className="px-4 py-2 rounded-lg border border-input text-sm hover:bg-muted transition-colors">ยกเลิก</button>
+              <button onClick={handleUpdate} disabled={saving} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
+                {saving ? "กำลังบันทึก..." : "บันทึก"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

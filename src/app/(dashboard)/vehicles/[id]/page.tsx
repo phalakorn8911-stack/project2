@@ -72,8 +72,11 @@ export default function VehicleDetailPage() {
   const [editYear, setEditYear] = useState(0)
   const [editMileage, setEditMileage] = useState(0)
   const [editVehicleTypeId, setEditVehicleTypeId] = useState("")
+  const [editUnitId, setEditUnitId] = useState("")
+  const [editFuelType, setEditFuelType] = useState("Diesel")
   const [editStatus, setEditStatus] = useState("")
   const [vehicleTypes, setVehicleTypes] = useState<{ id: string; name: string }[]>([])
+  const [units, setUnits] = useState<{ id: string; name: string }[]>([])
   const [saving, setSaving] = useState(false)
   const [showDriverPicker, setShowDriverPicker] = useState(false)
   const [editingRR, setEditingRR] = useState<string | null>(null)
@@ -102,6 +105,7 @@ export default function VehicleDetailPage() {
     fetchHistories()
     fetch("/api/drivers").then((r) => r.json()).then((d) => setAllDrivers(d)).catch(() => {})
     fetch("/api/vehicle-types").then((r) => r.json()).then((d) => setVehicleTypes(d)).catch(() => {})
+    fetch("/api/units").then((r) => r.json()).then((d) => setUnits(d)).catch(() => {})
   }, [params.id])
 
   const fetchVehicle = () => {
@@ -117,6 +121,8 @@ export default function VehicleDetailPage() {
         setEditYear(data.year)
         setEditMileage(data.currentMileage)
         setEditVehicleTypeId(data.vehicleTypeId ?? "")
+        setEditUnitId(data.unitId ?? "")
+        setEditFuelType(data.fuelType ?? "Diesel")
         setEditStatus(data.status)
         setLoading(false)
       })
@@ -238,7 +244,7 @@ export default function VehicleDetailPage() {
       await fetch(`/api/vehicles/${params.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ registrationNumber: editReg, brand: editBrand, model: editModel, year: editYear, currentMileage: editMileage, vehicleTypeId: editVehicleTypeId, status: editStatus }),
+        body: JSON.stringify({ registrationNumber: editReg, brand: editBrand, model: editModel, year: editYear, currentMileage: editMileage, vehicleTypeId: editVehicleTypeId, unitId: editUnitId, fuelType: editFuelType, status: editStatus }),
       })
       fetchVehicle()
       setEditing(false)
@@ -448,6 +454,23 @@ export default function VehicleDetailPage() {
                   {vehicleTypes.map((t) => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">หน่วยงาน</label>
+                <select value={editUnitId} onChange={(e) => setEditUnitId(e.target.value)} className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring">
+                  <option value="">-- เลือกหน่วย --</option>
+                  {units.map((u) => (
+                    <option key={u.id} value={u.id}>{u.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">เชื้อเพลิง</label>
+                <select value={editFuelType} onChange={(e) => setEditFuelType(e.target.value)} className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring">
+                  <option value="Diesel">ดีเซล</option>
+                  <option value="Gasoline">เบนซิน</option>
+                  <option value="Electric">ไฟฟ้า</option>
                 </select>
               </div>
               <div>

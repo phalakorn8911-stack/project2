@@ -110,6 +110,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         ...(body.year !== undefined && { year: body.year }),
         ...(body.currentMileage !== undefined && { currentMileage: body.currentMileage }),
         ...(body.vehicleTypeId !== undefined && { vehicleTypeId: body.vehicleTypeId }),
+        ...(body.unitId !== undefined && { unitId: body.unitId }),
+        ...(body.fuelType !== undefined && { fuelType: body.fuelType }),
         ...(body.status !== undefined && { status: body.status }),
       },
     })
