@@ -68,6 +68,9 @@ export async function GET() {
         waitingParts: statusCounts["WAITING_PARTS"] ?? 0,
         dueSoon: statusCounts["DUE_SOON"] ?? 0,
         overdue: statusCounts["OVERDUE"] ?? 0,
+        inUse: statusCounts["IN_USE"] ?? 0,
+        outOfService: statusCounts["OUT_OF_SERVICE"] ?? 0,
+        retired: statusCounts["RETIRED"] ?? 0,
       },
       workOrders: {
         open: woCounts["OPEN"] ?? 0,

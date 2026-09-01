@@ -12,12 +12,10 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
-  Line,
 } from "recharts"
 
 type DashboardData = {
-  vehicles: { total: number; available: number; inRepair: number; waitingParts: number; dueSoon: number; overdue: number }
+  vehicles: { total: number; available: number; inRepair: number; waitingParts: number; dueSoon: number; overdue: number; inUse: number; outOfService: number; retired: number }
   workOrders: { open: number; inProgress: number; waitingParts: number; completed: number }
 }
 
@@ -68,10 +66,14 @@ export function ChartsSection({ data: initialData }: { data?: any }) {
   ]
 
   const workOrderData = [
-    { name: "รอรับงาน", value: data.workOrders.open, color: "var(--chart-1)" },
-    { name: "กำลังซ่อม", value: data.workOrders.inProgress, color: "var(--chart-2)" },
-    { name: "รออะไหล่", value: data.workOrders.waitingParts, color: "var(--chart-3)" },
-    { name: "ซ่อมเสร็จ", value: data.workOrders.completed, color: "var(--chart-4)" },
+    { name: "พร้อมใช้งาน", value: data.vehicles.available, color: "var(--status-available)" },
+    { name: "กำลังใช้งาน", value: data.vehicles.inUse, color: "var(--chart-1)" },
+    { name: "กำลังซ่อม", value: data.vehicles.inRepair, color: "var(--status-repair)" },
+    { name: "รออะไหล่", value: data.vehicles.waitingParts, color: "var(--status-parts)" },
+    { name: "ใกล้รอบซ่อม", value: data.vehicles.dueSoon, color: "var(--status-due)" },
+    { name: "เกินรอบซ่อม", value: data.vehicles.overdue, color: "var(--status-overdue)" },
+    { name: "ไม่พร้อมใช้งาน", value: data.vehicles.outOfService, color: "var(--chart-4)" },
+    { name: "ปลดระวาง", value: data.vehicles.retired, color: "var(--muted-foreground)" },
   ]
 
   return (
@@ -102,8 +104,8 @@ export function ChartsSection({ data: initialData }: { data?: any }) {
       </div>
 
       <div className="rounded-xl border border-border bg-card p-5">
-        <h3 className="text-sm font-semibold text-card-foreground mb-1">สถานะใบงานซ่อม</h3>
-        <p className="text-xs text-muted-foreground mb-4">จำนวนใบงานแยกตามสถานะ</p>
+        <h3 className="text-sm font-semibold text-card-foreground mb-1">สถานะยานยนต์</h3>
+        <p className="text-xs text-muted-foreground mb-4">จำนวนยานยนต์แยกตามสถานะ</p>
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={workOrderData} barGap={4}>
