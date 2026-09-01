@@ -45,9 +45,9 @@ function VehiclesContent() {
 
   useEffect(() => {
     fetch("/api/vehicles")
-      .then((r) => r.json())
-      .then((data) => { setVehicles(data); setLoading(false) })
-      .catch(() => setLoading(false))
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => { setVehicles(Array.isArray(data) ? data : []); setLoading(false) })
+      .catch(() => { setVehicles([]); setLoading(false) })
   }, [])
 
   const openForm = async () => {

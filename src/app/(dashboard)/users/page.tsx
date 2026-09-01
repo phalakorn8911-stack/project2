@@ -53,9 +53,9 @@ export default function UsersPage() {
 
   const fetchUsers = () => {
     fetch("/api/users")
-      .then((r) => r.json())
-      .then((data) => { setUsers(data); setLoading(false) })
-      .catch(() => setLoading(false))
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => { setUsers(Array.isArray(data) ? data : []); setLoading(false) })
+      .catch(() => { setUsers([]); setLoading(false) })
   }
 
   const fetchRoles = () => {

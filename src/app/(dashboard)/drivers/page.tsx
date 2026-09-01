@@ -41,9 +41,9 @@ export default function DriversPage() {
 
   const fetchDrivers = () => {
     fetch("/api/drivers")
-      .then((r) => r.json())
-      .then((data) => { setDrivers(data); setLoading(false) })
-      .catch(() => setLoading(false))
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => { setDrivers(Array.isArray(data) ? data : []); setLoading(false) })
+      .catch(() => { setDrivers([]); setLoading(false) })
   }
 
   const filtered = drivers.filter(

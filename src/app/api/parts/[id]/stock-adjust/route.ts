@@ -2,6 +2,8 @@ export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { Client } from "pg"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const pg = new Client({
@@ -28,6 +30,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "สต็อกไม่สามารถติดลบได้" }, { status: 400 })
     }
 
+    const session = await getServerSession(authOptions)
+    const userId = performedById || session?.user?.id || null
+
+    await pg.query("BEGIN")
     await pg.query(`UPDATE parts SET "stockQuantity" = $1 WHERE id = $2`, [newQty, id])
 
     const movementId = crypto.randomUUID()
@@ -40,13 +46,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         adjustment > 0 ? "IN" : "OUT",
         Math.abs(adjustment),
         null,
-        performedById || null,
+        userId,
       ]
     )
+    await pg.query("COMMIT")
 
     return NextResponse.json({ ok: true, stockQuantity: newQty, adjustment })
   } catch (error) {
     console.error("Stock adjust error:", error)
+    try { await pg.query("ROLLBACK") } catch {}
     return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   } finally {
     await pg.end()

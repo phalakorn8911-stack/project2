@@ -28,10 +28,19 @@ export default function VehicleTypesPage() {
 
   const fetchRows = async () => {
     setLoading(true)
-    const res = await fetch("/api/vehicle-types")
-    const data = await res.json()
-    setRows(data)
-    setLoading(false)
+    try {
+      const res = await fetch("/api/vehicle-types")
+      if (!res.ok) {
+        setRows([])
+        return
+      }
+      const data = await res.json()
+      setRows(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error("Failed to fetch vehicle types:", error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => { fetchRows() }, [])

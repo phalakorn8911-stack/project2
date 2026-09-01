@@ -61,8 +61,12 @@ export default function WorkOrdersPage() {
   const fetchWorkOrders = async () => {
     try {
       const res = await fetch("/api/work-orders")
+      if (!res.ok) {
+        setWorkOrders([])
+        return
+      }
       const data = await res.json()
-      setWorkOrders(data)
+      setWorkOrders(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error("Failed to fetch work orders:", error)
     } finally {

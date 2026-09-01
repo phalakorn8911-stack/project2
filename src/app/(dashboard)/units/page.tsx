@@ -27,8 +27,12 @@ export default function UnitsPage() {
     setLoading(true);
     try {
       const res = await fetch("/api/units");
+      if (!res.ok) {
+        setUnits([]);
+        return;
+      }
       const data = await res.json();
-      setUnits(data);
+      setUnits(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Failed to fetch units", err);
     } finally {

@@ -32,31 +32,26 @@ export async function GET() {
         where: { status: "AVAILABLE" },
         include: { vehicleType: true },
         orderBy: { registrationNumber: "asc" },
-        take: 20,
       }),
       prisma.vehicle.findMany({
         where: { status: "IN_REPAIR" },
         include: { vehicleType: true },
         orderBy: { registrationNumber: "asc" },
-        take: 20,
       }),
       prisma.vehicle.findMany({
         where: { status: "WAITING_PARTS" },
         include: { vehicleType: true },
         orderBy: { registrationNumber: "asc" },
-        take: 20,
       }),
       prisma.vehicle.findMany({
         where: { status: "DUE_SOON" },
         include: { vehicleType: true },
         orderBy: { registrationNumber: "asc" },
-        take: 20,
       }),
       prisma.vehicle.findMany({
         where: { status: "OVERDUE" },
         include: { vehicleType: true },
         orderBy: { registrationNumber: "asc" },
-        take: 20,
       }),
     ])
 
