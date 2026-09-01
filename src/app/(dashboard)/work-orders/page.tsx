@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { ChevronDown, Plus, X, Pencil, Trash2 } from "lucide-react"
 
-type WorkOrderStatus = "OPEN" | "IN_PROGRESS" | "WAITING_PARTS" | "COMPLETED"
+type WorkOrderStatus = "OPEN" | "PENDING_APPROVAL" | "ASSIGNED" | "DIAGNOSING" | "IN_PROGRESS" | "WAITING_PARTS" | "READY_FOR_QC" | "COMPLETED" | "CLOSED" | "CANCELLED"
 
 interface WorkOrder {
   id: string
@@ -18,24 +18,35 @@ interface WorkOrder {
 }
 
 const statusConfig: Record<WorkOrderStatus, { label: string; color: string }> = {
-  OPEN: { label: "รอรับงาน", color: "text-info bg-info/10" },
+  OPEN: { label: "รับงาน", color: "text-info bg-info/10" },
+  PENDING_APPROVAL: { label: "รออนุมัติ", color: "text-status-due bg-status-due/10" },
+  ASSIGNED: { label: "มอบหมายแล้ว", color: "text-info bg-info/10" },
+  DIAGNOSING: { label: "กำลังตรวจ", color: "text-info bg-info/10" },
   IN_PROGRESS: { label: "กำลังซ่อม", color: "text-warning bg-warning/10" },
   WAITING_PARTS: { label: "รออะไหล่", color: "text-status-parts bg-status-parts/10" },
+  READY_FOR_QC: { label: "รอตรวจ QC", color: "text-status-due bg-status-due/10" },
   COMPLETED: { label: "ซ่อมเสร็จ", color: "text-success bg-success/10" },
+  CLOSED: { label: "ปิดงาน", color: "text-muted-foreground bg-muted" },
+  CANCELLED: { label: "ยกเลิก", color: "text-destructive bg-destructive/10" },
 }
 
 const statusOptions: { value: WorkOrderStatus; label: string }[] = [
-  { value: "OPEN", label: "รอรับงานซ่อม" },
+  { value: "OPEN", label: "รับงานซ่อม" },
+  { value: "PENDING_APPROVAL", label: "รออนุมัติ" },
+  { value: "ASSIGNED", label: "มอบหมายแล้ว" },
+  { value: "DIAGNOSING", label: "กำลังตรวจ" },
   { value: "IN_PROGRESS", label: "กำลังซ่อม" },
   { value: "WAITING_PARTS", label: "รออะไหล่" },
+  { value: "READY_FOR_QC", label: "รอตรวจ QC" },
   { value: "COMPLETED", label: "ซ่อมเสร็จแล้ว" },
+  { value: "CLOSED", label: "ปิดงาน" },
+  { value: "CANCELLED", label: "ยกเลิก" },
 ]
 
-const columns: { key: WorkOrderStatus; title: string }[] = [
-  { key: "OPEN", title: "รอรับงาน" },
-  { key: "IN_PROGRESS", title: "กำลังซ่อม" },
-  { key: "WAITING_PARTS", title: "รออะไหล่" },
-  { key: "COMPLETED", title: "ซ่อมเสร็จ" },
+const columns: { key: string; title: string; statuses: WorkOrderStatus[] }[] = [
+  { key: "pending", title: "รอดำเนินการ", statuses: ["OPEN", "PENDING_APPROVAL", "ASSIGNED", "DIAGNOSING"] },
+  { key: "active", title: "กำลังดำเนินการ", statuses: ["IN_PROGRESS", "WAITING_PARTS", "READY_FOR_QC"] },
+  { key: "done", title: "เสร็จสิ้น", statuses: ["COMPLETED", "CLOSED", "CANCELLED"] },
 ]
 
 const urgencyConfig: Record<string, { label: string; color: string }> = {
@@ -159,8 +170,8 @@ export default function WorkOrdersPage() {
     }
   }
 
-  const getOrdersByStatus = (status: WorkOrderStatus) =>
-    workOrders.filter((wo) => wo.status === status)
+  const getOrdersByStatuses = (statuses: WorkOrderStatus[]) =>
+    workOrders.filter((wo) => statuses.includes(wo.status))
 
   return (
     <div className="p-6">
@@ -207,11 +218,11 @@ export default function WorkOrdersPage() {
               <div className="flex items-center gap-2 mb-3">
                 <h2 className="text-sm font-semibold">{col.title}</h2>
                 <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">
-                  {getOrdersByStatus(col.key).length}
+                  {getOrdersByStatuses(col.statuses).length}
                 </span>
               </div>
               <div className="flex flex-col gap-3">
-                {getOrdersByStatus(col.key).map((wo) => (
+                {getOrdersByStatuses(col.statuses).map((wo) => (
                   <div
                     key={wo.id}
                     className="rounded-xl border border-border bg-card p-4 shadow-sm"
@@ -277,7 +288,7 @@ export default function WorkOrdersPage() {
                     </div>
                   </div>
                 ))}
-                {getOrdersByStatus(col.key).length === 0 && (
+                {getOrdersByStatuses(col.statuses).length === 0 && (
                   <p className="text-xs text-muted-foreground text-center py-4">ไม่มีรายการ</p>
                 )}
               </div>

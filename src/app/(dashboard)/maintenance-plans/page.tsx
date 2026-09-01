@@ -209,17 +209,22 @@ export default function MaintenancePlansPage() {
 
   const fetchAvailableVehicles = async (planId: string) => {
     try {
-      const plan = plans.find((p) => p.id === planId)
-      if (!plan) return
-      const res = await fetch(`/api/vehicles`)
-      if (res.ok) {
-        const raw = await res.json()
+      const [vehiclesRes, schedulesRes] = await Promise.all([
+        fetch(`/api/vehicles`),
+        fetch(`/api/maintenance-schedules?planId=${planId}`),
+      ])
+      if (vehiclesRes.ok) {
+        const raw = await vehiclesRes.json()
         const allVehicles = (Array.isArray(raw) ? raw : raw.vehicles ?? []).map((v: any) => ({
           id: v.id,
           registrationNumber: v.registrationNumber ?? "",
           model: v.model ?? "",
         }))
-        const assignedIds = planSchedules.map((s) => s.vehicleId)
+        let assignedIds: string[] = []
+        if (schedulesRes.ok) {
+          const sData = await schedulesRes.json()
+          if (Array.isArray(sData)) assignedIds = sData.map((s: any) => s.vehicleId)
+        }
         setAvailableVehicles(allVehicles.filter((v: Vehicle) => !assignedIds.includes(v.id)))
       }
     } catch (e) {

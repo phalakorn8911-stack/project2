@@ -20,20 +20,23 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     await pg.connect()
 
-    const current = await pg.query(`SELECT "stockQuantity" FROM parts WHERE id = $1`, [id])
+    const session = await getServerSession(authOptions)
+    const userId = performedById || session?.user?.id || null
+
+    await pg.query("BEGIN")
+
+    const current = await pg.query(`SELECT "stockQuantity" FROM parts WHERE id = $1 FOR UPDATE`, [id])
     if (current.rows.length === 0) {
+      await pg.query("ROLLBACK")
       return NextResponse.json({ error: "ไม่พบอะไหล่" }, { status: 404 })
     }
 
     const newQty = current.rows[0].stockQuantity + adjustment
     if (newQty < 0) {
+      await pg.query("ROLLBACK")
       return NextResponse.json({ error: "สต็อกไม่สามารถติดลบได้" }, { status: 400 })
     }
 
-    const session = await getServerSession(authOptions)
-    const userId = performedById || session?.user?.id || null
-
-    await pg.query("BEGIN")
     await pg.query(`UPDATE parts SET "stockQuantity" = $1 WHERE id = $2`, [newQty, id])
 
     const movementId = crypto.randomUUID()
