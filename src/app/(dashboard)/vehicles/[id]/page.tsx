@@ -234,14 +234,16 @@ export default function VehicleDetailPage() {
 
   const handleSetPrimary = async (photoId: string) => {
     try {
-      await fetch("/api/upload", {
+      const res = await fetch("/api/upload", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ photoId, vehicleId: params.id }),
       })
-      setPhotos((prev) =>
-        prev.map((p) => ({ ...p, isPrimary: p.id === photoId }))
-      )
+      if (res.ok) {
+        setPhotos((prev) =>
+          prev.map((p) => ({ ...p, isPrimary: p.id === photoId }))
+        )
+      }
     } catch (err) {
       console.error("Set primary failed:", err)
     }
@@ -250,13 +252,18 @@ export default function VehicleDetailPage() {
   const handleSaveVehicle = async () => {
     setSaving(true)
     try {
-      await fetch(`/api/vehicles/${params.id}`, {
+      const res = await fetch(`/api/vehicles/${params.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ registrationNumber: editReg, brand: editBrand, model: editModel, year: editYear, currentMileage: editMileage, vehicleTypeId: editVehicleTypeId, unitId: editUnitId, fuelType: editFuelType, status: editStatus }),
       })
-      fetchVehicle()
-      setEditing(false)
+      if (res.ok) {
+        fetchVehicle()
+        setEditing(false)
+      } else {
+        const errData = await res.json().catch(() => ({}))
+        alert(errData.error || "เกิดข้อผิดพลาดในการบันทึก")
+      }
     } catch (err) {
       console.error("Save error:", err)
     } finally {
@@ -266,13 +273,18 @@ export default function VehicleDetailPage() {
 
   const handleAssignDriver = async (driverId: string) => {
     try {
-      await fetch("/api/vehicle-drivers", {
+      const res = await fetch("/api/vehicle-drivers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vehicleId: params.id, driverId }),
       })
-      fetchVehicle()
-      setShowDriverPicker(false)
+      if (res.ok) {
+        fetchVehicle()
+        setShowDriverPicker(false)
+      } else {
+        const errData = await res.json().catch(() => ({}))
+        alert(errData.error || "เกิดข้อผิดพลาดในการมอบหมาย")
+      }
     } catch (err) {
       console.error("Assign error:", err)
     }
@@ -280,8 +292,8 @@ export default function VehicleDetailPage() {
 
   const handleUnassignDriver = async (driverId: string) => {
     try {
-      await fetch(`/api/vehicle-drivers?vehicleId=${params.id}&driverId=${driverId}`, { method: "DELETE" })
-      fetchVehicle()
+      const res = await fetch(`/api/vehicle-drivers?vehicleId=${params.id}&driverId=${driverId}`, { method: "DELETE" })
+      if (res.ok) fetchVehicle()
     } catch (err) {
       console.error("Unassign error:", err)
     }

@@ -57,17 +57,27 @@ export default function DriversPage() {
     try {
       let driverId = editingId
       if (editingId) {
-        await fetch(`/api/drivers/${editingId}`, {
+        const res = await fetch(`/api/drivers/${editingId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
         })
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}))
+          alert(errData.error || "เกิดข้อผิดพลาดในการแก้ไข")
+          return
+        }
       } else {
         const res = await fetch("/api/drivers", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
         })
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}))
+          alert(errData.error || "เกิดข้อผิดพลาดในการเพิ่มพลขับ")
+          return
+        }
         const data = await res.json()
         driverId = data.id
       }

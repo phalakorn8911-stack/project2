@@ -130,8 +130,8 @@ function VehiclesContent() {
     try {
       const res = await fetch(`/api/vehicles/${id}`, { method: "DELETE" })
       if (res.ok) {
-        const updated = await fetch("/api/vehicles").then((r) => r.json())
-        setVehicles(updated)
+        const updated = await fetch("/api/vehicles").then((r) => (r.ok ? r.json() : [])).catch(() => [])
+        setVehicles(Array.isArray(updated) ? updated : [])
       }
     } catch {}
   }

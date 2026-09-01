@@ -60,16 +60,16 @@ export default function UsersPage() {
 
   const fetchRoles = () => {
     fetch("/api/users?roles=true")
-      .then((r) => r.json())
-      .then((data) => setRoles(data))
-      .catch(() => {})
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => setRoles(Array.isArray(data) ? data : []))
+      .catch(() => setRoles([]))
   }
 
   const fetchUnits = () => {
     fetch("/api/units")
-      .then((r) => r.json())
-      .then((data) => setUnits(data))
-      .catch(() => {})
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => setUnits(Array.isArray(data) ? data : []))
+      .catch(() => setUnits([]))
   }
 
   const handleEdit = (u: any) => {
