@@ -18,6 +18,7 @@ export async function GET() {
       inRepairVehicles,
       waitingPartsVehicles,
       dueSoonVehicles,
+      overdueVehicles,
     ] = await Promise.all([
       prisma.vehicle.count(),
       prisma.vehicle.groupBy({ by: ["status"], _count: true }),
@@ -45,10 +46,16 @@ export async function GET() {
         orderBy: { registrationNumber: "asc" },
         take: 20,
       }),
-      prisma.maintenanceSchedule.findMany({
-        where: { status: { in: ["DUE_SOON", "OVERDUE"] } },
-        include: { vehicle: { include: { vehicleType: true } }, plan: true },
-        orderBy: { nextDueDate: "asc" },
+      prisma.vehicle.findMany({
+        where: { status: "DUE_SOON" },
+        include: { vehicleType: true },
+        orderBy: { registrationNumber: "asc" },
+        take: 20,
+      }),
+      prisma.vehicle.findMany({
+        where: { status: "OVERDUE" },
+        include: { vehicleType: true },
+        orderBy: { registrationNumber: "asc" },
         take: 20,
       }),
     ])
@@ -105,14 +112,19 @@ export async function GET() {
           vehicleType: v.vehicleType.name,
           status: v.status,
         })),
-        dueSoon: dueSoonVehicles.map((s) => ({
-          id: s.vehicle.id,
-          registrationNumber: s.vehicle.registrationNumber,
-          model: s.vehicle.model,
-          vehicleType: s.vehicle.vehicleType?.name ?? "",
-          planName: s.plan.name,
-          nextDueDate: s.nextDueDate?.toLocaleDateString("th-TH") ?? "-",
-          status: s.status,
+        dueSoon: dueSoonVehicles.map((v) => ({
+          id: v.id,
+          registrationNumber: v.registrationNumber,
+          model: v.model,
+          vehicleType: v.vehicleType.name,
+          status: v.status,
+        })),
+        overdue: overdueVehicles.map((v) => ({
+          id: v.id,
+          registrationNumber: v.registrationNumber,
+          model: v.model,
+          vehicleType: v.vehicleType.name,
+          status: v.status,
         })),
       },
     })

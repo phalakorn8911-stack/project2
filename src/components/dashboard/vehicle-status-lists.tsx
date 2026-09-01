@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Truck, Wrench, Package, Clock, CheckCircle } from "lucide-react"
+import { Truck, Wrench, Package, Clock, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 type Vehicle = {
@@ -9,8 +9,6 @@ type Vehicle = {
   registrationNumber: string
   model: string
   vehicleType?: string
-  planName?: string
-  nextDueDate?: string
   status: string
 }
 
@@ -19,16 +17,18 @@ type Props = {
   inRepair: Vehicle[]
   waitingParts: Vehicle[]
   dueSoon: Vehicle[]
+  overdue: Vehicle[]
 }
 
 const statusConfig: Record<string, { label: string; icon: React.ElementType; color: string; bgColor: string }> = {
-  available: { label: "พร้อมใช้งาน", icon: CheckCircle, color: "text-success", bgColor: "bg-success/10" },
+  available: { label: "พร้อมใช้งาน", icon: Truck, color: "text-success", bgColor: "bg-success/10" },
   inRepair: { label: "กำลังซ่อม", icon: Wrench, color: "text-status-repair", bgColor: "bg-status-repair/10" },
   waitingParts: { label: "รออะไหล่", icon: Package, color: "text-status-parts", bgColor: "bg-status-parts/10" },
   dueSoon: { label: "ใกล้รอบซ่อม", icon: Clock, color: "text-status-due", bgColor: "bg-status-due/10" },
+  overdue: { label: "เกินรอบซ่อม", icon: AlertTriangle, color: "text-status-overdue", bgColor: "bg-status-overdue/10" },
 }
 
-export function VehicleStatusLists({ available, inRepair, waitingParts, dueSoon }: Props) {
+export function VehicleStatusLists({ available, inRepair, waitingParts, dueSoon, overdue }: Props) {
   const router = useRouter()
 
   const sections = [
@@ -36,6 +36,7 @@ export function VehicleStatusLists({ available, inRepair, waitingParts, dueSoon 
     { key: "inRepair", data: inRepair },
     { key: "waitingParts", data: waitingParts },
     { key: "dueSoon", data: dueSoon },
+    { key: "overdue", data: overdue },
   ]
 
   return (
@@ -78,12 +79,6 @@ export function VehicleStatusLists({ available, inRepair, waitingParts, dueSoon 
                       </div>
                       <div className="text-right">
                         {v.vehicleType && <p className="text-xs text-muted-foreground">{v.vehicleType}</p>}
-                        {v.planName && (
-                          <div className="text-xs text-muted-foreground">
-                            <p>{v.planName}</p>
-                            {v.nextDueDate && <p className={cn(v.status === "OVERDUE" ? "text-destructive" : "text-status-due")}>{v.nextDueDate}</p>}
-                          </div>
-                        )}
                       </div>
                     </div>
                   ))}

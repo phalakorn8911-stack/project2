@@ -40,6 +40,7 @@ export default function DashboardPage() {
           inRepair={data.vehicleLists?.inRepair ?? []}
           waitingParts={data.vehicleLists?.waitingParts ?? []}
           dueSoon={data.vehicleLists?.dueSoon ?? []}
+          overdue={data.vehicleLists?.overdue ?? []}
         />
       )}
 
