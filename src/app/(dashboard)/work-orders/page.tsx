@@ -212,7 +212,7 @@ export default function WorkOrdersPage() {
       {loading ? (
         <p className="text-sm text-muted-foreground">กำลังโหลด...</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
           {columns.map((col) => (
             <div key={col.key} className="flex flex-col">
               <div className="flex items-center gap-2 mb-3">

@@ -94,8 +94,8 @@ function VehiclesContent() {
       }
       setShowForm(false)
       setEditId(null)
-      const updated = await fetch("/api/vehicles").then((r) => r.json())
-      setVehicles(updated)
+      const updated = await fetch("/api/vehicles").then((r) => (r.ok ? r.json() : [])).catch(() => [])
+      setVehicles(Array.isArray(updated) ? updated : [])
     } catch {
       setFormError("เชื่อมต่อไม่ได้")
     }
