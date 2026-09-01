@@ -454,10 +454,13 @@ export default function VehicleDetailPage() {
                 <label className="block text-xs text-muted-foreground mb-1">สถานะ</label>
                 <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring">
                   <option value="AVAILABLE">พร้อมใช้งาน</option>
+                  <option value="IN_USE">กำลังใช้งาน</option>
                   <option value="IN_REPAIR">กำลังซ่อม</option>
                   <option value="WAITING_PARTS">รออะไหล่</option>
-                  <option value="OUT_OF_SERVICE">รถงดใช้งาน</option>
-                  <option value="IN_USE">กำลังใช้งาน</option>
+                  <option value="OUT_OF_SERVICE">ใช้งานไม่ได้</option>
+                  <option value="DUE_SOON">ใกล้รอบซ่อม</option>
+                  <option value="OVERDUE">เกินรอบซ่อม</option>
+                  <option value="RETIRED">ปลดระวาง</option>
                 </select>
               </div>
             </div>

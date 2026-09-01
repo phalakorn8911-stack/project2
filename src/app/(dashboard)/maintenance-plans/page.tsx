@@ -303,13 +303,13 @@ export default function MaintenancePlansPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">ประเภท vehicle</label>
+              <label className="text-sm font-medium">ประเภทรถ</label>
               <select
                 value={form.vehicleTypeId}
                 onChange={(e) => updateField("vehicleTypeId", e.target.value)}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               >
-                <option value="">เลือกประเภท vehicle</option>
+                <option value="">เลือกประเภทรถ</option>
                 {vehicleTypes.map((vt) => (
                   <option key={vt.id} value={vt.id}>
                     {vt.name}
@@ -420,7 +420,7 @@ export default function MaintenancePlansPage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium">ประเภท vehicle</label>
+                    <label className="text-xs font-medium">ประเภทรถ</label>
                     <select
                       value={form.vehicleTypeId}
                       onChange={(e) => updateField("vehicleTypeId", e.target.value)}

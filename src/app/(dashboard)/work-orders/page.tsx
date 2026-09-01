@@ -52,7 +52,7 @@ export default function WorkOrdersPage() {
   const [vehicles, setVehicles] = useState<any[]>([])
   const [mechanics, setMechanics] = useState<any[]>([])
   const [repairRequests, setRepairRequests] = useState<any[]>([])
-  const [form, setForm] = useState({ vehicleId: "", supervisorId: "", repairRequestId: "", mechanicId: "" })
+  const [form, setForm] = useState({ vehicleId: "", supervisorId: "", repairRequestId: "" })
   const [saving, setSaving] = useState(false)
 
   const fetchWorkOrders = async () => {
@@ -72,7 +72,7 @@ export default function WorkOrdersPage() {
     fetch("/api/vehicles").then((r) => r.json()).then((d) => setVehicles(Array.isArray(d) ? d : d.vehicles ?? [])).catch(() => {})
     fetch("/api/users").then((r) => r.json()).then((d) => {
       const list = Array.isArray(d) ? d : d.users ?? []
-      setMechanics(list.filter((u: any) => u.roleName === "mechanic" || u.role === "mechanic"))
+      setMechanics(list.filter((u: any) => u.role === "mechanic"))
     }).catch(() => {})
     fetch("/api/repair-requests").then((r) => r.json()).then((d) => setRepairRequests(Array.isArray(d) ? d : [])).catch(() => {})
   }, [])
@@ -88,7 +88,7 @@ export default function WorkOrdersPage() {
       })
       if (res.ok) {
         setShowForm(false)
-        setForm({ vehicleId: "", supervisorId: "", repairRequestId: "", mechanicId: "" })
+        setForm({ vehicleId: "", supervisorId: "", repairRequestId: "" })
         fetchWorkOrders()
       }
     } catch (error) {

@@ -13,7 +13,6 @@ import {
   Minus,
   PlusIcon,
   ListPlus,
-  Rows3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -82,12 +81,12 @@ export default function PartsPage() {
         setParts(list.map((p: any) => ({
           id: p.id,
           name: p.name ?? "",
-          partNumber: p.partNumber ?? p.code ?? "",
+          partNumber: p.partNumber ?? "",
           categoryId: p.categoryId ?? "",
-          stockQuantity: p.stockQuantity ?? p.stock ?? 0,
-          minimumQuantity: p.minimumQuantity ?? p.min ?? 0,
-          unitMeasure: p.unitMeasure ?? p.unit ?? "ชิ้น",
-          unitPrice: p.unitPrice ?? p.price ?? 0,
+          stockQuantity: p.stockQuantity ?? 0,
+          minimumQuantity: p.minimumQuantity ?? 0,
+          unitMeasure: p.unitMeasure ?? "ชิ้น",
+          unitPrice: p.unitPrice ?? 0,
           vendorId: p.vendorId ?? "",
         })));
       }

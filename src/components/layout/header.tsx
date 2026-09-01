@@ -3,6 +3,7 @@
 import { useSession, signOut } from "next-auth/react"
 import { Bell, LogOut, ChevronDown, User } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 function formatDate(date: Date) {
   return date.toLocaleDateString("th-TH", {
@@ -22,6 +23,7 @@ export function Header() {
   const { data: session } = useSession()
   const [showMenu, setShowMenu] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -47,6 +49,7 @@ export function Header() {
       <div className="flex items-center gap-3">
         <button
           type="button"
+          onClick={() => router.push("/notifications")}
           className="relative rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
         >
           <Bell className="size-4" />

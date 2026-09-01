@@ -14,13 +14,13 @@ export async function GET() {
       parts.map((p) => ({
         id: p.id,
         name: p.name,
-        code: p.partNumber,
+        partNumber: p.partNumber,
         categoryId: p.categoryId,
         category: p.category.name,
-        stock: p.stockQuantity,
-        min: p.minimumQuantity,
-        unit: p.unitMeasure,
-        price: Number(p.unitPrice),
+        stockQuantity: p.stockQuantity,
+        minimumQuantity: p.minimumQuantity,
+        unitMeasure: p.unitMeasure,
+        unitPrice: Number(p.unitPrice),
         vendorId: p.vendorId,
         vendor: p.vendor?.name ?? "-",
       }))

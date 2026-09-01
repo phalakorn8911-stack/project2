@@ -35,16 +35,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function ChartsSection({ data: initialData }: { data?: any }) {
   const [mounted, setMounted] = useState(false)
-  const [data, setData] = useState<DashboardData | null>(initialData ?? null)
 
   useEffect(() => {
     setMounted(true)
-    if (!initialData) {
-      fetch("/api/dashboard").then((r) => r.json()).then(setData).catch(() => {})
-    }
-  }, [initialData])
+  }, [])
 
-  if (!mounted || !data) {
+  if (!mounted || !initialData) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {[1, 2, 3].map((i) => (
@@ -59,21 +55,21 @@ export function ChartsSection({ data: initialData }: { data?: any }) {
   }
 
   const readinessData = [
-    { name: "พร้อมใช้งาน", value: data.vehicles.available, color: "var(--status-available)" },
-    { name: "กำลังซ่อม", value: data.vehicles.inRepair, color: "var(--status-repair)" },
-    { name: "รออะไหล่", value: data.vehicles.waitingParts, color: "var(--status-parts)" },
-    { name: "อื่นๆ", value: Math.max(0, data.vehicles.total - data.vehicles.available - data.vehicles.inRepair - data.vehicles.waitingParts), color: "var(--muted-foreground)" },
+    { name: "พร้อมใช้งาน", value: initialData.vehicles.available, color: "var(--status-available)" },
+    { name: "กำลังซ่อม", value: initialData.vehicles.inRepair, color: "var(--status-repair)" },
+    { name: "รออะไหล่", value: initialData.vehicles.waitingParts, color: "var(--status-parts)" },
+    { name: "อื่นๆ", value: Math.max(0, initialData.vehicles.total - initialData.vehicles.available - initialData.vehicles.inRepair - initialData.vehicles.waitingParts), color: "var(--muted-foreground)" },
   ]
 
-  const workOrderData = [
-    { name: "พร้อมใช้งาน", value: data.vehicles.available, color: "var(--status-available)" },
-    { name: "กำลังใช้งาน", value: data.vehicles.inUse, color: "var(--chart-1)" },
-    { name: "กำลังซ่อม", value: data.vehicles.inRepair, color: "var(--status-repair)" },
-    { name: "รออะไหล่", value: data.vehicles.waitingParts, color: "var(--status-parts)" },
-    { name: "ใกล้รอบซ่อม", value: data.vehicles.dueSoon, color: "var(--status-due)" },
-    { name: "เกินรอบซ่อม", value: data.vehicles.overdue, color: "var(--status-overdue)" },
-    { name: "ไม่พร้อมใช้งาน", value: data.vehicles.outOfService, color: "var(--chart-4)" },
-    { name: "ปลดระวาง", value: data.vehicles.retired, color: "var(--muted-foreground)" },
+  const vehicleStatusData = [
+    { name: "พร้อมใช้งาน", value: initialData.vehicles.available, color: "var(--status-available)" },
+    { name: "กำลังใช้งาน", value: initialData.vehicles.inUse, color: "var(--chart-1)" },
+    { name: "กำลังซ่อม", value: initialData.vehicles.inRepair, color: "var(--status-repair)" },
+    { name: "รออะไหล่", value: initialData.vehicles.waitingParts, color: "var(--status-parts)" },
+    { name: "ใกล้รอบซ่อม", value: initialData.vehicles.dueSoon, color: "var(--status-due)" },
+    { name: "เกินรอบซ่อม", value: initialData.vehicles.overdue, color: "var(--status-overdue)" },
+    { name: "ไม่พร้อมใช้งาน", value: initialData.vehicles.outOfService, color: "var(--chart-4)" },
+    { name: "ปลดระวาง", value: initialData.vehicles.retired, color: "var(--muted-foreground)" },
   ]
 
   return (
@@ -108,13 +104,13 @@ export function ChartsSection({ data: initialData }: { data?: any }) {
         <p className="text-xs text-muted-foreground mb-4">จำนวนยานยนต์แยกตามสถานะ</p>
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={workOrderData} barGap={4}>
+            <BarChart data={vehicleStatusData} barGap={4}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
               <XAxis dataKey="name" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="value" radius={[4, 4, 0, 0]} strokeWidth={0}>
-                {workOrderData.map((entry, i) => (
+                {vehicleStatusData.map((entry, i) => (
                   <Cell key={i} fill={entry.color} />
                 ))}
               </Bar>
@@ -129,23 +125,23 @@ export function ChartsSection({ data: initialData }: { data?: any }) {
         <div className="space-y-4 mt-4">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">รถทั้งหมด</span>
-            <span className="text-sm font-semibold text-card-foreground">{data.vehicles.total}</span>
+            <span className="text-sm font-semibold text-card-foreground">{initialData.vehicles.total}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">พร้อมใช้งาน</span>
-            <span className="text-sm font-semibold text-success">{data.vehicles.available}</span>
+            <span className="text-sm font-semibold text-success">{initialData.vehicles.available}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">กำลังซ่อม</span>
-            <span className="text-sm font-semibold text-status-repair">{data.vehicles.inRepair}</span>
+            <span className="text-sm font-semibold text-status-repair">{initialData.vehicles.inRepair}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">ใกล้ถึงกำหนด</span>
-            <span className="text-sm font-semibold text-status-due">{data.vehicles.dueSoon}</span>
+            <span className="text-sm font-semibold text-status-due">{initialData.vehicles.dueSoon}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">เกินกำหนด</span>
-            <span className="text-sm font-semibold text-status-overdue">{data.vehicles.overdue}</span>
+            <span className="text-sm font-semibold text-status-overdue">{initialData.vehicles.overdue}</span>
           </div>
         </div>
       </div>
