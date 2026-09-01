@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { Search, Plus, Filter, Truck, X } from "lucide-react"
+import { Search, Plus, Filter, Truck, X, Pencil, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const statusMeta: Record<string, { label: string; className: string }> = {
@@ -41,6 +41,7 @@ function VehiclesContent() {
     currentMileage: 0,
     status: "AVAILABLE",
   })
+  const [editId, setEditId] = useState<string | null>(null)
 
   useEffect(() => {
     fetch("/api/vehicles")
@@ -51,6 +52,7 @@ function VehiclesContent() {
 
   const openForm = async () => {
     setFormError("")
+    setEditId(null)
     setForm({
       registrationNumber: "",
       brand: "",
@@ -77,8 +79,10 @@ function VehiclesContent() {
     setSaving(true)
     setFormError("")
     try {
-      const res = await fetch("/api/vehicles", {
-        method: "POST",
+      const url = editId ? `/api/vehicles/${editId}` : "/api/vehicles"
+      const method = editId ? "PATCH" : "POST"
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       })
@@ -89,12 +93,47 @@ function VehiclesContent() {
         return
       }
       setShowForm(false)
+      setEditId(null)
       const updated = await fetch("/api/vehicles").then((r) => r.json())
       setVehicles(updated)
     } catch {
       setFormError("เชื่อมต่อไม่ได้")
     }
     setSaving(false)
+  }
+
+  const openEdit = async (v: any) => {
+    setFormError("")
+    setEditId(v.id)
+    setForm({
+      registrationNumber: v.registrationNumber,
+      brand: v.brand,
+      model: v.model,
+      year: v.year,
+      vehicleTypeId: v.vehicleTypeId || "",
+      unitId: v.unitId || "",
+      fuelType: v.fuelType || "Diesel",
+      currentMileage: v.currentMileage || 0,
+      status: v.status,
+    })
+    const [vtRes, uRes] = await Promise.all([
+      fetch("/api/vehicle-types").then((r) => r.json()),
+      fetch("/api/units").then((r) => r.json()),
+    ])
+    setVehicleTypes(vtRes)
+    setUnits(uRes)
+    setShowForm(true)
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("ต้องการลบรถคันนี้? การลบไม่สามารถย้อนกลับได้")) return
+    try {
+      const res = await fetch(`/api/vehicles/${id}`, { method: "DELETE" })
+      if (res.ok) {
+        const updated = await fetch("/api/vehicles").then((r) => r.json())
+        setVehicles(updated)
+      }
+    } catch {}
   }
 
   const filtered = vehicles.filter(
@@ -179,6 +218,7 @@ function VehiclesContent() {
                 <th className="px-3 py-3 font-medium">หน่วยงาน</th>
                 <th className="px-3 py-3 font-medium">เลขไมล์</th>
                 <th className="px-4 py-3 font-medium">สถานะ</th>
+                <th className="px-3 py-3 font-medium text-center">จัดการ</th>
               </tr>
             </thead>
             <tbody>
@@ -206,11 +246,21 @@ function VehiclesContent() {
                         {status.label}
                       </span>
                     </td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
+                        <button onClick={() => openEdit(v)} className="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-info/10 hover:text-info transition-colors" title="แก้ไข">
+                          <Pencil className="size-3.5" />
+                        </button>
+                        <button onClick={() => handleDelete(v.id)} className="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors" title="ลบ">
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 )
               })}
               {filtered.length === 0 && (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-muted-foreground">ไม่มีรายการ</td></tr>
+                <tr><td colSpan={9} className="px-4 py-8 text-center text-sm text-muted-foreground">ไม่มีรายการ</td></tr>
               )}
             </tbody>
           </table>
@@ -221,7 +271,7 @@ function VehiclesContent() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-card rounded-xl border border-border shadow-xl w-full max-w-lg mx-4 p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-card-foreground">เพิ่มยานพาหนะ</h3>
+              <h3 className="text-lg font-semibold text-card-foreground">{editId ? "แก้ไขยานพาหนะ" : "เพิ่มยานพาหนะ"}</h3>
               <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground">
                 <X className="size-5" />
               </button>
