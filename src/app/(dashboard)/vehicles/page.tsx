@@ -100,7 +100,7 @@ function VehiclesContent() {
   const filtered = vehicles.filter(
     (v) =>
       (!statusFilter || v.status === statusFilter) &&
-      (v.reg?.includes(search) ||
+      (v.registrationNumber?.includes(search) ||
         v.model?.toLowerCase().includes(search.toLowerCase()) ||
         v.brand?.toLowerCase().includes(search.toLowerCase())),
   )
@@ -188,14 +188,14 @@ function VehiclesContent() {
                   <tr key={v.id} onClick={() => router.push(`/vehicles/${v.id}`)} className="border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer">
                     <td className="px-4 py-3">
                       {v.thumbnail ? (
-                        <img src={v.thumbnail} alt={v.reg} className="size-10 rounded-lg object-cover" />
+                        <img src={v.thumbnail} alt={v.registrationNumber} className="size-10 rounded-lg object-cover" />
                       ) : (
                         <div className="size-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
                           <Truck className="size-5" />
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3 font-medium text-card-foreground">{v.reg}</td>
+                    <td className="px-4 py-3 font-medium text-card-foreground">{v.registrationNumber}</td>
                     <td className="px-3 py-3 text-card-foreground">{v.brand} {v.model}</td>
                     <td className="px-3 py-3 text-muted-foreground">{v.year}</td>
                     <td className="px-3 py-3 text-muted-foreground">{v.type}</td>

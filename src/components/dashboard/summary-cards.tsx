@@ -16,8 +16,6 @@ type CardData = {
   href: string
 }
 
-const iconMap = { Truck, Wrench, Package, AlertTriangle, Clock, CheckCircle, DollarSign, FileText, Ban }
-
 export function SummaryCards({ data }: { data?: any }) {
   const [cards, setCards] = useState<CardData[]>([])
   const [loading, setLoading] = useState(true)

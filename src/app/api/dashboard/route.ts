@@ -47,7 +47,7 @@ export async function GET() {
       }),
       prisma.maintenanceSchedule.findMany({
         where: { status: { in: ["DUE_SOON", "OVERDUE"] } },
-        include: { vehicle: true, plan: true },
+        include: { vehicle: { include: { vehicleType: true } }, plan: true },
         orderBy: { nextDueDate: "asc" },
         take: 20,
       }),
@@ -109,6 +109,7 @@ export async function GET() {
           id: s.vehicle.id,
           registrationNumber: s.vehicle.registrationNumber,
           model: s.vehicle.model,
+          vehicleType: s.vehicle.vehicleType?.name ?? "",
           planName: s.plan.name,
           nextDueDate: s.nextDueDate?.toLocaleDateString("th-TH") ?? "-",
           status: s.status,

@@ -135,7 +135,7 @@ export default function WorkOrdersPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <select value={form.vehicleId} onChange={(e) => setForm({ ...form, vehicleId: e.target.value })} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs">
               <option value="">เลือกรถ</option>
-              {vehicles.map((v: any) => <option key={v.id} value={v.id}>{v.reg ?? v.registrationNumber} - {v.model}</option>)}
+              {vehicles.map((v: any) => <option key={v.id} value={v.id}>{v.registrationNumber} - {v.model}</option>)}
             </select>
             <select value={form.supervisorId} onChange={(e) => setForm({ ...form, supervisorId: e.target.value })} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs">
               <option value="">เลือกผู้ดูแล</option>

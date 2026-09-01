@@ -216,7 +216,7 @@ export default function MaintenancePlansPage() {
         const raw = await res.json()
         const allVehicles = (Array.isArray(raw) ? raw : raw.vehicles ?? []).map((v: any) => ({
           id: v.id,
-          registrationNumber: v.reg ?? v.registrationNumber ?? "",
+          registrationNumber: v.registrationNumber ?? "",
           model: v.model ?? "",
         }))
         const assignedIds = planSchedules.map((s) => s.vehicleId)

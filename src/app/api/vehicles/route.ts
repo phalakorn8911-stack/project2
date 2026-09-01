@@ -14,7 +14,7 @@ export async function GET() {
     return NextResponse.json(
       vehicles.map((v) => ({
         id: v.id,
-        reg: v.registrationNumber,
+        registrationNumber: v.registrationNumber,
         brand: v.brand,
         model: v.model,
         year: v.year,
