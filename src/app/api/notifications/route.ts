@@ -9,7 +9,7 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "ไม่ได้รับอนุญาต" }, { status: 401 })
     }
 
     const notifications = await prisma.notification.findMany({

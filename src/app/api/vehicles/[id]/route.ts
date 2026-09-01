@@ -32,7 +32,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     })
 
     if (!vehicle) {
-      return NextResponse.json({ error: "Vehicle not found" }, { status: 404 })
+      return NextResponse.json({ error: "ไม่พบยานพาหนะ" }, { status: 404 })
     }
 
     await pg.connect()

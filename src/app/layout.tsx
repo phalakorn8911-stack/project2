@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "สถานภาพยานยนต์ ร.153 พัน.3",
-  description: "Vehicle Maintenance Management System - ร.153 พัน.3",
+  description: "ระบบจัดการซ่อมบำรุงยานยนต์ - ร.153 พัน.3",
 };
 
 export default function RootLayout({
