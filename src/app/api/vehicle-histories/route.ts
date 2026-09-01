@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"
+﻿export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { Client } from "pg"
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     const vehicleId = searchParams.get("vehicleId")
 
     if (!vehicleId) {
-      return NextResponse.json({ error: "กรุณาระบุรหัสรถ" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธฃเธซเธฑเธชเธฃเธ–" }, { status: 400 })
     }
 
     await pg.connect()
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
     )
   } catch (error) {
     console.error("Vehicle histories API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   } finally {
     await pg.end()
   }
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     const body = await request.json()
 
     if (!body.vehicleId) {
-      return NextResponse.json({ error: "กรุณาระบุรหัสรถ" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธฃเธซเธฑเธชเธฃเธ–" }, { status: 400 })
     }
 
     await pg.connect()
@@ -106,7 +106,7 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error("Create vehicle history error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   } finally {
     await pg.end()
   }

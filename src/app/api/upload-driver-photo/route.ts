@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"
+﻿export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
@@ -11,16 +11,16 @@ export async function POST(request: Request) {
     const driverId = formData.get("driverId") as string | null
 
     if (!file || !driverId) {
-      return NextResponse.json({ error: "กรุณาเลือกไฟล์และรหัสพลขับ" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเนเธเธฅเนเนเธฅเธฐเธฃเธซเธฑเธชเธเธฅเธเธฑเธ" }, { status: 400 })
     }
 
     const allowed = ["image/jpeg", "image/png", "image/webp"]
     if (!allowed.includes(file.type)) {
-      return NextResponse.json({ error: "ไม่รองรับประเภทไฟล์นี้" }, { status: 400 })
+      return NextResponse.json({ error: "เนเธกเนเธฃเธญเธเธฃเธฑเธเธเธฃเธฐเน€เธ เธ—เนเธเธฅเนเธเธตเน" }, { status: 400 })
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: "ไฟล์มีขนาดใหญ่เกินไป (สูงสุด 5MB)" }, { status: 400 })
+      return NextResponse.json({ error: "เนเธเธฅเนเธกเธตเธเธเธฒเธ”เนเธซเธเนเน€เธเธดเธเนเธ (เธชเธนเธเธชเธธเธ” 5MB)" }, { status: 400 })
     }
 
     const ext = file.name.split(".").pop() ?? "jpg"
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
     if (uploadError) {
       console.error("Upload error:", uploadError)
-      return NextResponse.json({ error: "Upload failed: " + uploadError.message }, { status: 500 })
+      return NextResponse.json({ error: "อัปโหลดล้มเหลว: " + uploadError.message }, { status: 500 })
     }
 
     const { data: urlData } = supabase.storage
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ photoUrl })
   } catch (error) {
     console.error("Upload driver photo error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }
 
@@ -76,12 +76,12 @@ export async function DELETE(request: Request) {
     const driverId = searchParams.get("driverId")
 
     if (!driverId) {
-      return NextResponse.json({ error: "กรุณาระบุรหัสพลขับ" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธฃเธซเธฑเธชเธเธฅเธเธฑเธ" }, { status: 400 })
     }
 
     const driver = await prisma.driver.findUnique({ where: { id: driverId } })
     if (!driver || !driver.photoUrl) {
-      return NextResponse.json({ error: "ไม่มีรูปภาพให้ลบ" }, { status: 404 })
+      return NextResponse.json({ error: "เนเธกเนเธกเธตเธฃเธนเธเธ เธฒเธเนเธซเนเธฅเธ" }, { status: 404 })
     }
 
     const urlParts = driver.photoUrl.split("/driver-photos/")
@@ -111,6 +111,6 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error("Delete driver photo error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }

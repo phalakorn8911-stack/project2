@@ -65,13 +65,13 @@ function VehiclesContent() {
       status: "AVAILABLE",
     })
     const [vtRes, uRes] = await Promise.all([
-      fetch("/api/vehicle-types").then((r) => r.json()),
-      fetch("/api/units").then((r) => r.json()),
+      fetch("/api/vehicle-types").then((r) => (r.ok ? r.json() : [])).catch(() => []),
+      fetch("/api/units").then((r) => (r.ok ? r.json() : [])).catch(() => []),
     ])
-    setVehicleTypes(vtRes)
-    setUnits(uRes)
-    if (vtRes.length > 0) setForm((f) => ({ ...f, vehicleTypeId: vtRes[0].id }))
-    if (uRes.length > 0) setForm((f) => ({ ...f, unitId: uRes[0].id }))
+    setVehicleTypes(Array.isArray(vtRes) ? vtRes : [])
+    setUnits(Array.isArray(uRes) ? uRes : [])
+    if (Array.isArray(vtRes) && vtRes.length > 0) setForm((f) => ({ ...f, vehicleTypeId: vtRes[0].id }))
+    if (Array.isArray(uRes) && uRes.length > 0) setForm((f) => ({ ...f, unitId: uRes[0].id }))
     setShowForm(true)
   }
 
@@ -117,11 +117,11 @@ function VehiclesContent() {
       status: v.status,
     })
     const [vtRes, uRes] = await Promise.all([
-      fetch("/api/vehicle-types").then((r) => r.json()),
-      fetch("/api/units").then((r) => r.json()),
+      fetch("/api/vehicle-types").then((r) => (r.ok ? r.json() : [])).catch(() => []),
+      fetch("/api/units").then((r) => (r.ok ? r.json() : [])).catch(() => []),
     ])
-    setVehicleTypes(vtRes)
-    setUnits(uRes)
+    setVehicleTypes(Array.isArray(vtRes) ? vtRes : [])
+    setUnits(Array.isArray(uRes) ? uRes : [])
     setShowForm(true)
   }
 

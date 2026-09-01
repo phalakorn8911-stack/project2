@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"
+﻿export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
@@ -22,7 +22,7 @@ export async function GET() {
     )
   } catch (error) {
     console.error("Vehicle types API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }
 
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     const { name, description, fuelType, weight, seatingCapacity, engineSpec } = await request.json()
 
     if (!name) {
-      return NextResponse.json({ error: "กรุณากรอกชื่อประเภทรถ" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเธทเนเธญเธเธฃเธฐเน€เธ เธ—เธฃเธ–" }, { status: 400 })
     }
 
     const type = await prisma.vehicleType.create({
@@ -56,6 +56,6 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error("Create vehicle type error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }

@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"
+﻿export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
@@ -26,7 +26,7 @@ export async function GET() {
     )
   } catch (error) {
     console.error("Maintenance Plans API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }
 
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     const { name, vehicleTypeId, intervalMonths, intervalMileage, intervalHours } = await request.json()
 
     if (!name || !vehicleTypeId) {
-      return NextResponse.json({ error: "กรุณากรอกชื่อและเลือกประเภทรถ" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเธทเนเธญเนเธฅเธฐเน€เธฅเธทเธญเธเธเธฃเธฐเน€เธ เธ—เธฃเธ–" }, { status: 400 })
     }
 
     const plan = await prisma.maintenancePlan.create({
@@ -51,6 +51,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ id: plan.id, name: plan.name })
   } catch (error) {
     console.error("Create maintenance plan error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }

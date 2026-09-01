@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"
+﻿export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
@@ -9,7 +9,7 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "ไม่ได้รับอนุญาต" }, { status: 401 })
+      return NextResponse.json({ error: "เนเธกเนเนเธ”เนเธฃเธฑเธเธญเธเธธเธเธฒเธ•" }, { status: 401 })
     }
 
     const notifications = await prisma.notification.findMany({
@@ -30,6 +30,6 @@ export async function GET() {
     )
   } catch (error) {
     console.error("Notifications API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }

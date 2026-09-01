@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"
+﻿export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
     )
   } catch (error) {
     console.error("Users API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }
 
@@ -80,12 +80,12 @@ export async function POST(request: Request) {
     const { email, password, name, rank, firstName, lastName, roleId, unitId } = body
 
     if (!email || !password || !name || !roleId) {
-      return NextResponse.json({ error: "กรุณากรอกอีเมล, รหัสผ่าน, ชื่อ, และบทบาท" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธญเธตเน€เธกเธฅ, เธฃเธซเธฑเธชเธเนเธฒเธ, เธเธทเนเธญ, เนเธฅเธฐเธเธ—เธเธฒเธ—" }, { status: 400 })
     }
 
     const existing = await prisma.user.findUnique({ where: { email } })
     if (existing) {
-      return NextResponse.json({ error: "อีเมลนี้ถูกใช้แล้ว" }, { status: 400 })
+      return NextResponse.json({ error: "เธญเธตเน€เธกเธฅเธเธตเนเธ–เธนเธเนเธเนเนเธฅเนเธง" }, { status: 400 })
     }
 
     const role = await prisma.role.findUnique({ where: { id: roleId } })
@@ -94,7 +94,7 @@ export async function POST(request: Request) {
         where: { role: { name: "admin" } },
       })
       if (adminCount >= 2) {
-        return NextResponse.json({ error: "สามารถเพิ่ม admin ได้สูงสุด 2 คนเท่านั้น" }, { status: 400 })
+        return NextResponse.json({ error: "เธชเธฒเธกเธฒเธฃเธ–เน€เธเธดเนเธก admin เนเธ”เนเธชเธนเธเธชเธธเธ” 2 เธเธเน€เธ—เนเธฒเธเธฑเนเธ" }, { status: 400 })
       }
     }
 
@@ -116,6 +116,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ id: user.id, name: user.name, email: user.email })
   } catch (error) {
     console.error("Create user error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }

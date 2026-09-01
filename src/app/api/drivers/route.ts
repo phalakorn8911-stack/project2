@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"
+﻿export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { Client } from "pg"
@@ -45,7 +45,7 @@ export async function GET() {
     )
   } catch (error) {
     console.error("Drivers API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   } finally {
     await pg.end()
   }
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     const { rank, firstName, lastName, photoUrl } = await request.json()
 
     if (!rank || !firstName || !lastName) {
-      return NextResponse.json({ error: "กรุณากรอกข้อมูลที่จำเป็น" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเนเธญเธกเธนเธฅเธ—เธตเนเธเธณเน€เธเนเธ" }, { status: 400 })
     }
 
     await pg.connect()
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error("Create driver error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   } finally {
     await pg.end()
   }

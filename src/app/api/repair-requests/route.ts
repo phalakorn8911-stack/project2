@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"
+﻿export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { Client } from "pg"
@@ -21,7 +21,7 @@ export async function GET() {
     return NextResponse.json(result.rows)
   } catch (error) {
     console.error("Repair requests API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   } finally {
     await pg.end()
   }
@@ -37,12 +37,12 @@ export async function POST(request: Request) {
     const { vehicleId, requesterId, symptoms, systemCategory, urgency, mileage, photoUrl } = body
 
     if (!vehicleId || !requesterId || !symptoms || !systemCategory) {
-      return NextResponse.json({ error: "กรุณากรอกข้อมูลที่จำเป็น" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเนเธญเธกเธนเธฅเธ—เธตเนเธเธณเน€เธเนเธ" }, { status: 400 })
     }
 
     await pg.connect()
 
-    // สร้าง requestNumber อัตโนมัติ
+    // เธชเธฃเนเธฒเธ requestNumber เธญเธฑเธ•เนเธเธกเธฑเธ•เธด
     const countResult = await pg.query(`SELECT COUNT(*)::int as cnt FROM "repair_requests"`)
     const nextNum = countResult.rows[0].cnt + 1
     const year = new Date().getFullYear()
@@ -56,10 +56,10 @@ export async function POST(request: Request) {
       [id, requestNumber, vehicleId, requesterId, symptoms, systemCategory, urgency || "MEDIUM", mileage || 0, "PENDING", photoUrl || null]
     )
 
-    return NextResponse.json({ id: result.rows[0].id, requestNumber: result.rows[0].requestNumber, message: "สร้างใบแจ้งซ่อมสำเร็จ" }, { status: 201 })
+    return NextResponse.json({ id: result.rows[0].id, requestNumber: result.rows[0].requestNumber, message: "เธชเธฃเนเธฒเธเนเธเนเธเนเธเธเนเธญเธกเธชเธณเน€เธฃเนเธ" }, { status: 201 })
   } catch (error: any) {
     console.error("Repair request create error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   } finally {
     await pg.end()
   }

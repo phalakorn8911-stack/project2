@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"
+﻿export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
@@ -12,16 +12,16 @@ export async function POST(request: Request) {
     const isPrimary = formData.get("isPrimary") === "true"
 
     if (!file || !vehicleId) {
-      return NextResponse.json({ error: "กรุณาเลือกไฟล์และรถ" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเนเธเธฅเนเนเธฅเธฐเธฃเธ–" }, { status: 400 })
     }
 
     const allowed = ["image/jpeg", "image/png", "image/webp"]
     if (!allowed.includes(file.type)) {
-      return NextResponse.json({ error: "ไม่รองรับประเภทไฟล์นี้" }, { status: 400 })
+      return NextResponse.json({ error: "เนเธกเนเธฃเธญเธเธฃเธฑเธเธเธฃเธฐเน€เธ เธ—เนเธเธฅเนเธเธตเน" }, { status: 400 })
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: "ไฟล์มีขนาดใหญ่เกินไป (สูงสุด 5MB)" }, { status: 400 })
+      return NextResponse.json({ error: "เนเธเธฅเนเธกเธตเธเธเธฒเธ”เนเธซเธเนเน€เธเธดเธเนเธ (เธชเธนเธเธชเธธเธ” 5MB)" }, { status: 400 })
     }
 
     const ext = file.name.split(".").pop() ?? "jpg"
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
     if (uploadError) {
       console.error("Upload error:", uploadError)
-      return NextResponse.json({ error: "อัปโหลดล้มเหลว" }, { status: 500 })
+      return NextResponse.json({ error: "เธญเธฑเธเนเธซเธฅเธ”เธฅเนเธกเน€เธซเธฅเธง" }, { status: 500 })
     }
 
     const { data: urlData } = supabase.storage
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error("Upload API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }
 
@@ -67,12 +67,12 @@ export async function DELETE(request: Request) {
     const photoId = searchParams.get("id")
 
     if (!photoId) {
-      return NextResponse.json({ error: "กรุณาระบุรหัสรูปภาพ" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธฃเธซเธฑเธชเธฃเธนเธเธ เธฒเธ" }, { status: 400 })
     }
 
     const photo = await prisma.vehiclePhoto.findUnique({ where: { id: photoId } })
     if (!photo) {
-      return NextResponse.json({ error: "ไม่พบรูปภาพ" }, { status: 404 })
+      return NextResponse.json({ error: "เนเธกเนเธเธเธฃเธนเธเธ เธฒเธ" }, { status: 404 })
     }
 
     const urlParts = photo.photoUrl.split("/vehicle-photos/")
@@ -85,7 +85,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error("Delete photo error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }
 
@@ -94,7 +94,7 @@ export async function PATCH(request: Request) {
     const { photoId, vehicleId } = await request.json()
 
     if (!photoId || !vehicleId) {
-      return NextResponse.json({ error: "กรุณาระบุรหัสรูปภาพและรถ" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธฃเธซเธฑเธชเธฃเธนเธเธ เธฒเธเนเธฅเธฐเธฃเธ–" }, { status: 400 })
     }
 
     await prisma.vehiclePhoto.updateMany({
@@ -110,6 +110,6 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error("Set primary error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }

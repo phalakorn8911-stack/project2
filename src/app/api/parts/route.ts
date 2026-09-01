@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"
+﻿export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
@@ -27,7 +27,7 @@ export async function GET() {
     )
   } catch (error) {
     console.error("Parts API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }
 
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
           categoryId: p.categoryId,
           stockQuantity: p.stockQuantity ?? 0,
           minimumQuantity: p.minimumQuantity ?? 0,
-          unitMeasure: p.unitMeasure ?? "ชิ้น",
+          unitMeasure: p.unitMeasure ?? "เธเธดเนเธ",
           unitPrice: p.unitPrice ?? 0,
           vendorId: p.vendorId || null,
         })),
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     const { name, partNumber, categoryId, stockQuantity, minimumQuantity, unitMeasure, unitPrice, vendorId } = body
 
     if (!name || !partNumber || !categoryId || !unitMeasure) {
-      return NextResponse.json({ error: "กรุณากรอกชื่อ, หมายเลขอะไหล่, หมวดหมู่, และหน่วย" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเธทเนเธญ, เธซเธกเธฒเธขเน€เธฅเธเธญเธฐเนเธซเธฅเน, เธซเธกเธงเธ”เธซเธกเธนเน, เนเธฅเธฐเธซเธเนเธงเธข" }, { status: 400 })
     }
 
     const part = await prisma.part.create({
@@ -77,6 +77,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ id: part.id, name: part.name })
   } catch (error) {
     console.error("Create part error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }

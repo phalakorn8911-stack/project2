@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"
+﻿export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { Client } from "pg"
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ reply })
   } catch (error) {
     console.error("AI API error:", error)
-    return NextResponse.json({ reply: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง" })
+    return NextResponse.json({ reply: "เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ” เธเธฃเธธเธ“เธฒเธฅเธญเธเนเธซเธกเนเธญเธตเธเธเธฃเธฑเนเธ" })
   } finally {
     await pg.end()
   }
@@ -87,46 +87,46 @@ function buildReply(q: string, ctx: Ctx): string {
   const outOfService = sc["OUT_OF_SERVICE"] ?? 0
   const pct = totalVehicles > 0 ? ((available / totalVehicles) * 100).toFixed(1) : "0"
 
-  if (q.includes("รถ") && (q.includes("กี่คัน") || q.includes("ทั้งหมด") || q.includes("จำนวน"))) {
-    return `ขณะนี้มียานพาหนะทั้งหมด ${totalVehicles} คัน พร้อมใช้งาน ${available} คัน (${pct}%) กำลังซ่อม ${inRepair} คัน รออะไหล่ ${waitingParts} คัน เกินกำหนด ${overdue} คัน หยุดใช้งาน ${outOfService} คัน`
+  if (q.includes("เธฃเธ–") && (q.includes("เธเธตเนเธเธฑเธ") || q.includes("เธ—เธฑเนเธเธซเธกเธ”") || q.includes("เธเธณเธเธงเธ"))) {
+    return `เธเธ“เธฐเธเธตเนเธกเธตเธขเธฒเธเธเธฒเธซเธเธฐเธ—เธฑเนเธเธซเธกเธ” ${totalVehicles} เธเธฑเธ เธเธฃเนเธญเธกเนเธเนเธเธฒเธ ${available} เธเธฑเธ (${pct}%) เธเธณเธฅเธฑเธเธเนเธญเธก ${inRepair} เธเธฑเธ เธฃเธญเธญเธฐเนเธซเธฅเน ${waitingParts} เธเธฑเธ เน€เธเธดเธเธเธณเธซเธเธ” ${overdue} เธเธฑเธ เธซเธขเธธเธ”เนเธเนเธเธฒเธ ${outOfService} เธเธฑเธ`
   }
 
-  if (q.includes("แผนซ่อม") || q.includes("บำรุง") || q.includes("schedule")) {
+  if (q.includes("เนเธเธเธเนเธญเธก") || q.includes("เธเธณเธฃเธธเธ") || q.includes("schedule")) {
     const parts: string[] = []
-    if (ctx.overdueSchedules > 0) parts.push(`เกินกำหนด ${ctx.overdueSchedules} รายการ`)
-    if (ctx.dueSoonSchedules > 0) parts.push(`ใกล้ถึงกำหนด ${ctx.dueSoonSchedules} รายการ`)
+    if (ctx.overdueSchedules > 0) parts.push(`เน€เธเธดเธเธเธณเธซเธเธ” ${ctx.overdueSchedules} เธฃเธฒเธขเธเธฒเธฃ`)
+    if (ctx.dueSoonSchedules > 0) parts.push(`เนเธเธฅเนเธ–เธถเธเธเธณเธซเธเธ” ${ctx.dueSoonSchedules} เธฃเธฒเธขเธเธฒเธฃ`)
     return parts.length > 0
-      ? `แผนซ่อมบำรุง: ${parts.join(" ")}`
-      : "แผนซ่อมบำรุงอยู่ในเกณฑ์ปกติ ไม่มีรายการเกินกำหนด"
+      ? `เนเธเธเธเนเธญเธกเธเธณเธฃเธธเธ: ${parts.join(" ")}`
+      : "เนเธเธเธเนเธญเธกเธเธณเธฃเธธเธเธญเธขเธนเนเนเธเน€เธเธ“เธ‘เนเธเธเธ•เธด เนเธกเนเธกเธตเธฃเธฒเธขเธเธฒเธฃเน€เธเธดเธเธเธณเธซเธเธ”"
   }
 
-  if (q.includes("แจ้งซ่อม") || q.includes("ค้าง")) {
-    return `ใบแจ้งซ่อมค้างดำเนินการ ${ctx.pendingRepairs} รายการ`
+  if (q.includes("เนเธเนเธเธเนเธญเธก") || q.includes("เธเนเธฒเธ")) {
+    return `เนเธเนเธเนเธเธเนเธญเธกเธเนเธฒเธเธ”เธณเน€เธเธดเธเธเธฒเธฃ ${ctx.pendingRepairs} เธฃเธฒเธขเธเธฒเธฃ`
   }
 
-  if (q.includes("อะไหล่") || q.includes("สต็อก") || q.includes("stock")) {
-    if (ctx.lowStockParts.length === 0) return "อะไหล่ทุกรายการมีสต็อกเพียงพอ"
+  if (q.includes("เธญเธฐเนเธซเธฅเน") || q.includes("เธชเธ•เนเธญเธ") || q.includes("stock")) {
+    if (ctx.lowStockParts.length === 0) return "เธญเธฐเนเธซเธฅเนเธ—เธธเธเธฃเธฒเธขเธเธฒเธฃเธกเธตเธชเธ•เนเธญเธเน€เธเธตเธขเธเธเธญ"
     const list = ctx.lowStockParts
       .slice(0, 5)
-      .map((p) => `${p.name} (เหลือ ${p.stockQuantity} / ขั้นต่ำ ${p.minimumQuantity})`)
+      .map((p) => `${p.name} (เน€เธซเธฅเธทเธญ ${p.stockQuantity} / เธเธฑเนเธเธ•เนเธณ ${p.minimumQuantity})`)
       .join(", ")
-    return `อะไหล่ใกล้หมด ${ctx.lowStockParts.length} รายการ: ${list}`
+    return `เธญเธฐเนเธซเธฅเนเนเธเธฅเนเธซเธกเธ” ${ctx.lowStockParts.length} เธฃเธฒเธขเธเธฒเธฃ: ${list}`
   }
 
-  if (q.includes("ซ่อม") && (q.includes("กำลัง") || q.includes("ทำงาน") || progress(wc))) {
+  if (q.includes("เธเนเธญเธก") && (q.includes("เธเธณเธฅเธฑเธ") || q.includes("เธ—เธณเธเธฒเธ") || progress(wc))) {
     const total = (wc["OPEN"] ?? 0) + (wc["IN_PROGRESS"] ?? 0) + (wc["WAITING_PARTS"] ?? 0)
-    return `งานซ่อมที่กำลังดำเนินการ: รอรับงาน ${wc["OPEN"] ?? 0} กำลังซ่อม ${wc["IN_PROGRESS"] ?? 0} รออะไหล่ ${wc["WAITING_PARTS"] ?? 0} เสร็จแล้ว ${wc["COMPLETED"] ?? 0} รวม ${total} รายการ`
+    return `เธเธฒเธเธเนเธญเธกเธ—เธตเนเธเธณเธฅเธฑเธเธ”เธณเน€เธเธดเธเธเธฒเธฃ: เธฃเธญเธฃเธฑเธเธเธฒเธ ${wc["OPEN"] ?? 0} เธเธณเธฅเธฑเธเธเนเธญเธก ${wc["IN_PROGRESS"] ?? 0} เธฃเธญเธญเธฐเนเธซเธฅเน ${wc["WAITING_PARTS"] ?? 0} เน€เธชเธฃเนเธเนเธฅเนเธง ${wc["COMPLETED"] ?? 0} เธฃเธงเธก ${total} เธฃเธฒเธขเธเธฒเธฃ`
   }
 
-  if (q.includes("พร้อม") || q.includes("available")) {
-    return `รถพร้อมใช้งาน ${available} คัน จาก ${totalVehicles} คัน (${pct}%)`
+  if (q.includes("เธเธฃเนเธญเธก") || q.includes("available")) {
+    return `เธฃเธ–เธเธฃเนเธญเธกเนเธเนเธเธฒเธ ${available} เธเธฑเธ เธเธฒเธ ${totalVehicles} เธเธฑเธ (${pct}%)`
   }
 
-  if (q.includes("เกินกำหนด") || q.includes("overdue")) {
-    return `รถเกินกำหนดซ่อม ${overdue} คัน หยุดใช้งาน ${outOfService} คัน ควรเร่งดำเนินการ`
+  if (q.includes("เน€เธเธดเธเธเธณเธซเธเธ”") || q.includes("overdue")) {
+    return `เธฃเธ–เน€เธเธดเธเธเธณเธซเธเธ”เธเนเธญเธก ${overdue} เธเธฑเธ เธซเธขเธธเธ”เนเธเนเธเธฒเธ ${outOfService} เธเธฑเธ เธเธงเธฃเน€เธฃเนเธเธ”เธณเน€เธเธดเธเธเธฒเธฃ`
   }
 
-  return `ขณะนี้มียานพาหนะ ${totalVehicles} คัน พร้อมใช้งาน ${available} คัน กำลังซ่อม ${inRepair} คัน งานค้าง ${ctx.pendingRepairs} รายการ อะไหล่ใกล้หมด ${ctx.lowStockParts.length} รายการ สามารถถามเพิ่มเติมเกี่ยวกับ รถ, ซ่อม, อะไหล่, แผนซ่อมบำรุง ได้ครับ`
+  return `เธเธ“เธฐเธเธตเนเธกเธตเธขเธฒเธเธเธฒเธซเธเธฐ ${totalVehicles} เธเธฑเธ เธเธฃเนเธญเธกเนเธเนเธเธฒเธ ${available} เธเธฑเธ เธเธณเธฅเธฑเธเธเนเธญเธก ${inRepair} เธเธฑเธ เธเธฒเธเธเนเธฒเธ ${ctx.pendingRepairs} เธฃเธฒเธขเธเธฒเธฃ เธญเธฐเนเธซเธฅเนเนเธเธฅเนเธซเธกเธ” ${ctx.lowStockParts.length} เธฃเธฒเธขเธเธฒเธฃ เธชเธฒเธกเธฒเธฃเธ–เธ–เธฒเธกเน€เธเธดเนเธกเน€เธ•เธดเธกเน€เธเธตเนเธขเธงเธเธฑเธ เธฃเธ–, เธเนเธญเธก, เธญเธฐเนเธซเธฅเน, เนเธเธเธเนเธญเธกเธเธณเธฃเธธเธ เนเธ”เนเธเธฃเธฑเธ`
 }
 
 function progress(wc: Record<string, number>): boolean {

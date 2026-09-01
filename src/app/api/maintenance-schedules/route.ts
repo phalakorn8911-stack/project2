@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"
+﻿export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
     )
   } catch (error) {
     console.error("Maintenance schedules API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }
 
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     const { planId, vehicleId, lastPerformedDate, lastPerformedMileage, nextDueDate, nextDueMileage } = await request.json()
 
     if (!planId || !vehicleId) {
-      return NextResponse.json({ error: "กรุณาเลือกแผนและรถ" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเนเธเธเนเธฅเธฐเธฃเธ–" }, { status: 400 })
     }
 
     const existing = await prisma.maintenanceSchedule.findFirst({
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     })
 
     if (existing) {
-      return NextResponse.json({ error: "รถคันนี้อยู่ในแผนนี้แล้ว" }, { status: 400 })
+      return NextResponse.json({ error: "เธฃเธ–เธเธฑเธเธเธตเนเธญเธขเธนเนเนเธเนเธเธเธเธตเนเนเธฅเนเธง" }, { status: 400 })
     }
 
     const schedule = await prisma.maintenanceSchedule.create({
@@ -71,6 +71,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ id: schedule.id })
   } catch (error) {
     console.error("Create maintenance schedule error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }

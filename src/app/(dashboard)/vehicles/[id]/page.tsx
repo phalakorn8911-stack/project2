@@ -17,6 +17,13 @@ const statusMeta: Record<string, { label: string; className: string }> = {
   RETIRED: { label: "ปลดประจำการ", className: "text-muted-foreground bg-muted" },
 }
 
+const fuelTypeLabels: Record<string, string> = {
+  Diesel: "ดีเซล",
+  Gasoline: "เบนซิน",
+  Electric: "ไฟฟ้า",
+  Hybrid: "ไฮบริด",
+}
+
 const urgencyLabels: Record<string, { label: string; className: string }> = {
   LOW: { label: "ปกติ", className: "text-muted-foreground bg-muted" },
   MEDIUM: { label: "ปานกลาง", className: "text-status-parts bg-status-parts/10" },
@@ -103,9 +110,9 @@ export default function VehicleDetailPage() {
   useEffect(() => {
     fetchVehicle()
     fetchHistories()
-    fetch("/api/drivers").then((r) => r.json()).then((d) => setAllDrivers(d)).catch(() => {})
-    fetch("/api/vehicle-types").then((r) => r.json()).then((d) => setVehicleTypes(d)).catch(() => {})
-    fetch("/api/units").then((r) => r.json()).then((d) => setUnits(d)).catch(() => {})
+    fetch("/api/drivers").then((r) => (r.ok ? r.json() : [])).then((d) => setAllDrivers(Array.isArray(d) ? d : [])).catch(() => {})
+    fetch("/api/vehicle-types").then((r) => (r.ok ? r.json() : [])).then((d) => setVehicleTypes(Array.isArray(d) ? d : [])).catch(() => {})
+    fetch("/api/units").then((r) => (r.ok ? r.json() : [])).then((d) => setUnits(Array.isArray(d) ? d : [])).catch(() => {})
   }, [params.id])
 
   const fetchVehicle = () => {
@@ -511,7 +518,7 @@ export default function VehicleDetailPage() {
           </div>
             <div className="flex items-center gap-2">
               <Fuel className="size-4 text-muted-foreground" />
-              <div><p className="text-muted-foreground">เชื้อเพลิง</p><p className="font-medium text-card-foreground">{vehicle.fuelType}</p></div>
+              <div><p className="text-muted-foreground">เชื้อเพลิง</p><p className="font-medium text-card-foreground">{fuelTypeLabels[vehicle.fuelType] ?? vehicle.fuelType}</p></div>
             </div>
           </div>
         )}

@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"
+﻿export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
@@ -18,7 +18,7 @@ export async function GET() {
       model: s.vehicle.model,
       type: s.plan.name,
       dueDate: s.nextDueDate?.toLocaleDateString("th-TH") ?? "-",
-      status: s.status === "OVERDUE" ? "เกินกำหนด" : "ใกล้ถึงกำหนด",
+      status: s.status === "OVERDUE" ? "เน€เธเธดเธเธเธณเธซเธเธ”" : "เนเธเธฅเนเธ–เธถเธเธเธณเธซเธเธ”",
       statusColor: s.status === "OVERDUE" ? "text-destructive bg-destructive/10" : "text-status-due bg-status-due/10",
     }))
 

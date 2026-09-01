@@ -31,7 +31,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     })
   } catch (error) {
     console.error("Update vehicle type error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }
 
@@ -54,6 +54,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     if (error.code === "P2003") {
       return NextResponse.json({ error: "ไม่สามารถลบได้ มีรถที่ใช้ประเภทนี้อยู่" }, { status: 409 })
     }
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }

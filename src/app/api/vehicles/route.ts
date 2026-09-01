@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"
+﻿export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
@@ -31,7 +31,7 @@ export async function GET() {
     )
   } catch (error) {
     console.error("Vehicles API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }
 
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     const { registrationNumber, brand, model, year, vehicleTypeId, unitId, fuelType, currentMileage, status } = body
 
     if (!registrationNumber || !brand || !model || !year || !vehicleTypeId || !unitId) {
-      return NextResponse.json({ error: "กรุณากรอกข้อมูลที่จำเป็น" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเนเธญเธกเธนเธฅเธ—เธตเนเธเธณเน€เธเนเธ" }, { status: 400 })
     }
 
     await pg.connect()
@@ -70,13 +70,13 @@ export async function POST(request: Request) {
       ]
     )
 
-    return NextResponse.json({ id: result.rows[0].id, message: "สร้างยานพาหนะสำเร็จ" }, { status: 201 })
+    return NextResponse.json({ id: result.rows[0].id, message: "เธชเธฃเนเธฒเธเธขเธฒเธเธเธฒเธซเธเธฐเธชเธณเน€เธฃเนเธ" }, { status: 201 })
   } catch (error: any) {
     console.error("Vehicle create error:", error)
     if (error.code === "23505") {
-      return NextResponse.json({ error: "ทะเบียนรถซ้ำ" }, { status: 409 })
+      return NextResponse.json({ error: "เธ—เธฐเน€เธเธตเธขเธเธฃเธ–เธเนเธณ" }, { status: 409 })
     }
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   } finally {
     await pg.end()
   }

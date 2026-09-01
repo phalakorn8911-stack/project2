@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"
+﻿export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
@@ -21,7 +21,7 @@ export async function GET() {
     )
   } catch (error) {
     console.error("Units API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }
 
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const { name, description } = await request.json()
 
     if (!name) {
-      return NextResponse.json({ error: "กรุณากรอกชื่อหน่วย" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเธทเนเธญเธซเธเนเธงเธข" }, { status: 400 })
     }
 
     const unit = await prisma.unit.create({
@@ -40,6 +40,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ id: unit.id, name: unit.name, description: unit.description })
   } catch (error) {
     console.error("Create unit error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }

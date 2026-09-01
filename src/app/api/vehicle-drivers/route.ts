@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"
+﻿export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     const { vehicleId, driverId } = await request.json()
 
     if (!vehicleId || !driverId) {
-      return NextResponse.json({ error: "กรุณาระบุรถและพลขับ" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธฃเธ–เนเธฅเธฐเธเธฅเธเธฑเธ" }, { status: 400 })
     }
 
     const existing = await prisma.vehicleDriver.findUnique({
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     })
 
     if (existing) {
-      return NextResponse.json({ error: "พลขับคนนี้มอบหมายรถคันนี้แล้ว" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฅเธเธฑเธเธเธเธเธตเนเธกเธญเธเธซเธกเธฒเธขเธฃเธ–เธเธฑเธเธเธตเนเนเธฅเนเธง" }, { status: 400 })
     }
 
     const vd = await prisma.vehicleDriver.create({
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ id: vd.id, vehicleId: vd.vehicleId, driverId: vd.driverId })
   } catch (error) {
     console.error("Assign driver error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }
 
@@ -37,7 +37,7 @@ export async function DELETE(request: Request) {
     const driverId = searchParams.get("driverId")
 
     if (!vehicleId || !driverId) {
-      return NextResponse.json({ error: "กรุณาระบุรถและพลขับ" }, { status: 400 })
+      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธฃเธ–เนเธฅเธฐเธเธฅเธเธฑเธ" }, { status: 400 })
     }
 
     await prisma.vehicleDriver.delete({
@@ -47,6 +47,6 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error("Unassign driver error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }

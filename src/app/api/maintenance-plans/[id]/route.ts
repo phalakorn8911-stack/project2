@@ -22,7 +22,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ id: plan.id, name: plan.name })
   } catch (error) {
     console.error("Update maintenance plan error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }
 
@@ -37,6 +37,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     if (error.code === "P2025") {
       return NextResponse.json({ error: "ไม่พบรายการที่ต้องการลบ" }, { status: 404 })
     }
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }
