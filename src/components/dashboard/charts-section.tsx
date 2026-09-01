@@ -40,7 +40,7 @@ export function ChartsSection({ data: initialData }: { data?: any }) {
     setMounted(true)
   }, [])
 
-  if (!mounted || !initialData) {
+  if (!mounted || !initialData?.vehicles) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {[1, 2, 3].map((i) => (

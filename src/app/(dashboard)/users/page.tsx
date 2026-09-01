@@ -142,9 +142,11 @@ export default function UsersPage() {
   }
 
   const updateBatchItem = (index: number, field: keyof UserForm, value: string) => {
-    const updated = [...batchItems]
-    updated[index] = { ...updated[index], [field]: value }
-    setBatchItems(updated)
+    setBatchItems((prev) => {
+      const updated = [...prev]
+      updated[index] = { ...updated[index], [field]: value }
+      return updated
+    })
   }
 
   const handleBatchSave = async () => {
@@ -382,8 +384,12 @@ export default function UsersPage() {
                               type="text"
                               value={item.firstName}
                               onChange={(e) => {
-                                updateBatchItem(idx, "firstName", e.target.value)
-                                updateBatchItem(idx, "name", `${e.target.value} ${item.lastName}`.trim())
+                                setBatchItems((prev) => {
+                                  const updated = [...prev]
+                                  const newFirst = e.target.value
+                                  updated[idx] = { ...updated[idx], firstName: newFirst, name: `${newFirst} ${updated[idx].lastName}`.trim() }
+                                  return updated
+                                })
                               }}
                               className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                               placeholder="ชื่อ"
@@ -395,8 +401,12 @@ export default function UsersPage() {
                               type="text"
                               value={item.lastName}
                               onChange={(e) => {
-                                updateBatchItem(idx, "lastName", e.target.value)
-                                updateBatchItem(idx, "name", `${item.firstName} ${e.target.value}`.trim())
+                                setBatchItems((prev) => {
+                                  const updated = [...prev]
+                                  const newLast = e.target.value
+                                  updated[idx] = { ...updated[idx], lastName: newLast, name: `${updated[idx].firstName} ${newLast}`.trim() }
+                                  return updated
+                                })
                               }}
                               className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                               placeholder="นามสกุล"
@@ -482,8 +492,12 @@ export default function UsersPage() {
                         type="text"
                         value={batchItems[0]?.firstName ?? ""}
                         onChange={(e) => {
-                          updateBatchItem(0, "firstName", e.target.value)
-                          updateBatchItem(0, "name", `${e.target.value} ${batchItems[0]?.lastName ?? ""}`.trim())
+                          setBatchItems((prev) => {
+                            const updated = [...prev]
+                            const newFirst = e.target.value
+                            updated[0] = { ...updated[0], firstName: newFirst, name: `${newFirst} ${updated[0].lastName}`.trim() }
+                            return updated
+                          })
                         }}
                         className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                         placeholder="ชื่อ"
@@ -495,8 +509,12 @@ export default function UsersPage() {
                         type="text"
                         value={batchItems[0]?.lastName ?? ""}
                         onChange={(e) => {
-                          updateBatchItem(0, "lastName", e.target.value)
-                          updateBatchItem(0, "name", `${batchItems[0]?.firstName ?? ""} ${e.target.value}`.trim())
+                          setBatchItems((prev) => {
+                            const updated = [...prev]
+                            const newLast = e.target.value
+                            updated[0] = { ...updated[0], lastName: newLast, name: `${updated[0].firstName} ${newLast}`.trim() }
+                            return updated
+                          })
                         }}
                         className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                         placeholder="นามสกุล"

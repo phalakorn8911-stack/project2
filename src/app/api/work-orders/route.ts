@@ -48,8 +48,8 @@ export async function POST(request: Request) {
     await pg.connect()
 
     const year = new Date().getFullYear()
-    const rand = Math.floor(Math.random() * 900 + 100)
-    const woNumber = `WO-${year}-${rand}`
+    const suffix = crypto.randomUUID().slice(0, 4).toUpperCase()
+    const woNumber = `WO-${year}-${suffix}`
 
     const id = crypto.randomUUID()
     const result = await pg.query(

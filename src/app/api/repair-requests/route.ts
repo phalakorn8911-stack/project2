@@ -42,10 +42,10 @@ export async function POST(request: Request) {
 
     await pg.connect()
 
-    // สร้าง requestNumber แบบสุ่ม
+    // สร้าง requestNumber แบบ UUID 4 หลักท้าย
     const year = new Date().getFullYear()
-    const rand = Math.floor(Math.random() * 900 + 100)
-    const requestNumber = `RR-${year}-${rand}`
+    const suffix = crypto.randomUUID().slice(0, 4).toUpperCase()
+    const requestNumber = `RR-${year}-${suffix}`
 
     const id = crypto.randomUUID()
     const result = await pg.query(
