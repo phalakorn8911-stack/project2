@@ -217,14 +217,19 @@ export default function PartsPage() {
     if (isNaN(qty) || qty <= 0) return;
 
     try {
-      await fetch(`/api/parts/${partId}/stock-adjust`, {
+      const res = await fetch(`/api/parts/${partId}/stock-adjust`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ adjustment: delta * qty }),
       });
-      setAdjustingId(null);
-      setAdjustValue("1");
-      fetchParts();
+      if (res.ok) {
+        setAdjustingId(null);
+        setAdjustValue("1");
+        fetchParts();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || "เกิดข้อผิดพลาด");
+      }
     } catch {
       console.error("Failed to adjust stock");
     }

@@ -63,6 +63,7 @@ export default function WorkOrdersPage() {
   const [showForm, setShowForm] = useState(false)
   const [vehicles, setVehicles] = useState<any[]>([])
   const [mechanics, setMechanics] = useState<any[]>([])
+  const [supervisors, setSupervisors] = useState<any[]>([])
   const [repairRequests, setRepairRequests] = useState<any[]>([])
   const [form, setForm] = useState({ vehicleId: "", supervisorId: "", repairRequestId: "" })
   const [saving, setSaving] = useState(false)
@@ -91,6 +92,7 @@ export default function WorkOrdersPage() {
     fetch("/api/users").then((r) => r.json()).then((d) => {
       const list = Array.isArray(d) ? d : d.users ?? []
       setMechanics(list.filter((u: any) => u.role === "mechanic"))
+      setSupervisors(list.filter((u: any) => u.role === "admin" || u.role === "mechanic"))
     }).catch(() => {})
     fetch("/api/repair-requests").then((r) => r.json()).then((d) => setRepairRequests(Array.isArray(d) ? d : [])).catch(() => {})
   }, [])
@@ -196,7 +198,7 @@ export default function WorkOrdersPage() {
             </select>
             <select value={form.supervisorId} onChange={(e) => setForm({ ...form, supervisorId: e.target.value })} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs">
               <option value="">เลือกผู้ดูแล</option>
-              {mechanics.map((m: any) => <option key={m.id} value={m.id}>{m.name ?? `${m.firstName} ${m.lastName}`}</option>)}
+              {supervisors.map((m: any) => <option key={m.id} value={m.id}>{m.name ?? `${m.firstName} ${m.lastName}`}</option>)}
             </select>
             <select value={form.repairRequestId} onChange={(e) => setForm({ ...form, repairRequestId: e.target.value })} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs">
               <option value="">ใบแจ้งซ่อม (ถ้ามี)</option>
@@ -316,7 +318,7 @@ export default function WorkOrdersPage() {
                 <label className="block text-xs text-muted-foreground mb-1">ผู้ดูแล</label>
                 <select value={editForm.supervisorId} onChange={(e) => setEditForm({ ...editForm, supervisorId: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50">
                   <option value="">ไม่เปลี่ยน</option>
-                  {mechanics.map((m: any) => <option key={m.id} value={m.id}>{m.name ?? `${m.firstName} ${m.lastName}`}</option>)}
+                  {supervisors.map((m: any) => <option key={m.id} value={m.id}>{m.name ?? `${m.firstName} ${m.lastName}`}</option>)}
                 </select>
               </div>
             </div>

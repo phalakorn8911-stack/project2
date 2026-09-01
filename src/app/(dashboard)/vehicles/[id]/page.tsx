@@ -117,20 +117,22 @@ export default function VehicleDetailPage() {
 
   const fetchVehicle = () => {
     fetch(`/api/vehicles/${params.id}`)
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : { error: "ไม่พบยานพาหนะ" }))
       .then((data) => {
         setVehicle(data)
-        setPhotos(data.photos ?? [])
-        setDrivers(data.drivers ?? [])
-        setEditReg(data.registrationNumber)
-        setEditBrand(data.brand ?? "")
-        setEditModel(data.model)
-        setEditYear(data.year)
-        setEditMileage(data.currentMileage)
-        setEditVehicleTypeId(data.vehicleTypeId ?? "")
-        setEditUnitId(data.unitId ?? "")
-        setEditFuelType(data.fuelType ?? "Diesel")
-        setEditStatus(data.status)
+        if (!data.error) {
+          setPhotos(data.photos ?? [])
+          setDrivers(data.drivers ?? [])
+          setEditReg(data.registrationNumber)
+          setEditBrand(data.brand ?? "")
+          setEditModel(data.model)
+          setEditYear(data.year)
+          setEditMileage(data.currentMileage)
+          setEditVehicleTypeId(data.vehicleTypeId ?? "")
+          setEditUnitId(data.unitId ?? "")
+          setEditFuelType(data.fuelType ?? "Diesel")
+          setEditStatus(data.status)
+        }
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -346,10 +348,10 @@ export default function VehicleDetailPage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          lastPerformedDate: editMSLastDate || undefined,
-          lastPerformedMileage: editMSLastMileage ? Number(editMSLastMileage) : undefined,
-          nextDueDate: editMSNextDate || undefined,
-          nextDueMileage: editMSNextMileage ? Number(editMSNextMileage) : undefined,
+          lastPerformedDate: editMSLastDate || null,
+          lastPerformedMileage: editMSLastMileage ? Number(editMSLastMileage) : null,
+          nextDueDate: editMSNextDate || null,
+          nextDueMileage: editMSNextMileage ? Number(editMSNextMileage) : null,
           status: editMSStatus || undefined,
         }),
       })

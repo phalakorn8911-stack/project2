@@ -13,7 +13,7 @@ export async function GET() {
       lowStockParts,
       overdueSchedules,
       dueSoonSchedules,
-      totalPartsCost,
+      totalPartsCostAgg,
       availableVehicles,
       inRepairVehicles,
       waitingPartsVehicles,
@@ -60,7 +60,7 @@ export async function GET() {
     const woCounts: Record<string, number> = {}
     for (const w of workOrdersByStatus) woCounts[w.status] = w._count
 
-    const monthlyCost = Number(totalPartsCost._sum.totalPartsCost ?? 0)
+    const totalPartsCostVal = Number(totalPartsCostAgg._sum.totalPartsCost ?? 0)
 
     return NextResponse.json({
       vehicles: {
@@ -84,7 +84,7 @@ export async function GET() {
       overdueSchedules,
       dueSoonSchedules,
       lowStockCount: lowStockParts.length,
-      monthlyCost,
+      totalPartsCost: totalPartsCostVal,
       vehicleLists: {
         available: availableVehicles.map((v) => ({
           id: v.id,
