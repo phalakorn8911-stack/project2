@@ -27,11 +27,15 @@ export function Header() {
   const router = useRouter()
 
   useEffect(() => {
-    fetch("/api/notifications")
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data) => {
-        const list = Array.isArray(data) ? data : []
-        setUnreadCount(list.filter((n: any) => !n.read).length)
+    Promise.all([
+      fetch("/api/notifications").then((r) => (r.ok ? r.json() : [])),
+      fetch("/api/parts/alerts").then((r) => (r.ok ? r.json() : { lowStock: [] })),
+    ])
+      .then(([notifData, alertData]) => {
+        const list = Array.isArray(notifData) ? notifData : []
+        const unread = list.filter((n: any) => !n.read).length
+        const lowStock = (alertData.lowStock ?? []).length
+        setUnreadCount(unread + lowStock)
       })
       .catch(() => setUnreadCount(0))
   }, [])
