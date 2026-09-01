@@ -45,7 +45,7 @@ export async function POST(request: Request) {
           categoryId: p.categoryId,
           stockQuantity: p.stockQuantity ?? 0,
           minimumQuantity: p.minimumQuantity ?? 0,
-          unitMeasure: p.unitMeasure ?? "เธเธดเนเธ",
+          unitMeasure: p.unitMeasure ?? "ชิ้น",
           unitPrice: p.unitPrice ?? 0,
           vendorId: p.vendorId || null,
         })),
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     const { name, partNumber, categoryId, stockQuantity, minimumQuantity, unitMeasure, unitPrice, vendorId } = body
 
     if (!name || !partNumber || !categoryId || !unitMeasure) {
-      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเธทเนเธญ, เธซเธกเธฒเธขเน€เธฅเธเธญเธฐเนเธซเธฅเน, เธซเธกเธงเธ”เธซเธกเธนเน, เนเธฅเธฐเธซเธเนเธงเธข" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอก UUID ชื่อ, ประเภท, หน่วย, จำนวนขั้นต่ำ" }, { status: 400 })
     }
 
     const part = await prisma.part.create({

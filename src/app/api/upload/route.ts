@@ -12,16 +12,16 @@ export async function POST(request: Request) {
     const isPrimary = formData.get("isPrimary") === "true"
 
     if (!file || !vehicleId) {
-      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเนเธเธฅเนเนเธฅเธฐเธฃเธ–" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณาเลือกไฟล์รูปภาพ" }, { status: 400 })
     }
 
     const allowed = ["image/jpeg", "image/png", "image/webp"]
     if (!allowed.includes(file.type)) {
-      return NextResponse.json({ error: "เนเธกเนเธฃเธญเธเธฃเธฑเธเธเธฃเธฐเน€เธ เธ—เนเธเธฅเนเธเธตเน" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณาเลือกไฟล์รูปภาพ (JPEG, PNG, WebP)" }, { status: 400 })
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: "เนเธเธฅเนเธกเธตเธเธเธฒเธ”เนเธซเธเนเน€เธเธดเธเนเธ (เธชเธนเธเธชเธธเธ” 5MB)" }, { status: 400 })
+      return NextResponse.json({ error: "รูปภาพมีขนาดเกิน 5MB" }, { status: 400 })
     }
 
     const ext = file.name.split(".").pop() ?? "jpg"
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
     if (uploadError) {
       console.error("Upload error:", uploadError)
-      return NextResponse.json({ error: "เธญเธฑเธเนเธซเธฅเธ”เธฅเนเธกเน€เธซเธฅเธง" }, { status: 500 })
+      return NextResponse.json({ error: "อัปโหลดล้มเหลว" }, { status: 500 })
     }
 
     const { data: urlData } = supabase.storage
@@ -67,12 +67,12 @@ export async function DELETE(request: Request) {
     const photoId = searchParams.get("id")
 
     if (!photoId) {
-      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธฃเธซเธฑเธชเธฃเธนเธเธ เธฒเธ" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอก UUID ไฟล์รูปภาพ" }, { status: 400 })
     }
 
     const photo = await prisma.vehiclePhoto.findUnique({ where: { id: photoId } })
     if (!photo) {
-      return NextResponse.json({ error: "เนเธกเนเธเธเธฃเธนเธเธ เธฒเธ" }, { status: 404 })
+      return NextResponse.json({ error: "ไม่พบไฟล์" }, { status: 404 })
     }
 
     const urlParts = photo.photoUrl.split("/vehicle-photos/")
@@ -94,7 +94,7 @@ export async function PATCH(request: Request) {
     const { photoId, vehicleId } = await request.json()
 
     if (!photoId || !vehicleId) {
-      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธฃเธซเธฑเธชเธฃเธนเธเธ เธฒเธเนเธฅเธฐเธฃเธ–" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอก UUID ชื่อไฟล์เดิม" }, { status: 400 })
     }
 
     await prisma.vehiclePhoto.updateMany({

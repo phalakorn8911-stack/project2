@@ -80,12 +80,12 @@ export async function POST(request: Request) {
     const { email, password, name, rank, firstName, lastName, roleId, unitId } = body
 
     if (!email || !password || !name || !roleId) {
-      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธญเธตเน€เธกเธฅ, เธฃเธซเธฑเธชเธเนเธฒเธ, เธเธทเนเธญ, เนเธฅเธฐเธเธ—เธเธฒเธ—" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอก UUID ชื่อ, ประเภท, หน่วย, จำนวนขั้นต่ำ" }, { status: 400 })
     }
 
     const existing = await prisma.user.findUnique({ where: { email } })
     if (existing) {
-      return NextResponse.json({ error: "เธญเธตเน€เธกเธฅเธเธตเนเธ–เธนเธเนเธเนเนเธฅเนเธง" }, { status: 400 })
+      return NextResponse.json({ error: "อีเมลซ้ำ" }, { status: 400 })
     }
 
     const role = await prisma.role.findUnique({ where: { id: roleId } })
@@ -94,7 +94,7 @@ export async function POST(request: Request) {
         where: { role: { name: "admin" } },
       })
       if (adminCount >= 2) {
-        return NextResponse.json({ error: "เธชเธฒเธกเธฒเธฃเธ–เน€เธเธดเนเธก admin เนเธ”เนเธชเธนเธเธชเธธเธ” 2 เธเธเน€เธ—เนเธฒเธเธฑเนเธ" }, { status: 400 })
+        return NextResponse.json({ error: "มีผู้ดูแลระบบ admin แล้ว 2 คน ไม่สามารถเพิ่มได้" }, { status: 400 })
       }
     }
 

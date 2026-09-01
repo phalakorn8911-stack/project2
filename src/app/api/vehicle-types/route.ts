@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     const { name, description, fuelType, weight, seatingCapacity, engineSpec } = await request.json()
 
     if (!name) {
-      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเธทเนเธญเธเธฃเธฐเน€เธ เธ—เธฃเธ–" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอกชื่อประเภท, รายละเอียด" }, { status: 400 })
     }
 
     const type = await prisma.vehicleType.create({

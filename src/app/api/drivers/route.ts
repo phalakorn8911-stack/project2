@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     const { rank, firstName, lastName, photoUrl } = await request.json()
 
     if (!rank || !firstName || !lastName) {
-      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเนเธญเธกเธนเธฅเธ—เธตเนเธเธณเน€เธเนเธ" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอกข้อมูลให้ครบถ้วน" }, { status: 400 })
     }
 
     await pg.connect()

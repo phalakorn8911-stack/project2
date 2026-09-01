@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     const { registrationNumber, brand, model, year, vehicleTypeId, unitId, fuelType, currentMileage, status } = body
 
     if (!registrationNumber || !brand || !model || !year || !vehicleTypeId || !unitId) {
-      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเนเธญเธกเธนเธฅเธ—เธตเนเธเธณเน€เธเนเธ" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอก UUID ยานพาหนะ, UUID ประเภท, ชื่อ, ปี, เชื้อเพลิง, สถานะ, เลขไมล์" }, { status: 400 })
     }
 
     await pg.connect()
@@ -70,11 +70,11 @@ export async function POST(request: Request) {
       ]
     )
 
-    return NextResponse.json({ id: result.rows[0].id, message: "เธชเธฃเนเธฒเธเธขเธฒเธเธเธฒเธซเธเธฐเธชเธณเน€เธฃเนเธ" }, { status: 201 })
+    return NextResponse.json({ id: result.rows[0].id, message: "สร้างยานพาหนะสำเร็จ" }, { status: 201 })
   } catch (error: any) {
     console.error("Vehicle create error:", error)
     if (error.code === "23505") {
-      return NextResponse.json({ error: "เธ—เธฐเน€เธเธตเธขเธเธฃเธ–เธเนเธณ" }, { status: 409 })
+      return NextResponse.json({ error: "ทะเบียนซ้ำ" }, { status: 409 })
     }
     return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   } finally {

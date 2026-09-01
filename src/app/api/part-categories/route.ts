@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   try {
     const { name } = await request.json()
     if (!name?.trim()) {
-      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเธทเนเธญเธซเธกเธงเธ”เธซเธกเธนเน" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอกชื่อประเภท, รายละเอียด" }, { status: 400 })
     }
     const category = await prisma.partCategory.create({ data: { name: name.trim() } })
     return NextResponse.json(category, { status: 201 })

@@ -11,16 +11,16 @@ export async function POST(request: Request) {
     const driverId = formData.get("driverId") as string | null
 
     if (!file || !driverId) {
-      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเนเธเธฅเนเนเธฅเธฐเธฃเธซเธฑเธชเธเธฅเธเธฑเธ" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอก UUID ชื่อไฟล์รูปภาพ" }, { status: 400 })
     }
 
     const allowed = ["image/jpeg", "image/png", "image/webp"]
     if (!allowed.includes(file.type)) {
-      return NextResponse.json({ error: "เนเธกเนเธฃเธญเธเธฃเธฑเธเธเธฃเธฐเน€เธ เธ—เนเธเธฅเนเธเธตเน" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณาเลือกไฟล์รูปภาพ" }, { status: 400 })
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: "เนเธเธฅเนเธกเธตเธเธเธฒเธ”เนเธซเธเนเน€เธเธดเธเนเธ (เธชเธนเธเธชเธธเธ” 5MB)" }, { status: 400 })
+      return NextResponse.json({ error: "รูปภาพมีขนาดเกิน 5MB" }, { status: 400 })
     }
 
     const ext = file.name.split(".").pop() ?? "jpg"
@@ -76,12 +76,12 @@ export async function DELETE(request: Request) {
     const driverId = searchParams.get("driverId")
 
     if (!driverId) {
-      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเธฃเธฐเธเธธเธฃเธซเธฑเธชเธเธฅเธเธฑเธ" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอก UUID ชื่อไฟล์เดิม" }, { status: 400 })
     }
 
     const driver = await prisma.driver.findUnique({ where: { id: driverId } })
     if (!driver || !driver.photoUrl) {
-      return NextResponse.json({ error: "เนเธกเนเธกเธตเธฃเธนเธเธ เธฒเธเนเธซเนเธฅเธ" }, { status: 404 })
+      return NextResponse.json({ error: "ไม่พบรูปภาพ" }, { status: 404 })
     }
 
     const urlParts = driver.photoUrl.split("/driver-photos/")

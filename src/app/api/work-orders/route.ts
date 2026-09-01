@@ -21,7 +21,7 @@ export async function GET() {
         woNumber: wo.woNumber,
         vehicleId: wo.vehicleId,
         vehicleRegistration: wo.vehicle.registrationNumber,
-        issueDescription: wo.repairRequest?.symptoms ?? "เนเธกเนเธฃเธฐเธเธธ",
+        issueDescription: wo.repairRequest?.symptoms ?? "ไม่ระบุอาการ",
         urgency: wo.repairRequest?.urgency ?? "MEDIUM",
         mechanicName: wo.mechanic?.name ?? "-",
         status: wo.status,
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     const { vehicleId, supervisorId, repairRequestId, mechanicId, issueDescription } = await request.json()
 
     if (!vehicleId || !supervisorId) {
-      return NextResponse.json({ error: "เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเธฃเธ–เนเธฅเธฐเธเธนเนเธ”เธนเนเธฅ" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอก UUID ยานพาหนะ, UUID พลขับ" }, { status: 400 })
     }
 
     await pg.connect()
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
       await pg.query(`UPDATE "repair_requests" SET "status" = 'WORK_ORDER_CREATED' WHERE id = $1`, [repairRequestId])
     }
 
-    return NextResponse.json({ id: result.rows[0].id, woNumber: result.rows[0].woNumber, message: "เธชเธฃเนเธฒเธเนเธเธชเธฑเนเธเธเนเธญเธกเธชเธณเน€เธฃเนเธ" }, { status: 201 })
+    return NextResponse.json({ id: result.rows[0].id, woNumber: result.rows[0].woNumber, message: "สร้างใบสั่งซ่อมสำเร็จ" }, { status: 201 })
   } catch (error: any) {
     console.error("Create work order error:", error)
     return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })

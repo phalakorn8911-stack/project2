@@ -9,7 +9,7 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "เนเธกเนเนเธ”เนเธฃเธฑเธเธญเธเธธเธเธฒเธ•" }, { status: 401 })
+      return NextResponse.json({ error: "กรุณาเข้าสู่ระบบ" }, { status: 401 })
     }
 
     const notifications = await prisma.notification.findMany({
