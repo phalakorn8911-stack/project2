@@ -13,7 +13,10 @@ export async function GET() {
     }
 
     const notifications = await prisma.notification.findMany({
-      where: { userId: session.user.id },
+      where: {
+        userId: session.user.id,
+        type: { notIn: ["warning", "low_stock", "out_of_stock"] },
+      },
       orderBy: { createdAt: "desc" },
       take: 50,
     })
