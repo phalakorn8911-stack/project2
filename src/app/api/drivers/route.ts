@@ -4,11 +4,11 @@ import { NextResponse } from "next/server"
 import { Client } from "pg"
 
 export async function GET() {
+  const pg = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  })
   try {
-    const pg = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    })
     await pg.connect()
 
     const driversResult = await pg.query(
@@ -21,8 +21,6 @@ export async function GET() {
        FROM vehicle_drivers vd
        JOIN vehicles v ON v.id = vd.vehicle_id`
     )
-
-    await pg.end()
 
     const vehicleMap = new Map<string, any[]>()
     for (const row of vehiclesResult.rows) {
@@ -48,10 +46,16 @@ export async function GET() {
   } catch (error) {
     console.error("Drivers API error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  } finally {
+    await pg.end()
   }
 }
 
 export async function POST(request: Request) {
+  const pg = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  })
   try {
     const { rank, firstName, lastName, photoUrl } = await request.json()
 
@@ -59,10 +63,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    const pg = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    })
     await pg.connect()
     const result = await pg.query(
       `INSERT INTO drivers (id, rank, first_name, last_name, photo_url)
@@ -70,7 +70,6 @@ export async function POST(request: Request) {
        RETURNING id, rank, first_name, last_name, photo_url`,
       [rank, firstName, lastName, photoUrl || null]
     )
-    await pg.end()
 
     const d = result.rows[0]
     return NextResponse.json({
@@ -83,5 +82,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Create driver error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  } finally {
+    await pg.end()
   }
 }

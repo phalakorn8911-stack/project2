@@ -4,14 +4,14 @@ import { NextResponse } from "next/server"
 import { Client } from "pg"
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const pg = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  })
   try {
     const { id } = await params
     const body = await request.json()
 
-    const pg = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    })
     await pg.connect()
 
     const fields: string[] = []
@@ -36,29 +36,31 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       values
     )
 
-    await pg.end()
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error("Update vehicle history error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  } finally {
+    await pg.end()
   }
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const pg = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  })
   try {
     const { id } = await params
 
-    const pg = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    })
     await pg.connect()
     await pg.query("DELETE FROM vehicle_histories WHERE id = $1", [id])
-    await pg.end()
 
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error("Delete vehicle history error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  } finally {
+    await pg.end()
   }
 }

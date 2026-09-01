@@ -4,11 +4,11 @@ import { NextResponse } from "next/server"
 import { Client } from "pg"
 
 export async function GET() {
+  const pg = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  })
   try {
-    const pg = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    })
     await pg.connect()
     const result = await pg.query(
       `SELECT rr.id, rr."requestNumber", rr."vehicleId", rr."requesterId", rr.symptoms,
@@ -18,15 +18,20 @@ export async function GET() {
        LEFT JOIN vehicles v ON v.id = rr."vehicleId"
        ORDER BY rr."requestNumber" DESC`
     )
-    await pg.end()
     return NextResponse.json(result.rows)
   } catch (error) {
     console.error("Repair requests API error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  } finally {
+    await pg.end()
   }
 }
 
 export async function POST(request: Request) {
+  const pg = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  })
   try {
     const body = await request.json()
     const { vehicleId, requesterId, symptoms, systemCategory, urgency, mileage, photoUrl } = body
@@ -35,10 +40,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "กรุณากรอกข้อมูลที่จำเป็น" }, { status: 400 })
     }
 
-    const pg = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    })
     await pg.connect()
 
     // สร้าง requestNumber อัตโนมัติ
@@ -55,11 +56,11 @@ export async function POST(request: Request) {
       [id, requestNumber, vehicleId, requesterId, symptoms, systemCategory, urgency || "MEDIUM", mileage || 0, "PENDING", photoUrl || null]
     )
 
-    await pg.end()
-
     return NextResponse.json({ id: result.rows[0].id, requestNumber: result.rows[0].requestNumber, message: "สร้างใบแจ้งซ่อมสำเร็จ" }, { status: 201 })
   } catch (error: any) {
     console.error("Repair request create error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  } finally {
+    await pg.end()
   }
 }

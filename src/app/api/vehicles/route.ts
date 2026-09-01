@@ -32,6 +32,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const pg = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  })
   try {
     const body = await request.json()
     const { registrationNumber, brand, model, year, vehicleTypeId, unitId, fuelType, currentMileage, status } = body
@@ -40,10 +44,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "กรุณากรอกข้อมูลที่จำเป็น" }, { status: 400 })
     }
 
-    const pg = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    })
     await pg.connect()
 
     const id = crypto.randomUUID()
@@ -66,8 +66,6 @@ export async function POST(request: Request) {
       ]
     )
 
-    await pg.end()
-
     return NextResponse.json({ id: result.rows[0].id, message: "สร้างยานพาหนะสำเร็จ" }, { status: 201 })
   } catch (error: any) {
     console.error("Vehicle create error:", error)
@@ -75,5 +73,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "ทะเบียนรถซ้ำ" }, { status: 409 })
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  } finally {
+    await pg.end()
   }
 }

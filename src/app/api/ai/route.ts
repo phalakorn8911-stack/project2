@@ -4,14 +4,14 @@ import { NextResponse } from "next/server"
 import { Client } from "pg"
 
 export async function POST(request: Request) {
+  const pg = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  })
   try {
     const { question } = await request.json()
     const q = (question ?? "").toLowerCase()
 
-    const pg = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    })
     await pg.connect()
 
     const [
@@ -31,8 +31,6 @@ export async function POST(request: Request) {
       pg.query(`SELECT COUNT(*)::int AS cnt FROM "maintenance_schedules" WHERE "status" = 'OVERDUE'`),
       pg.query(`SELECT COUNT(*)::int AS cnt FROM "maintenance_schedules" WHERE "status" = 'DUE_SOON'`),
     ])
-
-    await pg.end()
 
     const totalVehicles = totalResult.rows[0].cnt
 
@@ -65,6 +63,8 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("AI API error:", error)
     return NextResponse.json({ reply: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง" })
+  } finally {
+    await pg.end()
   }
 }
 

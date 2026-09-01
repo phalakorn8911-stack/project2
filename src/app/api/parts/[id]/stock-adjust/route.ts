@@ -4,6 +4,10 @@ import { NextResponse } from "next/server"
 import { Client } from "pg"
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const pg = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  })
   try {
     const { id } = await params
     const { adjustment, reason, performedById } = await request.json()
@@ -12,21 +16,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "Adjustment value is required" }, { status: 400 })
     }
 
-    const pg = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    })
     await pg.connect()
 
     const current = await pg.query(`SELECT "stockQuantity" FROM parts WHERE id = $1`, [id])
     if (current.rows.length === 0) {
-      await pg.end()
       return NextResponse.json({ error: "Part not found" }, { status: 404 })
     }
 
     const newQty = current.rows[0].stockQuantity + adjustment
     if (newQty < 0) {
-      await pg.end()
       return NextResponse.json({ error: "Stock cannot be negative" }, { status: 400 })
     }
 
@@ -46,11 +44,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       ]
     )
 
-    await pg.end()
-
     return NextResponse.json({ ok: true, stockQuantity: newQty, adjustment })
   } catch (error) {
     console.error("Stock adjust error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  } finally {
+    await pg.end()
   }
 }

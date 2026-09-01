@@ -145,8 +145,8 @@ export default function MaintenancePlansPage() {
       name: form.name.trim(),
       vehicleTypeId: form.vehicleTypeId || null,
       intervalMonths: form.intervalMonths ? parseInt(form.intervalMonths) : null,
-      intervalMileage: form.intervalMileage ? parseInt(form.intervalMileage) : null,
-      intervalHours: form.intervalHours ? parseInt(form.intervalHours) : null,
+      intervalMileage: form.intervalMileage ? parseFloat(form.intervalMileage) : null,
+      intervalHours: form.intervalHours ? parseFloat(form.intervalHours) : null,
     }
 
     try {
@@ -367,7 +367,7 @@ export default function MaintenancePlansPage() {
               disabled={saving || !form.name.trim() || !form.vehicleTypeId}
               className={cn(
                 "rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground transition-colors",
-                saving || !form.name.trim() ? "opacity-50 cursor-not-allowed" : "hover:bg-primary/90"
+                saving || !form.name.trim() || !form.vehicleTypeId ? "opacity-50 cursor-not-allowed" : "hover:bg-primary/90"
               )}
             >
               <Save className="inline h-4 w-4 mr-1" />
@@ -478,7 +478,7 @@ export default function MaintenancePlansPage() {
                       disabled={saving || !form.name.trim() || !form.vehicleTypeId}
                       className={cn(
                         "rounded-lg bg-primary px-3 py-1 text-xs text-primary-foreground transition-colors",
-                        saving || !form.name.trim() ? "opacity-50 cursor-not-allowed" : "hover:bg-primary/90"
+                        saving || !form.name.trim() || !form.vehicleTypeId ? "opacity-50 cursor-not-allowed" : "hover:bg-primary/90"
                       )}
                     >
                       <Save className="inline h-3 w-3 mr-1" />

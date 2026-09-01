@@ -6,6 +6,10 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 
 export async function GET(request: Request) {
+  const pg = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  })
   try {
     const { searchParams } = new URL(request.url)
     const vehicleId = searchParams.get("vehicleId")
@@ -14,10 +18,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Missing vehicleId" }, { status: 400 })
     }
 
-    const pg = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    })
     await pg.connect()
 
     const result = await pg.query(
@@ -28,8 +28,6 @@ export async function GET(request: Request) {
        ORDER BY vh.created_at DESC`,
       [vehicleId]
     )
-
-    await pg.end()
 
     return NextResponse.json(
       result.rows.map((r) => ({
@@ -51,10 +49,16 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Vehicle histories API error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  } finally {
+    await pg.end()
   }
 }
 
 export async function POST(request: Request) {
+  const pg = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  })
   try {
     const session = await getServerSession(authOptions)
     const body = await request.json()
@@ -63,10 +67,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing vehicleId" }, { status: 400 })
     }
 
-    const pg = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    })
     await pg.connect()
 
     const result = await pg.query(
@@ -89,8 +89,6 @@ export async function POST(request: Request) {
       ]
     )
 
-    await pg.end()
-
     const r = result.rows[0]
     return NextResponse.json({
       id: r.id,
@@ -109,5 +107,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Create vehicle history error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  } finally {
+    await pg.end()
   }
 }

@@ -5,6 +5,10 @@ import { prisma } from "@/lib/prisma"
 import { Client } from "pg"
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const pg = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  })
   try {
     const { id } = await params
     const vehicle = await prisma.vehicle.findUnique({
@@ -31,10 +35,6 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: "Vehicle not found" }, { status: 404 })
     }
 
-    const pg = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    })
     await pg.connect()
     const driversResult = await pg.query(
       `SELECT d.id, d.rank, d.first_name, d.last_name, d.photo_url
@@ -43,7 +43,6 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
        WHERE vd.vehicle_id = $1`,
       [id]
     )
-    await pg.end()
 
     return NextResponse.json({
       id: vehicle.id,
@@ -92,6 +91,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   } catch (error) {
     console.error("Vehicle detail API error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  } finally {
+    await pg.end()
   }
 }
 
@@ -121,13 +122,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const pg = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  })
   try {
     const { id } = await params
 
-    const pg = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    })
     await pg.connect()
 
     await pg.query(`DELETE FROM vehicle_drivers WHERE vehicle_id = $1`, [id])
@@ -139,11 +140,11 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     await pg.query(`DELETE FROM maintenance_schedules WHERE "vehicleId" = $1`, [id])
     await pg.query(`DELETE FROM vehicles WHERE id = $1`, [id])
 
-    await pg.end()
-
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error("Delete vehicle error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  } finally {
+    await pg.end()
   }
 }
