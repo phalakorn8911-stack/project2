@@ -33,6 +33,7 @@ export function SummaryCards({ data }: { data?: any }) {
       { label: "เกินรอบซ่อม", value: String(data.vehicles.overdue), change: "", trend: "neutral", icon: AlertTriangle, color: "text-status-overdue", bgColor: "bg-status-overdue/10", href: "/vehicles?status=OVERDUE" },
       { label: "รออนุมัติ", value: String(data.pendingRepairs), change: "รอการดำเนินการ", trend: "neutral", icon: FileText, color: "text-info", bgColor: "bg-info/10", href: "/vehicles" },
       { label: "งานค้าง", value: String(data.workOrders.open), change: "", trend: "neutral", icon: Ban, color: "text-destructive", bgColor: "bg-destructive/10", href: "/work-orders" },
+      { label: "รถปลดระวาง", value: String(data.vehicles.retired), change: "", trend: "neutral", icon: Ban, color: "text-muted-foreground", bgColor: "bg-muted/50", href: "/vehicles?status=RETIRED" },
       { label: "ค่าอะไหล่สะสม", value: `฿${(data.totalPartsCost / 1000).toFixed(0)}K`, change: "", trend: "neutral", icon: DollarSign, color: "text-accent", bgColor: "bg-accent/10", href: "/parts" },
       { label: "อะไหล่ใกล้หมด", value: String(data.lowStockCount), change: "ต้องสั่งเพิ่ม", trend: "neutral", icon: AlertTriangle, color: "text-destructive", bgColor: "bg-destructive/10", href: "/parts" },
     ])
@@ -42,7 +43,7 @@ export function SummaryCards({ data }: { data?: any }) {
   if (loading) {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-        {Array.from({ length: 11 }).map((_, i) => (
+        {Array.from({ length: 12 }).map((_, i) => (
           <div key={i} className="rounded-lg border border-border bg-card p-4 animate-pulse">
             <div className="h-8 w-8 rounded-lg bg-muted mb-3" />
             <div className="h-7 w-16 rounded bg-muted mb-1" />
