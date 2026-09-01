@@ -57,10 +57,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
+    await prisma.workOrder.updateMany({ where: { repairRequestId: id }, data: { repairRequestId: null } })
     await prisma.repairRequest.delete({ where: { id } })
     return NextResponse.json({ ok: true })
-  } catch (error) {
+  } catch (error: any) {
     console.error("Delete repair request error:", error)
+    if (error.code === "P2025") {
+      return NextResponse.json({ error: "ไม่พบรายการที่ต้องการลบ" }, { status: 404 })
+    }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

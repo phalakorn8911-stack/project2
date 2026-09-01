@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     const vehicleId = searchParams.get("vehicleId")
 
     if (!vehicleId) {
-      return NextResponse.json({ error: "Missing vehicleId" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณาระบุรหัสรถ" }, { status: 400 })
     }
 
     await pg.connect()
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     const body = await request.json()
 
     if (!body.vehicleId) {
-      return NextResponse.json({ error: "Missing vehicleId" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณาระบุรหัสรถ" }, { status: 400 })
     }
 
     await pg.connect()

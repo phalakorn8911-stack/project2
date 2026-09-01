@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     const { vehicleId, driverId } = await request.json()
 
     if (!vehicleId || !driverId) {
-      return NextResponse.json({ error: "Missing vehicleId or driverId" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณาระบุรถและพลขับ" }, { status: 400 })
     }
 
     const existing = await prisma.vehicleDriver.findUnique({
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     })
 
     if (existing) {
-      return NextResponse.json({ error: "Driver already assigned to this vehicle" }, { status: 400 })
+      return NextResponse.json({ error: "พลขับคนนี้มอบหมายรถคันนี้แล้ว" }, { status: 400 })
     }
 
     const vd = await prisma.vehicleDriver.create({
@@ -37,7 +37,7 @@ export async function DELETE(request: Request) {
     const driverId = searchParams.get("driverId")
 
     if (!vehicleId || !driverId) {
-      return NextResponse.json({ error: "Missing vehicleId or driverId" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณาระบุรถและพลขับ" }, { status: 400 })
     }
 
     await prisma.vehicleDriver.delete({

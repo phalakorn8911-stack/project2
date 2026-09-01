@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     const { name, vehicleTypeId, intervalMonths, intervalMileage, intervalHours } = await request.json()
 
     if (!name || !vehicleTypeId) {
-      return NextResponse.json({ error: "Name and vehicle type are required" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอกชื่อและเลือกประเภทรถ" }, { status: 400 })
     }
 
     const plan = await prisma.maintenancePlan.create({

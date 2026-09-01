@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     const { name, description, fuelType, weight, seatingCapacity, engineSpec } = await request.json()
 
     if (!name) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอกชื่อประเภทรถ" }, { status: 400 })
     }
 
     const type = await prisma.vehicleType.create({

@@ -13,19 +13,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const { adjustment, reason, performedById } = await request.json()
 
     if (adjustment === undefined || typeof adjustment !== "number") {
-      return NextResponse.json({ error: "Adjustment value is required" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณาระบุจำนวนที่ต้องการปรับ" }, { status: 400 })
     }
 
     await pg.connect()
 
     const current = await pg.query(`SELECT "stockQuantity" FROM parts WHERE id = $1`, [id])
     if (current.rows.length === 0) {
-      return NextResponse.json({ error: "Part not found" }, { status: 404 })
+      return NextResponse.json({ error: "ไม่พบอะไหล่" }, { status: 404 })
     }
 
     const newQty = current.rows[0].stockQuantity + adjustment
     if (newQty < 0) {
-      return NextResponse.json({ error: "Stock cannot be negative" }, { status: 400 })
+      return NextResponse.json({ error: "สต็อกไม่สามารถติดลบได้" }, { status: 400 })
     }
 
     await pg.query(`UPDATE parts SET "stockQuantity" = $1 WHERE id = $2`, [newQty, id])

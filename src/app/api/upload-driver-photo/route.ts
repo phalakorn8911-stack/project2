@@ -11,16 +11,16 @@ export async function POST(request: Request) {
     const driverId = formData.get("driverId") as string | null
 
     if (!file || !driverId) {
-      return NextResponse.json({ error: "Missing file or driverId" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณาเลือกไฟล์และรหัสพลขับ" }, { status: 400 })
     }
 
     const allowed = ["image/jpeg", "image/png", "image/webp"]
     if (!allowed.includes(file.type)) {
-      return NextResponse.json({ error: "File type not allowed" }, { status: 400 })
+      return NextResponse.json({ error: "ไม่รองรับประเภทไฟล์นี้" }, { status: 400 })
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 })
+      return NextResponse.json({ error: "ไฟล์มีขนาดใหญ่เกินไป (สูงสุด 5MB)" }, { status: 400 })
     }
 
     const ext = file.name.split(".").pop() ?? "jpg"
@@ -73,12 +73,12 @@ export async function DELETE(request: Request) {
     const driverId = searchParams.get("driverId")
 
     if (!driverId) {
-      return NextResponse.json({ error: "Missing driverId" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณาระบุรหัสพลขับ" }, { status: 400 })
     }
 
     const driver = await prisma.driver.findUnique({ where: { id: driverId } })
     if (!driver || !driver.photoUrl) {
-      return NextResponse.json({ error: "No photo to delete" }, { status: 404 })
+      return NextResponse.json({ error: "ไม่มีรูปภาพให้ลบ" }, { status: 404 })
     }
 
     const urlParts = driver.photoUrl.split("/driver-photos/")

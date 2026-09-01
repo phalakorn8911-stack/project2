@@ -12,16 +12,16 @@ export async function POST(request: Request) {
     const isPrimary = formData.get("isPrimary") === "true"
 
     if (!file || !vehicleId) {
-      return NextResponse.json({ error: "Missing file or vehicleId" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณาเลือกไฟล์และรถ" }, { status: 400 })
     }
 
     const allowed = ["image/jpeg", "image/png", "image/webp"]
     if (!allowed.includes(file.type)) {
-      return NextResponse.json({ error: "File type not allowed" }, { status: 400 })
+      return NextResponse.json({ error: "ไม่รองรับประเภทไฟล์นี้" }, { status: 400 })
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 })
+      return NextResponse.json({ error: "ไฟล์มีขนาดใหญ่เกินไป (สูงสุด 5MB)" }, { status: 400 })
     }
 
     const ext = file.name.split(".").pop() ?? "jpg"
@@ -67,12 +67,12 @@ export async function DELETE(request: Request) {
     const photoId = searchParams.get("id")
 
     if (!photoId) {
-      return NextResponse.json({ error: "Missing photo id" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณาระบุรหัสรูปภาพ" }, { status: 400 })
     }
 
     const photo = await prisma.vehiclePhoto.findUnique({ where: { id: photoId } })
     if (!photo) {
-      return NextResponse.json({ error: "Photo not found" }, { status: 404 })
+      return NextResponse.json({ error: "ไม่พบรูปภาพ" }, { status: 404 })
     }
 
     const urlParts = photo.photoUrl.split("/vehicle-photos/")
@@ -94,7 +94,7 @@ export async function PATCH(request: Request) {
     const { photoId, vehicleId } = await request.json()
 
     if (!photoId || !vehicleId) {
-      return NextResponse.json({ error: "Missing photoId or vehicleId" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณาระบุรหัสรูปภาพและรถ" }, { status: 400 })
     }
 
     await prisma.vehiclePhoto.updateMany({

@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     const { name, partNumber, categoryId, stockQuantity, minimumQuantity, unitMeasure, unitPrice, vendorId } = body
 
     if (!name || !partNumber || !categoryId || !unitMeasure) {
-      return NextResponse.json({ error: "Name, part number, category, and unit are required" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอกชื่อ, หมายเลขอะไหล่, หมวดหมู่, และหน่วย" }, { status: 400 })
     }
 
     const part = await prisma.part.create({

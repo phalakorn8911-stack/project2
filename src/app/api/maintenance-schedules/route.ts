@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     const { planId, vehicleId, lastPerformedDate, lastPerformedMileage, nextDueDate, nextDueMileage } = await request.json()
 
     if (!planId || !vehicleId) {
-      return NextResponse.json({ error: "Plan ID and Vehicle ID are required" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณาเลือกแผนและรถ" }, { status: 400 })
     }
 
     const existing = await prisma.maintenanceSchedule.findFirst({
