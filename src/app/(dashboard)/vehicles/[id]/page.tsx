@@ -504,7 +504,7 @@ export default function VehicleDetailPage() {
                   <option value="OUT_OF_SERVICE">ใช้งานไม่ได้</option>
                   <option value="DUE_SOON">ใกล้รอบซ่อม</option>
                   <option value="OVERDUE">เกินรอบซ่อม</option>
-                  <option value="RETIRED">ปลดระวาง</option>
+                  <option value="RETIRED">ปลดประจำการ</option>
                 </select>
               </div>
             </div>
