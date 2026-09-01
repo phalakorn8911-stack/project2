@@ -102,6 +102,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const { id } = await params
     const body = await request.json()
 
+    const existing = await prisma.vehicle.findUnique({ where: { id } })
+    if (!existing) {
+      return NextResponse.json({ error: "ไม่พบยานพาหนะ" }, { status: 404 })
+    }
+
     const vehicle = await prisma.vehicle.update({
       where: { id },
       data: {

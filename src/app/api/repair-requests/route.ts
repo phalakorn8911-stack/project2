@@ -37,16 +37,15 @@ export async function POST(request: Request) {
     const { vehicleId, requesterId, symptoms, systemCategory, urgency, mileage, photoUrl } = body
 
     if (!vehicleId || !requesterId || !symptoms || !systemCategory) {
-      return NextResponse.json({ error: "กรุณากรอก UUID ยานพาหนะ, อาการ, ประเภทระบบ, ความเร่งด่วน" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอกยานพาหนะ, อาการ, ประเภทระบบ, ความเร่งด่วน" }, { status: 400 })
     }
 
     await pg.connect()
 
-    // สร้าง requestNumber แบบอัตโนมัติ
-    const countResult = await pg.query(`SELECT COUNT(*)::int as cnt FROM "repair_requests"`)
-    const nextNum = countResult.rows[0].cnt + 1
+    // สร้าง requestNumber แบบสุ่ม
     const year = new Date().getFullYear()
-    const requestNumber = `RR-${year}-${String(nextNum).padStart(3, "0")}`
+    const rand = Math.floor(Math.random() * 900 + 100)
+    const requestNumber = `RR-${year}-${rand}`
 
     const id = crypto.randomUUID()
     const result = await pg.query(

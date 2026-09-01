@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     const { registrationNumber, brand, model, year, vehicleTypeId, unitId, fuelType, currentMileage, status } = body
 
     if (!registrationNumber || !brand || !model || !year || !vehicleTypeId || !unitId) {
-      return NextResponse.json({ error: "กรุณากรอก UUID ยานพาหนะ, UUID ประเภท, ชื่อ, ปี, เชื้อเพลิง, สถานะ, เลขไมล์" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอกทะเบียน, ยี่ห้อ, รุ่น, ปี, ประเภทรถ, หน่วยงาน" }, { status: 400 })
     }
 
     await pg.connect()

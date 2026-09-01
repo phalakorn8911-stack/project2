@@ -8,6 +8,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const { id } = await params
     const body = await request.json()
 
+    const existing = await prisma.vehicleType.findUnique({ where: { id } })
+    if (!existing) {
+      return NextResponse.json({ error: "ไม่พบประเภทยานพาหนะ" }, { status: 404 })
+    }
+
     const type = await prisma.vehicleType.update({
       where: { id },
       data: {

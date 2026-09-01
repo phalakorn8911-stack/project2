@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     const { email, password, name, rank, firstName, lastName, roleId, unitId } = body
 
     if (!email || !password || !name || !roleId) {
-      return NextResponse.json({ error: "กรุณากรอก UUID ชื่อ, ประเภท, หน่วย, จำนวนขั้นต่ำ" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอกอีเมล, รหัสผ่าน, ชื่อ, และบทบาท" }, { status: 400 })
     }
 
     const existing = await prisma.user.findUnique({ where: { email } })

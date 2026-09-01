@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     const { planId, vehicleId, lastPerformedDate, lastPerformedMileage, nextDueDate, nextDueMileage } = await request.json()
 
     if (!planId || !vehicleId) {
-      return NextResponse.json({ error: "กรุณากรอก UUID ประเภท, ชื่อ, วันที่เริ่ม, สิ้นสุด, สถานะ" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอกแผนซ่อมบำรุง และยานพาหนะ" }, { status: 400 })
     }
 
     const existing = await prisma.maintenanceSchedule.findFirst({
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     })
 
     if (existing) {
-      return NextResponse.json({ error: "UUID ประเภทหรือ UUID พลขับซ้ำ" }, { status: 400 })
+      return NextResponse.json({ error: "มีตารางบำรุงรักษาคันนี้แผนนี้อยู่แล้ว" }, { status: 400 })
     }
 
     const schedule = await prisma.maintenanceSchedule.create({

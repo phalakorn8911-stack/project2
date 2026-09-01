@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const { name, description } = await request.json()
 
     if (!name) {
-      return NextResponse.json({ error: "กรุณากรอกชื่อ unit" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอกชื่อหน่วยงาน" }, { status: 400 })
     }
 
     const unit = await prisma.unit.create({

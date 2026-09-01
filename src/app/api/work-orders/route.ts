@@ -42,15 +42,14 @@ export async function POST(request: Request) {
     const { vehicleId, supervisorId, repairRequestId, mechanicId, issueDescription } = await request.json()
 
     if (!vehicleId || !supervisorId) {
-      return NextResponse.json({ error: "กรุณากรอก UUID ยานพาหนะ, UUID พลขับ" }, { status: 400 })
+      return NextResponse.json({ error: "กรุณากรอกยานพาหนะ, ผู้ควบคุม" }, { status: 400 })
     }
 
     await pg.connect()
 
-    const countResult = await pg.query(`SELECT COUNT(*)::int as cnt FROM "work_orders"`)
-    const nextNum = countResult.rows[0].cnt + 1
     const year = new Date().getFullYear()
-    const woNumber = `WO-${year}-${String(nextNum).padStart(3, "0")}`
+    const rand = Math.floor(Math.random() * 900 + 100)
+    const woNumber = `WO-${year}-${rand}`
 
     const id = crypto.randomUUID()
     const result = await pg.query(
