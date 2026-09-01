@@ -23,38 +23,49 @@ export function DataTables() {
   const [lowStockParts, setLowStockParts] = useState<LowStock[]>([])
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/due-maintenance").then((r) => r.json()),
-      fetch("/api/work-orders").then((r) => r.json()),
-      fetch("/api/parts").then((r) => r.json()),
-    ]).then(([dueData, woData, partsData]) => {
-      setDueMaintenance(dueData)
-      setLowStockParts(
-        partsData
-          .filter((p: any) => p.stockQuantity <= p.minimumQuantity)
-          .map((p: any) => ({
-            part: p.name,
-            code: p.partNumber,
-            stock: p.stockQuantity,
-            min: p.minimumQuantity,
-            status: p.stockQuantity <= p.minimumQuantity / 2 ? "วิกฤติ" : "ใกล้หมด",
-            statusColor: p.stockQuantity <= p.minimumQuantity / 2 ? "text-destructive bg-destructive/10" : "text-status-parts bg-status-parts/10",
-          }))
-      )
-      setUrgentRepairs(
-        woData
-          .filter((wo: any) => wo.status === "IN_PROGRESS" || wo.urgency === "EMERGENCY")
-          .slice(0, 5)
-          .map((wo: any) => ({
-            vehicleId: wo.vehicleId || "",
-            vehicle: wo.vehicleRegistration,
-            issue: wo.issueDescription,
-            priority: wo.urgency === "EMERGENCY" ? "สูงมาก" : wo.urgency === "HIGH" ? "สูง" : "ปานกลาง",
-            priorityColor: wo.urgency === "EMERGENCY" || wo.urgency === "HIGH" ? "text-destructive bg-destructive/10" : "text-status-parts bg-status-parts/10",
-            assignedTo: wo.mechanicName,
-          }))
-      )
-    }).catch(() => {})
+    fetch("/api/due-maintenance")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => setDueMaintenance(Array.isArray(data) ? data : []))
+      .catch(() => setDueMaintenance([]))
+
+    fetch("/api/work-orders")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (!Array.isArray(data)) return setUrgentRepairs([])
+        setUrgentRepairs(
+          data
+            .filter((wo: any) => wo.status !== "COMPLETED" && wo.status !== "CANCELLED" && (wo.status === "IN_PROGRESS" || wo.urgency === "EMERGENCY" || wo.urgency === "HIGH"))
+            .slice(0, 5)
+            .map((wo: any) => ({
+              vehicleId: wo.vehicleId || "",
+              vehicle: wo.vehicleRegistration,
+              issue: wo.issueDescription,
+              priority: wo.urgency === "EMERGENCY" ? "สูงมาก" : wo.urgency === "HIGH" ? "สูง" : "ปานกลาง",
+              priorityColor: wo.urgency === "EMERGENCY" || wo.urgency === "HIGH" ? "text-destructive bg-destructive/10" : "text-status-parts bg-status-parts/10",
+              assignedTo: wo.mechanicName,
+            }))
+        )
+      })
+      .catch(() => setUrgentRepairs([]))
+
+    fetch("/api/parts")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        if (!Array.isArray(data)) return setLowStockParts([])
+        setLowStockParts(
+          data
+            .filter((p: any) => p.stockQuantity <= p.minimumQuantity)
+            .map((p: any) => ({
+              part: p.name,
+              code: p.partNumber,
+              stock: p.stockQuantity,
+              min: p.minimumQuantity,
+              status: p.stockQuantity <= p.minimumQuantity / 2 ? "วิกฤติ" : "ใกล้หมด",
+              statusColor: p.stockQuantity <= p.minimumQuantity / 2 ? "text-destructive bg-destructive/10" : "text-status-parts bg-status-parts/10",
+            }))
+        )
+      })
+      .catch(() => setLowStockParts([]))
   }, [])
 
   return (

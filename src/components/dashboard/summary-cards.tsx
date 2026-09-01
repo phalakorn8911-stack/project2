@@ -32,7 +32,7 @@ export function SummaryCards({ data }: { data?: any }) {
       { label: "ใกล้รอบซ่อม", value: String(data.vehicles.dueSoon), change: "", trend: "neutral", icon: Clock, color: "text-status-due", bgColor: "bg-status-due/10", href: "/vehicles?status=DUE_SOON" },
       { label: "เกินรอบซ่อม", value: String(data.vehicles.overdue), change: "", trend: "neutral", icon: AlertTriangle, color: "text-status-overdue", bgColor: "bg-status-overdue/10", href: "/vehicles?status=OVERDUE" },
       { label: "รออนุมัติ", value: String(data.pendingRepairs), change: "รอการดำเนินการ", trend: "neutral", icon: FileText, color: "text-info", bgColor: "bg-info/10", href: "/vehicles" },
-      { label: "งานซ่อมค้าง", value: String(data.workOrders.inProgress), change: "", trend: "neutral", icon: Ban, color: "text-destructive", bgColor: "bg-destructive/10", href: "/vehicles?status=IN_REPAIR" },
+      { label: "งานค้าง", value: String(data.workOrders.open), change: "", trend: "neutral", icon: Ban, color: "text-destructive", bgColor: "bg-destructive/10", href: "/work-orders" },
       { label: "ค่าอะไหล่สะสม", value: `฿${(data.monthlyCost / 1000).toFixed(0)}K`, change: "", trend: "neutral", icon: DollarSign, color: "text-accent", bgColor: "bg-accent/10", href: "/parts" },
       { label: "อะไหล่ใกล้หมด", value: String(data.lowStockCount), change: "ต้องสั่งเพิ่ม", trend: "neutral", icon: AlertTriangle, color: "text-destructive", bgColor: "bg-destructive/10", href: "/parts" },
     ])
