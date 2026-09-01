@@ -138,7 +138,7 @@ export default function VehicleTypesPage() {
             </div>
             <div>
               <label className="mb-1 block text-xs text-muted-foreground">เชื้อเพลิง</label>
-              <input value={addForm.fuelType} onChange={(e) => setAddForm({ ...addForm, fuelType: e.target.value })} placeholder="Diesel, Gasoline..." className={cn(inputClass, "rounded-lg px-3 py-2 bg-muted")} />
+              <input value={addForm.fuelType} onChange={(e) => setAddForm({ ...addForm, fuelType: e.target.value })} placeholder="ดีเซล, เบนซิน..." className={cn(inputClass, "rounded-lg px-3 py-2 bg-muted")} />
             </div>
             <div>
               <label className="mb-1 block text-xs text-muted-foreground">น้ำหนัก</label>

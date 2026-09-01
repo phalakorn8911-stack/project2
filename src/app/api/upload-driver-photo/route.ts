@@ -55,9 +55,12 @@ export async function POST(request: Request) {
         connectionString: process.env.DATABASE_URL,
         ssl: { rejectUnauthorized: false },
       })
-      await pg.connect()
-      await pg.query('UPDATE drivers SET photo_url = $1 WHERE id = $2', [photoUrl, driverId])
-      await pg.end()
+      try {
+        await pg.connect()
+        await pg.query('UPDATE drivers SET photo_url = $1 WHERE id = $2', [photoUrl, driverId])
+      } finally {
+        await pg.end()
+      }
     }
 
     return NextResponse.json({ photoUrl })
@@ -97,9 +100,12 @@ export async function DELETE(request: Request) {
         connectionString: process.env.DATABASE_URL,
         ssl: { rejectUnauthorized: false },
       })
-      await pg.connect()
-      await pg.query('UPDATE drivers SET photo_url = NULL WHERE id = $1', [driverId])
-      await pg.end()
+      try {
+        await pg.connect()
+        await pg.query('UPDATE drivers SET photo_url = NULL WHERE id = $1', [driverId])
+      } finally {
+        await pg.end()
+      }
     }
 
     return NextResponse.json({ ok: true })

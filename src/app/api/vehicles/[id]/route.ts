@@ -55,6 +55,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       currentMileage: vehicle.currentMileage,
       status: vehicle.status,
       unit: vehicle.unit.name,
+      unitId: vehicle.unitId,
       vehicleType: vehicle.vehicleType.name,
       vehicleTypeId: vehicle.vehicleTypeId,
       photos: vehicle.photos.map((p) => ({

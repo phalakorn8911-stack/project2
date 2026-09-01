@@ -605,7 +605,7 @@ export default function VehicleDetailPage() {
                   <div className="relative max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
                     <img
                       src={photos.find((p) => p.id === selectedPhoto)?.photoUrl}
-                      alt="Vehicle photo"
+                      alt="รูปยานพาหนะ"
                       className="w-full rounded-xl object-contain max-h-[80vh]"
                     />
                     <button
@@ -662,7 +662,7 @@ export default function VehicleDetailPage() {
                   >
                     <img
                       src={photo.photoUrl}
-                      alt="Vehicle"
+                      alt="ยานพาหนะ"
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2">

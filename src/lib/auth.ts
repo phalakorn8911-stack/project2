@@ -8,17 +8,20 @@ async function findUserByEmail(email: string) {
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
   })
-  await pg.connect()
-  const result = await pg.query(
-    `SELECT u.id, u.email, u.password, u.name, u.rank, u.first_name, u.last_name, u.status, u."unitId",
-            r.name as role_name
-     FROM users u
-     JOIN roles r ON r.id = u."roleId"
-     WHERE u.email = $1`,
-    [email]
-  )
-  await pg.end()
-  return result.rows[0] || null
+  try {
+    await pg.connect()
+    const result = await pg.query(
+      `SELECT u.id, u.email, u.password, u.name, u.rank, u.first_name, u.last_name, u.status, u."unitId",
+              r.name as role_name
+       FROM users u
+       JOIN roles r ON r.id = u."roleId"
+       WHERE u.email = $1`,
+      [email]
+    )
+    return result.rows[0] || null
+  } finally {
+    await pg.end()
+  }
 }
 
 export const authOptions: NextAuthOptions = {
