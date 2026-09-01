@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
     if (uploadError) {
       console.error("Upload error:", uploadError)
-      return NextResponse.json({ error: "อัปโหลดล้มเหลว: " + uploadError.message }, { status: 500 })
+      return NextResponse.json({ error: "อัปโหลดล้มเหลว" }, { status: 500 })
     }
 
     const { data: urlData } = supabase.storage

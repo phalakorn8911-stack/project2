@@ -43,7 +43,7 @@ export default function ReportsPage() {
         </button>
       </div>
 
-      {dashData && (
+      {dashData?.vehicles && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatCard icon={<Truck className="size-5" />} label="ยานพาหนะทั้งหมด" value={`${totalVehicles} คัน`} color="text-primary" />
