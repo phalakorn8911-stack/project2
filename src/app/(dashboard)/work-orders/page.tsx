@@ -17,10 +17,10 @@ interface WorkOrder {
 }
 
 const statusConfig: Record<WorkOrderStatus, { label: string; color: string }> = {
-  OPEN: { label: "รอรับงาน", color: "bg-blue-100 text-blue-700" },
-  IN_PROGRESS: { label: "กำลังซ่อม", color: "bg-yellow-100 text-yellow-700" },
-  WAITING_PARTS: { label: "รออะไหล่", color: "bg-orange-100 text-orange-700" },
-  COMPLETED: { label: "ซ่อมเสร็จ", color: "bg-green-100 text-green-700" },
+  OPEN: { label: "รอรับงาน", color: "text-info bg-info/10" },
+  IN_PROGRESS: { label: "กำลังซ่อม", color: "text-warning bg-warning/10" },
+  WAITING_PARTS: { label: "รออะไหล่", color: "text-status-parts bg-status-parts/10" },
+  COMPLETED: { label: "ซ่อมเสร็จ", color: "text-success bg-success/10" },
 }
 
 const statusOptions: { value: WorkOrderStatus; label: string }[] = [
@@ -38,10 +38,10 @@ const columns: { key: WorkOrderStatus; title: string }[] = [
 ]
 
 const urgencyConfig: Record<string, { label: string; color: string }> = {
-  EMERGENCY: { label: "ด่วนมาก", color: "bg-red-500 text-white" },
-  HIGH: { label: "สูง", color: "bg-red-100 text-red-700" },
-  MEDIUM: { label: "ปานกลาง", color: "bg-yellow-100 text-yellow-700" },
-  LOW: { label: "ปกติ", color: "bg-gray-100 text-gray-700" },
+  EMERGENCY: { label: "ด่วนมาก", color: "bg-destructive text-destructive-foreground" },
+  HIGH: { label: "สูง", color: "text-destructive bg-destructive/10" },
+  MEDIUM: { label: "ปานกลาง", color: "text-warning bg-warning/10" },
+  LOW: { label: "ปกติ", color: "text-muted-foreground bg-muted" },
 }
 
 export default function WorkOrdersPage() {
@@ -215,7 +215,7 @@ export default function WorkOrdersPage() {
                       <span
                         className={cn(
                           "text-xs rounded-full px-2 py-0.5",
-                          urgencyConfig[wo.urgency]?.color || "bg-gray-100 text-gray-700"
+                          urgencyConfig[wo.urgency]?.color || "text-muted-foreground bg-muted"
                         )}
                       >
                         {urgencyConfig[wo.urgency]?.label ?? wo.urgency}

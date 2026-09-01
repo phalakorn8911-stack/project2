@@ -56,8 +56,8 @@ export default function NotificationsPage() {
   const partsAsNotifications = lowStockParts.map((p) => ({
     id: `stock-${p.id}`,
     title: p.status === "out_of_stock"
-      ? `❌ ${p.name} - หมด stock`
-      : `⚠️ ${p.name} - stock ใกล้หมด`,
+      ? `❌ ${p.name} - หมดสต็อก`
+      : `⚠️ ${p.name} - สต็อกใกล้หมด`,
     message: `คงเหลือ ${p.stockQuantity} ${p.unitMeasure} (ขั้นต่ำ ${p.minimumQuantity} ${p.unitMeasure}) | หมวด: ${p.category}`,
     type: p.status === "out_of_stock" ? "out_of_stock" : "low_stock",
     read: false,

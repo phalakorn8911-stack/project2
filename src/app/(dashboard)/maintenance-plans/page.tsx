@@ -527,7 +527,7 @@ export default function MaintenancePlansPage() {
                       <span className="font-medium">{plan.totalVehicles}</span>
                     </div>
                     {plan.dueSoon > 0 && (
-                      <div className="flex items-center gap-1 text-yellow-600">
+                      <div className="flex items-center gap-1 text-warning">
                         <AlertTriangle className="h-3.5 w-3.5" />
                         <span className="font-medium">{plan.dueSoon}</span>
                         <span>ใกล้ถึงกำหนด</span>

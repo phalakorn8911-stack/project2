@@ -101,7 +101,7 @@ export function AiSummary() {
         <div className="mt-4 rounded-lg bg-muted/60 p-4 text-sm text-card-foreground leading-relaxed">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="size-3.5 text-info" />
-            <span className="text-xs font-medium text-info">AI Analysis</span>
+            <span className="text-xs font-medium text-info">สรุปจาก AI</span>
           </div>
           {summary}
         </div>

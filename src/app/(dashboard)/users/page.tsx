@@ -324,7 +324,7 @@ export default function UsersPage() {
                           {batchItems.length > 1 && (
                             <button
                               onClick={() => removeBatchRow(idx)}
-                              className="p-1 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
+                              className="p-1 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>

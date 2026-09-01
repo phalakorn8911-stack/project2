@@ -318,7 +318,7 @@ export default function DriversPage() {
                       <td className="px-3 py-3 font-medium text-card-foreground">{d.firstName} {d.lastName}</td>
                       <td className="px-3 py-3 text-muted-foreground">
                         {d.vehicles.length === 0 ? (
-                          <span className="text-xs">ยังไม่ได้ assigns</span>
+                          <span className="text-xs">ยังไม่มีรถมอบหมาย</span>
                         ) : (
                           <div className="flex flex-wrap gap-1">
                             {d.vehicles.map((v) => (

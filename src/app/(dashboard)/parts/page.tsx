@@ -34,9 +34,9 @@ interface Category {
 }
 
 const STATUS_CONFIG = {
-  critical: { label: "วิกฤติ", color: "bg-red-500/20 text-red-400 border-red-500/30" },
-  low: { label: "ใกล้หมด", color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
-  normal: { label: "ปกติ", color: "bg-green-500/20 text-green-400 border-green-500/30" },
+  critical: { label: "วิกฤติ", color: "text-destructive bg-destructive/10 border-destructive/30" },
+  low: { label: "ใกล้หมด", color: "text-warning bg-warning/10 border-warning/30" },
+  normal: { label: "ปกติ", color: "text-success bg-success/10 border-success/30" },
 };
 
 function getStockStatus(stock: number, min: number) {
@@ -347,14 +347,14 @@ export default function PartsPage() {
                     />
                     <button
                       onClick={() => handleStockAdjust(part.id, -1)}
-                      className="p-0.5 rounded bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
+                      className="p-0.5 rounded bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
                       title="ลดสต็อก"
                     >
                       <Minus className="h-3 w-3" />
                     </button>
                     <button
                       onClick={() => handleStockAdjust(part.id, 1)}
-                      className="p-0.5 rounded bg-green-500/10 text-green-500 hover:bg-green-500/20 transition-colors"
+                      className="p-0.5 rounded bg-success/10 text-success hover:bg-success/20 transition-colors"
                       title="เพิ่มสต็อก"
                     >
                       <PlusIcon className="h-3 w-3" />
@@ -394,7 +394,7 @@ export default function PartsPage() {
                   </button>
                   <button
                     onClick={() => setDeleteTarget(part)}
-                    className="flex-1 flex items-center justify-center gap-1 px-2 py-1 text-xs rounded border border-red-500/30 text-red-500 hover:bg-red-500/10 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-1 px-2 py-1 text-xs rounded border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors"
                   >
                     <Trash2 className="h-3 w-3" />
                   </button>
@@ -540,7 +540,7 @@ export default function PartsPage() {
                         {batchItems.length > 1 && (
                           <button
                             onClick={() => removeBatchRow(idx)}
-                            className="p-1 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
+                            className="p-1 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -677,8 +677,8 @@ export default function PartsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-card border border-border rounded-2xl w-full max-w-sm shadow-xl">
             <div className="p-6 text-center space-y-3">
-              <div className="mx-auto w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
-                <Trash2 className="h-6 w-6 text-red-500" />
+              <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                <Trash2 className="h-6 w-6 text-destructive" />
               </div>
               <h3 className="text-lg font-semibold">ยืนยันการลบ</h3>
               <p className="text-sm text-muted-foreground">
@@ -698,7 +698,7 @@ export default function PartsPage() {
               </button>
               <button
                 onClick={() => handleDelete(deleteTarget.id)}
-                className="flex-1 px-4 py-2.5 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+                className="flex-1 px-4 py-2.5 text-sm font-medium rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
               >
                 ลบ
               </button>

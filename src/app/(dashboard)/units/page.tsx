@@ -281,7 +281,7 @@ export default function UnitsPage() {
                           onClick={() => handleUpdate(unit.id)}
                           className={cn(
                             "rounded-xl p-2 hover:bg-muted",
-                            "text-green-600 dark:text-green-400"
+                            "text-success"
                           )}
                           title="บันทึก"
                         >

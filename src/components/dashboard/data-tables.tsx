@@ -31,14 +31,14 @@ export function DataTables() {
       setDueMaintenance(dueData)
       setLowStockParts(
         partsData
-          .filter((p: any) => p.stock <= p.min)
+          .filter((p: any) => p.stockQuantity <= p.minimumQuantity)
           .map((p: any) => ({
             part: p.name,
-            code: p.code,
-            stock: p.stock,
-            min: p.min,
-            status: p.stock <= p.min / 2 ? "วิกฤติ" : "ใกล้หมด",
-            statusColor: p.stock <= p.min / 2 ? "text-destructive bg-destructive/10" : "text-status-parts bg-status-parts/10",
+            code: p.partNumber,
+            stock: p.stockQuantity,
+            min: p.minimumQuantity,
+            status: p.stockQuantity <= p.minimumQuantity / 2 ? "วิกฤติ" : "ใกล้หมด",
+            statusColor: p.stockQuantity <= p.minimumQuantity / 2 ? "text-destructive bg-destructive/10" : "text-status-parts bg-status-parts/10",
           }))
       )
       setUrgentRepairs(
