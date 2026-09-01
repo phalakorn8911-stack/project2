@@ -216,13 +216,11 @@ export default function PartsPage() {
     const qty = parseInt(adjustValue, 10);
     if (isNaN(qty) || qty <= 0) return;
 
-    const newStock = Math.max(0, part.stockQuantity + delta * qty);
-
     try {
-      await fetch(`/api/parts/${partId}`, {
+      await fetch(`/api/parts/${partId}/stock-adjust`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stockQuantity: newStock }),
+        body: JSON.stringify({ adjustment: delta * qty }),
       });
       setAdjustingId(null);
       setAdjustValue("1");

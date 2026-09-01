@@ -22,8 +22,19 @@ const roleLabels: Record<string, string> = {
 export function Header() {
   const { data: session } = useSession()
   const [showMenu, setShowMenu] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
   const menuRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    fetch("/api/notifications")
+      .then((r) => r.json())
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data.notifications ?? []
+        setUnreadCount(list.filter((n: any) => !n.read).length)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -53,7 +64,7 @@ export function Header() {
           className="relative rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
         >
           <Bell className="size-4" />
-          <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-destructive" />
+          {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-destructive" />}
         </button>
 
         <div className="relative" ref={menuRef}>

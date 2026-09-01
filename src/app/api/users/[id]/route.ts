@@ -50,12 +50,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-
     await prisma.user.delete({ where: { id } })
-
     return NextResponse.json({ ok: true })
-  } catch (error) {
+  } catch (error: any) {
     console.error("Delete user error:", error)
+    if (error.code === "P2025") {
+      return NextResponse.json({ error: "ไม่พบผู้ใช้ที่ต้องการลบ" }, { status: 404 })
+    }
+    if (error.code === "P2003") {
+      return NextResponse.json({ error: "ไม่สามารถลบได้ มีรายการที่เกี่ยวข้อง" }, { status: 409 })
+    }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
