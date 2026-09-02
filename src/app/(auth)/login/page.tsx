@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { signIn } from "next-auth/react"
 import { useState } from "react"
-import { Truck, Eye, EyeOff } from "lucide-react"
+import { Truck, Eye, EyeOff, Download } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -121,6 +121,12 @@ export default function LoginPage() {
           </button>
         </form>
 
+        <div className="mt-6 pt-4 border-t border-border text-center">
+          <a href="/download" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors">
+            <Download className="size-3.5" />
+            ดาวน์โหลดแอปลงมือถือ
+          </a>
+        </div>
       </div>
     </div>
   )

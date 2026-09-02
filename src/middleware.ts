@@ -6,14 +6,14 @@ const roleAccess: Record<string, string[]> = {
   admin: [
     "/dashboard", "/vehicles", "/vehicle-types", "/units", "/drivers",
     "/maintenance-plans", "/work-orders", "/parts", "/reports",
-    "/ai-assistant", "/users", "/settings", "/notifications", "/gps-tracking", "/profile",
+    "/ai-assistant", "/users", "/settings", "/notifications", "/gps-tracking", "/profile", "/download",
   ],
   mechanic: [
     "/dashboard", "/vehicles", "/drivers", "/maintenance-plans",
-    "/work-orders", "/parts", "/reports", "/ai-assistant", "/notifications", "/profile",
+    "/work-orders", "/parts", "/reports", "/ai-assistant", "/notifications", "/profile", "/download",
   ],
   driver: [
-    "/dashboard", "/vehicles", "/drivers", "/ai-assistant", "/notifications", "/profile",
+    "/dashboard", "/vehicles", "/drivers", "/ai-assistant", "/notifications", "/profile", "/download",
   ],
 }
 
@@ -65,5 +65,6 @@ export const config = {
     "/notifications/:path*",
     "/gps-tracking/:path*",
     "/profile/:path*",
+    "/download/:path*",
   ],
 }
