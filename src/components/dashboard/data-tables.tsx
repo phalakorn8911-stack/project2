@@ -90,8 +90,8 @@ export function DataTables() {
             <tbody className="border-t border-border">
               {dueMaintenance.map((row, i) => (
                 <tr key={i} className="border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => router.push(`/vehicles/${row.vehicleId}`)}>
-                  <td className="px-5 py-2.5 font-medium text-card-foreground">{row.vehicle}</td>
-                  <td className="px-3 py-2.5 text-muted-foreground text-[13px]">{row.type}</td>
+                  <td className="px-5 py-2.5 font-medium text-card-foreground whitespace-nowrap">{row.vehicle}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap"><span className="inline-block text-xs text-muted-foreground bg-muted rounded px-1.5 py-0.5">{row.type}</span></td>
                   <td className="px-3 py-2.5 text-muted-foreground text-[13px]">{row.dueDate}</td>
                   <td className="px-5 py-2.5"><Badge label={row.status} className={row.statusColor} /></td>
                 </tr>

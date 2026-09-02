@@ -524,7 +524,7 @@ export default function VehicleDetailPage() {
           </div>
           <div className="flex items-center gap-2">
             <Truck className="size-4 text-muted-foreground" />
-            <div><p className="text-muted-foreground">ประเภท</p><p className="font-medium text-card-foreground">{vehicle.vehicleType}</p></div>
+            <div><p className="text-muted-foreground">ประเภท</p><span className="inline-block text-xs font-medium text-card-foreground bg-muted rounded px-1.5 py-0.5 whitespace-nowrap">{vehicle.vehicleType}</span></div>
           </div>
           <div className="flex items-center gap-2">
             <Gauge className="size-4 text-muted-foreground" />

@@ -74,11 +74,11 @@ export function VehicleStatusLists({ available, inRepair, waitingParts, dueSoon,
                         </div>
                         <div>
                           <p className="text-sm font-medium text-card-foreground">{v.registrationNumber}</p>
-                          <p className="text-xs text-muted-foreground">{v.model}</p>
+                          <p className="text-xs text-muted-foreground whitespace-nowrap">{v.model}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        {v.vehicleType && <p className="text-xs text-muted-foreground">{v.vehicleType}</p>}
+                      <div className="text-right flex-shrink-0">
+                        {v.vehicleType && <span className="inline-block text-xs text-muted-foreground bg-muted rounded px-1.5 py-0.5 whitespace-nowrap">{v.vehicleType}</span>}
                       </div>
                     </div>
                   ))}

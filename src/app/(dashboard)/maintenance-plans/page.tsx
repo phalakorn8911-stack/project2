@@ -579,7 +579,7 @@ export default function MaintenancePlansPage() {
                     <div className="min-w-0 flex-1">
                       <h3 className="font-semibold truncate">{plan.name}</h3>
                       {plan.vehicleType && (
-                        <p className="text-sm text-muted-foreground truncate">{plan.vehicleType}</p>
+                        <span className="inline-block text-xs text-muted-foreground bg-muted rounded px-1.5 py-0.5 whitespace-nowrap">{plan.vehicleType}</span>
                       )}
                     </div>
                   </div>
@@ -655,7 +655,7 @@ export default function MaintenancePlansPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-semibold">{selectedPlan.name}</h3>
-                <p className="text-sm text-muted-foreground">{selectedPlan.vehicleType}</p>
+                {selectedPlan.vehicleType && <span className="inline-block text-xs text-muted-foreground bg-muted rounded px-1.5 py-0.5 whitespace-nowrap">{selectedPlan.vehicleType}</span>}
               </div>
               <button onClick={() => { setSelectedPlan(null); setShowAddVehicle(false); setAvailableVehicles([]) }} className="text-muted-foreground hover:text-foreground">
                 <X className="h-5 w-5" />

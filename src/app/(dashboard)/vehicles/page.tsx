@@ -359,10 +359,10 @@ function VehiclesContent() {
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3 font-medium text-card-foreground">{v.registrationNumber}</td>
-                    <td className="px-3 py-3 text-card-foreground">{v.brand} {v.model}</td>
-                    <td className="px-3 py-3 text-muted-foreground">{v.year}</td>
-                    <td className="px-3 py-3 text-muted-foreground">{v.type}</td>
+                    <td className="px-4 py-3 font-medium text-card-foreground whitespace-nowrap">{v.registrationNumber}</td>
+                    <td className="px-3 py-3 text-card-foreground whitespace-nowrap">{v.brand} {v.model}</td>
+                    <td className="px-3 py-3 text-muted-foreground whitespace-nowrap">{v.year}</td>
+                    <td className="px-3 py-3 whitespace-nowrap"><span className="inline-block text-xs text-muted-foreground bg-muted rounded px-1.5 py-0.5">{v.type}</span></td>
                     <td className="px-3 py-3 text-muted-foreground">{v.unit}</td>
                     <td className="px-3 py-3 text-muted-foreground">{v.mileage}</td>
                     <td className="px-4 py-3">
