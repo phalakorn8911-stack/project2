@@ -68,6 +68,36 @@ export default function ProfilePage() {
       {msg && <div className={`p-3 rounded text-sm ${msg.includes("สำเร็จ") ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{msg}</div>}
 
       <div className="rounded-xl border bg-card p-5 space-y-4">
+        <div className="flex items-center gap-4 pb-4 border-b border-border">
+          {profile.photoUrl ? (
+            <label className="relative cursor-pointer">
+              <img src={profile.photoUrl} alt="photo" className="size-20 rounded-full object-cover" />
+              <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                const file = e.target.files?.[0]; if (!file) return
+                const fd = new FormData(); fd.append("file", file); fd.append("userId", profile.id)
+                const res = await fetch("/api/upload-user-photo", { method: "POST", body: fd })
+                const d = await res.json()
+                if (d.photoUrl) { setProfile({...profile, photoUrl: d.photoUrl}); setMsg("เปลี่ยนรูปสำเร็จ") }
+              }} />
+              <span className="absolute bottom-0 right-0 size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs">+</span>
+            </label>
+          ) : (
+            <label className="flex size-20 items-center justify-center rounded-full bg-muted text-muted-foreground cursor-pointer hover:bg-muted/80 transition-colors">
+              <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                const file = e.target.files?.[0]; if (!file) return
+                const fd = new FormData(); fd.append("file", file); fd.append("userId", profile.id)
+                const res = await fetch("/api/upload-user-photo", { method: "POST", body: fd })
+                const d = await res.json()
+                if (d.photoUrl) { setProfile({...profile, photoUrl: d.photoUrl}); setMsg("เปลี่ยนรูปสำเร็จ") }
+              }} />
+              <span className="text-2xl">+</span>
+            </label>
+          )}
+          <div>
+            <p className="font-semibold">{profile.rank} {profile.firstName} {profile.lastName}</p>
+            <p className="text-xs text-muted-foreground">{profile.email}</p>
+          </div>
+        </div>
         <h3 className="font-semibold">ข้อมูลทั่วไป</h3>
         <div className="grid grid-cols-2 gap-3">
           <div><label className="text-xs text-muted-foreground">ยศ</label><input value={form.rank||""} onChange={e=>setForm({...form,rank:e.target.value})} className={i} /></div>

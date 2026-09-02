@@ -17,7 +17,7 @@ export async function GET() {
         id: true, email: true, name: true, rank: true,
         firstName: true, lastName: true, address: true,
         maritalStatus: true, education: true, nationalId: true,
-        civilianLicense: true, armyLicense: true,
+        civilianLicense: true, armyLicense: true, photoUrl: true,
         role: true, unit: true, status: true,
       },
     })
@@ -71,7 +71,7 @@ export async function PATCH(request: Request) {
         rank: user.rank, address: user.address,
         maritalStatus: user.maritalStatus, education: user.education,
         nationalId: user.nationalId, civilianLicense: user.civilianLicense,
-        armyLicense: user.armyLicense,
+        armyLicense: user.armyLicense, photoUrl: user.photoUrl,
       },
     })
   } catch (error) {
