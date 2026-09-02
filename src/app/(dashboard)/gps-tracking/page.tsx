@@ -184,7 +184,7 @@ function TripsTab({ session }: { session: any }) {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold text-card-foreground">รถกำลังใช้งาน</h3>
-          <p className="text-xs text-muted-foreground">พลขับบันทึกเส้นทางการใช้รถ - ลิงค์กับ GPS Tracking</p>
+          <p className="text-xs text-muted-foreground">พลขับบันทึกเส้นทางการใช้รถ - ลิงค์กับระบบติดตาม GPS</p>
         </div>
         <button onClick={openForm} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">
           <Plus className="size-3" /> บันทึกการเดินทาง
@@ -495,7 +495,7 @@ export default function GPSTrackingPage() {
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="rounded-xl border border-border bg-card p-3"><div className="flex items-center gap-2 mb-1"><Truck className="size-4 text-info" /><span className="text-xs text-muted-foreground">รถวิ่ง</span></div><p className="text-2xl font-bold text-card-foreground">{locations.length}</p></div>
-            <div className="rounded-xl border border-border bg-card p-3"><div className="flex items-center gap-2 mb-1"><Route className="size-4 text-success" /><span className="text-xs text-muted-foreground">ระยะทาง</span></div><p className="text-2xl font-bold text-success">{(totalDistance / 1000).toFixed(1)} <span className="text-sm font-normal">km</span></p></div>
+            <div className="rounded-xl border border-border bg-card p-3"><div className="flex items-center gap-2 mb-1"><Route className="size-4 text-success" /><span className="text-xs text-muted-foreground">ระยะทาง</span></div><p className="text-2xl font-bold text-success">{(totalDistance / 1000).toFixed(1)} <span className="text-sm font-normal">กม.</span></p></div>
             <div className="rounded-xl border border-border bg-card p-3"><div className="flex items-center gap-2 mb-1"><MapPin className="size-4 text-primary" /><span className="text-xs text-muted-foreground">จุดพิกัด</span></div><p className="text-2xl font-bold text-card-foreground">{totalPoints}</p></div>
             <div className="rounded-xl border border-border bg-card p-3"><div className="flex items-center gap-2 mb-1"><Zap className="size-4 text-warning" /><span className="text-xs text-muted-foreground">กม./ชม.</span></div><p className="text-2xl font-bold text-card-foreground">{locations.length > 0 ? Math.max(...locations.map(l => l.maxSpeed)).toFixed(0) : 0}</p></div>
           </div>
@@ -520,7 +520,7 @@ export default function GPSTrackingPage() {
                             <p className="text-[10px] text-muted-foreground truncate">{loc.firstName} {loc.lastName}</p>
                           </div>
                           <div className="shrink-0 text-right">
-                            <p className="text-xs font-bold text-card-foreground">{(loc.distance / 1000).toFixed(1)} km</p>
+                            <p className="text-xs font-bold text-card-foreground">{(loc.distance / 1000).toFixed(1)} กม.</p>
                             <p className="text-[9px] text-muted-foreground">⏱ {new Date(loc.recordedAt).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}</p>
                           </div>
                         </div>

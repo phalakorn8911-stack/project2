@@ -85,11 +85,11 @@ function GPSModal({ vehicle, points, loading, onClose, mapRef, mapInstanceRef }:
             <div className="grid grid-cols-3 gap-3">
               <div className="rounded-lg bg-muted/50 p-3 text-center">
                 <p className="text-lg font-bold text-card-foreground">{(totalDistance / 1000).toFixed(2)}</p>
-                <p className="text-[10px] text-muted-foreground">ระยะทาง (km)</p>
+                <p className="text-[10px] text-muted-foreground">ระยะทาง (กม.)</p>
               </div>
               <div className="rounded-lg bg-muted/50 p-3 text-center">
                 <p className="text-lg font-bold text-card-foreground">{maxSpeed.toFixed(0)}</p>
-                <p className="text-[10px] text-muted-foreground">ความเร็วสูงสุด (km/h)</p>
+                <p className="text-[10px] text-muted-foreground">ความเร็วสูงสุด (กม./ชม.)</p>
               </div>
               <div className="rounded-lg bg-muted/50 p-3 text-center">
                 <p className="text-lg font-bold text-card-foreground">{points.length}</p>
