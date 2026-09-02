@@ -107,30 +107,58 @@ export default function ProfilePage() {
 
       <div className="rounded-xl border bg-card p-5 space-y-4">
         <h3 className="font-semibold">ใบอนุญาตขับขี่</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <div><label className="text-xs text-muted-foreground">ใบขับขี่พลเรือน</label>
-            <select value={form.civilianLicense||""} onChange={e=>setForm({...form,civilianLicense:e.target.value})} className={i}>
-              <option value="">-- เลือก --</option>
-              <option value="บ.1">บ.1 รถยนต์ส่วนบุคคล ไม่เกิน 3,500 กก.</option>
-              <option value="บ.2">บ.2 รถยนต์ส่วนบุคคล นั่งเกิน 7 คน</option>
-              <option value="ท.1">ท.1 รถยนต์สาธารณะ ไม่เกิน 3,500 กก.</option>
-              <option value="ท.2">ท.2 รถยนต์สาธารณะ นั่งไม่เกิน 20 คน</option>
-              <option value="ท.3">ท.3 รถยนต์สาธารณะ นั่งเกิน 20 คน</option>
-              <option value="ท.4">ท.4 รถบรรทุกสาธารณะ</option>
-              <option value="ข.1">ข.1 รถจักรยานยนต์</option>
-              <option value="ข.2">ข.2 รถจักรยานยนต์สามล้อ</option>
-              <option value="ข.3">ข.3 รถแทรกเตอร์</option>
-              <option value="ข.4">ข.4 รถออฟโรด</option>
-            </select>
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs text-muted-foreground mb-2 block">ใบขับขี่พลเรือน (เลือกได้หลายข้อ)</label>
+            <div className="grid grid-cols-1 gap-2">
+              {[
+                { val: "บ.1", label: "บ.1 รถยนต์ส่วนบุคคล ไม่เกิน 3,500 กก." },
+                { val: "บ.2", label: "บ.2 รถยนต์ส่วนบุคคล นั่งเกิน 7 คน" },
+                { val: "ท.1", label: "ท.1 รถยนต์สาธารณะ ไม่เกิน 3,500 กก." },
+                { val: "ท.2", label: "ท.2 รถยนต์สาธารณะ นั่งไม่เกิน 20 คน" },
+                { val: "ท.3", label: "ท.3 รถยนต์สาธารณะ นั่งเกิน 20 คน" },
+                { val: "ท.4", label: "ท.4 รถบรรทุกสาธารณะ" },
+                { val: "ข.1", label: "ข.1 รถจักรยานยนต์" },
+                { val: "ข.2", label: "ข.2 รถจักรยานยนต์สามล้อ" },
+                { val: "ข.3", label: "ข.3 รถแทรกเตอร์" },
+                { val: "ข.4", label: "ข.4 รถออฟโรด" },
+              ].map(opt => {
+                const checked = (form.civilianLicense||"").split(",").filter(Boolean).includes(opt.val)
+                return (
+                  <label key={opt.val} className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${checked ? "border-primary bg-primary/5 text-foreground" : "border-border text-muted-foreground hover:bg-muted/50"}`}>
+                    <input type="checkbox" checked={checked} onChange={() => {
+                      const arr = (form.civilianLicense||"").split(",").filter(Boolean)
+                      const next = checked ? arr.filter((v: string)=>v!==opt.val) : [...arr, opt.val]
+                      setForm({...form, civilianLicense: next.join(",")})
+                    }} className="rounded" />
+                    {opt.label}
+                  </label>
+                )
+              })}
+            </div>
           </div>
-          <div><label className="text-xs text-muted-foreground">ใบขับขี่ ทบ.</label>
-            <select value={form.armyLicense||""} onChange={e=>setForm({...form,armyLicense:e.target.value})} className={i}>
-              <option value="">-- เลือก --</option>
-              <option value="ชนิดที่ 1">ชนิดที่ 1 รถยนต์สายพานใช้คันบังคับ</option>
-              <option value="ชนิดที่ 2">ชนิดที่ 2 รถยนต์สายพาน/กึ่งสายพานใช้พวงมาลัย หรือ 3 ล้อ บรรทุกเกิน 2 ตัน</option>
-              <option value="ชนิดที่ 3">ชนิดที่ 3 รถยนต์ 3 ล้อ บรรทุกไม่เกิน 2 ตัน</option>
-              <option value="ชนิดที่ 4">ชนิดที่ 4 รถจักรยานยนต์พ่วงข้าง</option>
-            </select>
+          <div>
+            <label className="text-xs text-muted-foreground mb-2 block">ใบขับขี่ ทบ. (เลือกได้หลายข้อ)</label>
+            <div className="grid grid-cols-1 gap-2">
+              {[
+                { val: "ชนิดที่ 1", label: "ชนิดที่ 1 รถยนต์สายพานใช้คันบังคับ" },
+                { val: "ชนิดที่ 2", label: "ชนิดที่ 2 รถยนต์สายพาน/กึ่งสายพาน หรือ 3 ล้อ เกิน 2 ตัน" },
+                { val: "ชนิดที่ 3", label: "ชนิดที่ 3 รถยนต์ 3 ล้อ ไม่เกิน 2 ตัน" },
+                { val: "ชนิดที่ 4", label: "ชนิดที่ 4 รถจักรยานยนต์พ่วงข้าง" },
+              ].map(opt => {
+                const checked = (form.armyLicense||"").split(",").filter(Boolean).includes(opt.val)
+                return (
+                  <label key={opt.val} className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${checked ? "border-primary bg-primary/5 text-foreground" : "border-border text-muted-foreground hover:bg-muted/50"}`}>
+                    <input type="checkbox" checked={checked} onChange={() => {
+                      const arr = (form.armyLicense||"").split(",").filter(Boolean)
+                      const next = checked ? arr.filter((v: string)=>v!==opt.val) : [...arr, opt.val]
+                      setForm({...form, armyLicense: next.join(",")})
+                    }} className="rounded" />
+                    {opt.label}
+                  </label>
+                )
+              })}
+            </div>
           </div>
         </div>
       </div>

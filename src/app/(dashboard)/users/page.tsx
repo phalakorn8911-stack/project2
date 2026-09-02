@@ -663,9 +663,41 @@ export default function UsersPage() {
               <div><label className="block text-xs text-muted-foreground mb-1">หมายเลขประชาชน</label><input value={editForm.nationalId} onChange={e=>setEditForm({...editForm,nationalId:e.target.value})} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" maxLength={13} /></div>
 
               <h3 className="text-sm font-semibold pt-3 border-t border-border">ใบอนุญาตขับขี่</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div><label className="block text-xs text-muted-foreground mb-1">ใบขับขี่พลเรือน</label><select value={editForm.civilianLicense} onChange={e=>setEditForm({...editForm,civilianLicense:e.target.value})} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"><option value="">-- เลือก --</option><option value="บ.1">บ.1 รถยนต์ส่วนบุคคล ไม่เกิน 3,500 กก.</option><option value="บ.2">บ.2 รถยนต์ส่วนบุคคล นั่งเกิน 7 คน</option><option value="ท.1">ท.1 รถยนต์สาธารณะ ไม่เกิน 3,500 กก.</option><option value="ท.2">ท.2 รถยนต์สาธารณะ นั่งไม่เกิน 20 คน</option><option value="ท.3">ท.3 รถยนต์สาธารณะ นั่งเกิน 20 คน</option><option value="ท.4">ท.4 รถบรรทุกสาธารณะ</option><option value="ข.1">ข.1 รถจักรยานยนต์</option><option value="ข.2">ข.2 รถจักรยานยนต์สามล้อ</option><option value="ข.3">ข.3 รถแทรกเตอร์</option><option value="ข.4">ข.4 รถออฟโรด</option></select></div>
-                <div><label className="block text-xs text-muted-foreground mb-1">ใบขับขี่ ทบ.</label><select value={editForm.armyLicense} onChange={e=>setEditForm({...editForm,armyLicense:e.target.value})} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"><option value="">-- เลือก --</option><option value="ชนิดที่ 1">ชนิดที่ 1 รถยนต์สายพานใช้คันบังคับ</option><option value="ชนิดที่ 2">ชนิดที่ 2 รถยนต์สายพาน/กึ่งสายพาน หรือ 3 ล้อ เกิน 2 ตัน</option><option value="ชนิดที่ 3">ชนิดที่ 3 รถยนต์ 3 ล้อ ไม่เกิน 2 ตัน</option><option value="ชนิดที่ 4">ชนิดที่ 4 รถจักรยานยนต์พ่วงข้าง</option></select></div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">ใบขับขี่พลเรือน (เลือกได้หลายข้อ)</label>
+                <div className="grid grid-cols-2 gap-1">
+                  {["บ.1","บ.2","ท.1","ท.2","ท.3","ท.4","ข.1","ข.2","ข.3","ข.4"].map(v => {
+                    const checked = (editForm.civilianLicense||"").split(",").filter(Boolean).includes(v)
+                    return (
+                      <label key={v} className={`flex items-center gap-1.5 rounded border px-2 py-1 text-xs cursor-pointer ${checked ? "border-primary bg-primary/5" : "border-border"}`}>
+                        <input type="checkbox" checked={checked} onChange={() => {
+                          const arr = (editForm.civilianLicense||"").split(",").filter(Boolean)
+                          const next = checked ? arr.filter((x: string)=>x!==v) : [...arr,v]
+                          setEditForm({...editForm, civilianLicense: next.join(",")})
+                        }} className="rounded" />
+                        {v}
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">ใบขับขี่ ทบ. (เลือกได้หลายข้อ)</label>
+                <div className="grid grid-cols-2 gap-1">
+                  {["ชนิดที่ 1","ชนิดที่ 2","ชนิดที่ 3","ชนิดที่ 4"].map(v => {
+                    const checked = (editForm.armyLicense||"").split(",").filter(Boolean).includes(v)
+                    return (
+                      <label key={v} className={`flex items-center gap-1.5 rounded border px-2 py-1 text-xs cursor-pointer ${checked ? "border-primary bg-primary/5" : "border-border"}`}>
+                        <input type="checkbox" checked={checked} onChange={() => {
+                          const arr = (editForm.armyLicense||"").split(",").filter(Boolean)
+                          const next = checked ? arr.filter((x: string)=>x!==v) : [...arr,v]
+                          setEditForm({...editForm, armyLicense: next.join(",")})
+                        }} className="rounded" />
+                        {v}
+                      </label>
+                    )
+                  })}
+                </div>
               </div>
 
               <div className="flex gap-3 pt-4 border-t border-border">
