@@ -126,10 +126,10 @@ export default function ProfilePage() {
           <div><label className="text-xs text-muted-foreground">ใบขับขี่ ทบ.</label>
             <select value={form.armyLicense||""} onChange={e=>setForm({...form,armyLicense:e.target.value})} className={i}>
               <option value="">-- เลือก --</option>
-              <option value="ทบ.1">ทบ.1 รถยนต์ขนาดเล็ก</option>
-              <option value="ทบ.2">ทบ.2 รถยนต์ขนาดกลาง</option>
-              <option value="ทบ.3">ทบ.3 รถยนต์ขนาดใหญ่</option>
-              <option value="ทบ.4">ทบ.4 รถหุ้มเกราะ</option>
+              <option value="ชนิดที่ 1">ชนิดที่ 1 รถยนต์สายพานใช้คันบังคับ</option>
+              <option value="ชนิดที่ 2">ชนิดที่ 2 รถยนต์สายพาน/กึ่งสายพานใช้พวงมาลัย หรือ 3 ล้อ บรรทุกเกิน 2 ตัน</option>
+              <option value="ชนิดที่ 3">ชนิดที่ 3 รถยนต์ 3 ล้อ บรรทุกไม่เกิน 2 ตัน</option>
+              <option value="ชนิดที่ 4">ชนิดที่ 4 รถจักรยานยนต์พ่วงข้าง</option>
             </select>
           </div>
         </div>
