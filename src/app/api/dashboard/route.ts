@@ -19,6 +19,8 @@ export async function GET() {
       waitingPartsVehicles,
       dueSoonVehicles,
       overdueVehicles,
+      activeTrips,
+      activeTripVehicles,
     ] = await Promise.all([
       prisma.vehicle.count(),
       prisma.vehicle.groupBy({ by: ["status"], _count: true }),
@@ -53,6 +55,17 @@ export async function GET() {
         include: { vehicleType: true },
         orderBy: { registrationNumber: "asc" },
       }),
+      prisma.$queryRaw<{id: string; vehicleId: string; driverId: string; origin_tambon: string; origin_amphoe: string; origin_province: string; dest_tambon: string; dest_amphoe: string; dest_province: string; purpose: string; started_at: Date; first_name: string; last_name: string; rank: string; registrationNumber: string; brand: string; model: string}[]>`
+        SELECT vt.*, d.first_name, d.last_name, d.rank, v."registrationNumber", v.brand, v.model
+        FROM vehicle_trips vt
+        JOIN drivers d ON d.id = vt."driverId"
+        JOIN vehicles v ON v.id = vt."vehicleId"
+        WHERE vt.status = 'active'
+        ORDER BY vt."started_at" DESC
+      `.catch(() => []),
+      prisma.$queryRaw<{vehicleId: string}[]>`
+        SELECT DISTINCT "vehicleId" FROM vehicle_trips WHERE status = 'active'
+      `.catch(() => []),
     ])
 
     const statusCounts: Record<string, number> = {}
@@ -70,7 +83,7 @@ export async function GET() {
         waitingParts: statusCounts["WAITING_PARTS"] ?? 0,
         dueSoon: statusCounts["DUE_SOON"] ?? 0,
         overdue: statusCounts["OVERDUE"] ?? 0,
-        inUse: statusCounts["IN_USE"] ?? 0,
+        inUse: activeTripVehicles.length,
         outOfService: statusCounts["OUT_OF_SERVICE"] ?? 0,
         retired: statusCounts["RETIRED"] ?? 0,
       },
@@ -85,6 +98,17 @@ export async function GET() {
       dueSoonSchedules,
       lowStockCount: lowStockParts.length,
       totalPartsCost: totalPartsCostVal,
+      activeTrips: activeTrips.map((t) => ({
+        id: t.id,
+        registrationNumber: t.registrationNumber,
+        brand: t.brand,
+        model: t.model,
+        driverName: `${t.rank} ${t.first_name} ${t.last_name}`,
+        origin: `${t.origin_tambon} ${t.origin_amphoe} ${t.origin_province}`,
+        destination: `${t.dest_tambon} ${t.dest_amphoe} ${t.dest_province}`,
+        purpose: t.purpose,
+        startedAt: t.started_at,
+      })),
       vehicleLists: {
         available: availableVehicles.map((v) => ({
           id: v.id,

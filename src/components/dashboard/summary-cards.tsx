@@ -26,7 +26,7 @@ export function SummaryCards({ data }: { data?: any }) {
     setCards([
       { label: "รถทั้งหมด", value: String(data.vehicles.total), change: "", trend: "neutral", icon: Truck, color: "text-primary", bgColor: "bg-primary/10", href: "/vehicles" },
       { label: "พร้อมใช้งาน", value: String(data.vehicles.available), change: data.vehicles.total ? `${((data.vehicles.available / data.vehicles.total) * 100).toFixed(1)}%` : "0%", trend: "up", icon: CheckCircle, color: "text-success", bgColor: "bg-success/10", href: "/vehicles?status=AVAILABLE" },
-      { label: "กำลังใช้งาน", value: String(data.vehicles.inUse), change: "", trend: "neutral", icon: Truck, color: "text-info", bgColor: "bg-info/10", href: "/vehicles?status=IN_USE" },
+      { label: "รถกำลังเดินทาง", value: String(data.activeTrips?.length ?? data.vehicles.inUse), change: "", trend: "neutral", icon: Truck, color: "text-info", bgColor: "bg-info/10", href: "/gps-tracking" },
       { label: "กำลังซ่อม", value: String(data.vehicles.inRepair), change: "", trend: "neutral", icon: Wrench, color: "text-status-repair", bgColor: "bg-status-repair/10", href: "/vehicles?status=IN_REPAIR" },
       { label: "รออะไหล่", value: String(data.vehicles.waitingParts), change: "", trend: "neutral", icon: Package, color: "text-status-parts", bgColor: "bg-status-parts/10", href: "/vehicles?status=WAITING_PARTS" },
       { label: "ใกล้รอบซ่อม", value: String(data.vehicles.dueSoon), change: "", trend: "neutral", icon: Clock, color: "text-status-due", bgColor: "bg-status-due/10", href: "/vehicles?status=DUE_SOON" },
