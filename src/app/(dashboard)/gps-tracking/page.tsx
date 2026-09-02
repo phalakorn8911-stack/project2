@@ -24,19 +24,20 @@ function MapComponent({ drivers }: { drivers: DriverLocation[] }) {
   useEffect(() => {
     const map = mapInstanceRef.current; if (!map) return; let L: any; try { L = require("leaflet") } catch { return }
     markersRef.current.forEach((m: any) => m.remove()); linesRef.current.forEach((l: any) => l.remove()); markersRef.current = []; linesRef.current = []
-    const allPoints: [number, number][] = []; const colors = ["#2563eb", "#dc2626", "#16a34a", "#ea580c", "#8b5cf6", "#0891b2", "#e11d48", "#ca8a04"]
+    const allPoints: [number, number][] = []; const colors = ["#2563eb", "#dc2626", "#16a34a", "#ea580c", "#8b5cf6", "#0891b2", "#e11d48", "#ca8a04", "#059669", "#7c3aed", "#db2777", "#0d9488", "#c2410c", "#4338ca", "#15803d", "#b91c1c"]
     drivers.forEach((driver, idx) => {
       if (driver.points.length === 0) return; const color = colors[idx % colors.length]
       const latlngs: [number, number][] = driver.points.map((p) => [p.latitude, p.longitude]); allPoints.push(...latlngs)
-      if (latlngs.length > 1) { const pl = L.polyline(latlngs, { color, weight: 3, opacity: 0.7, dashArray: "8,8" }).addTo(map); linesRef.current.push(pl) }
-      const latest = driver.points[driver.points.length - 1]; const icon = L.divIcon({ className: "", html: `<div style="background:${color};width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;"><span style="color:white;font-size:10px;font-weight:bold;">${driver.registrationNumber.slice(-2)}</span></div>`, iconSize: [28, 28], iconAnchor: [14, 14] })
+      if (latlngs.length > 1) { const pl = L.polyline(latlngs, { color, weight: 2, opacity: 0.6, dashArray: "6,8" }).addTo(map); linesRef.current.push(pl) }
+      const latest = driver.points[driver.points.length - 1]; const age = Date.now() - new Date(latest.recordedAt).getTime(); const isStale = age > 30 * 60 * 1000
+      const icon = L.divIcon({ className: "", html: `<div style="background:${color};width:32px;height:32px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;opacity:${isStale ? 0.4 : 1};"><span style="color:white;font-size:10px;font-weight:bold;">${driver.registrationNumber.slice(-2)}</span></div>`, iconSize: [32, 32], iconAnchor: [16, 16] })
       const marker = L.marker([latest.latitude, latest.longitude], { icon }).addTo(map)
-      marker.bindPopup(`<b>${driver.registrationNumber}</b><br/>${driver.firstName} ${driver.lastName}<br/><small>${(driver.distance / 1000).toFixed(2)} km • ${new Date(latest.recordedAt).toLocaleString("th-TH")}</small>`)
+      marker.bindPopup(`<div style="min-width:150px;font-family:sans-serif"><b style="font-size:13px">${driver.registrationNumber}</b><br/><span style="color:#666;font-size:11px">${driver.firstName} ${driver.lastName}</span><div style="margin-top:4px;font-size:10px;color:#888">📏 ${(driver.distance / 1000).toFixed(2)} km<br/>🏎 ${driver.maxSpeed.toFixed(0)} km/h<br/>🕐 ${new Date(latest.recordedAt).toLocaleString("th-TH")}</div></div>`)
       markersRef.current.push(marker)
     })
-    if (allPoints.length > 1) { map.fitBounds(L.latLngBounds(allPoints), { padding: [50, 50] }) }
+    if (allPoints.length > 1) { map.fitBounds(L.latLngBounds(allPoints), { padding: [60, 60] }) }
   }, [drivers])
-  return <div ref={mapRef} className="h-[400px] w-full rounded-xl" />
+  return <div ref={mapRef} className="h-full w-full" />
 }
 
 function TripsTab({ session }: { session: any }) {
@@ -501,25 +502,40 @@ export default function GPSTrackingPage() {
           {loading ? <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">กำลังโหลด...</div> : locations.length === 0 ? (
             <div className="rounded-xl border border-border bg-card p-12 text-center"><MapPin className="mx-auto mb-3 size-10 text-muted-foreground" /><p className="text-sm text-muted-foreground">ยังไม่มีข้อมูล GPS</p><p className="text-xs text-muted-foreground mt-1">เปิดเว็บ <b>/gps</b> บนมือถือเพื่อเริ่มติดตาม</p></div>
           ) : (
-            <>
-              <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm"><MapComponent drivers={locations} /></div>
-              <div className="rounded-xl border border-border bg-card">
-                <div className="border-b border-border px-4 py-3"><h3 className="text-sm font-semibold text-card-foreground">รถที่กำลังติดตาม ({locations.length})</h3></div>
-                <div className="divide-y divide-border">
-                  {locations.map((loc) => { const age = Date.now() - new Date(loc.recordedAt).getTime(); const isStale = age > 30 * 60 * 1000; return (
-                    <div key={loc.driverId} className="px-4 py-3 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={cn("flex items-center justify-center size-10 rounded-full", isStale ? "bg-muted text-muted-foreground" : "bg-info/10 text-info")}><Truck className="size-5" /></div>
-                          <div><div className="flex items-center gap-2"><p className="text-sm font-semibold text-card-foreground">{loc.registrationNumber}</p><span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium", isStale ? "bg-muted text-muted-foreground" : "bg-success/10 text-success")}>{isStale ? "ออฟไลน์" : "ออนไลน์"}</span></div><p className="text-xs text-muted-foreground">{loc.firstName} {loc.lastName}</p></div>
+            <div className="flex gap-3" style={{ height: "65vh" }}>
+              <div className="flex-1 rounded-xl border border-border bg-card overflow-hidden shadow-sm min-w-0"><MapComponent drivers={locations} /></div>
+              <div className="w-[300px] shrink-0 rounded-xl border border-border bg-card flex flex-col overflow-hidden">
+                <div className="border-b border-border px-3 py-2.5 shrink-0"><h3 className="text-xs font-semibold text-card-foreground">รถที่กำลังติดตาม ({locations.length})</h3></div>
+                <div className="flex-1 overflow-y-auto divide-y divide-border">
+                  {locations.map((loc, idx) => { const age = Date.now() - new Date(loc.recordedAt).getTime(); const isStale = age > 30 * 60 * 1000; const colors = ["#2563eb", "#dc2626", "#16a34a", "#ea580c", "#8b5cf6", "#0891b2", "#e11d48", "#ca8a04", "#059669", "#7c3aed", "#db2777", "#0d9488", "#c2410c", "#4338ca", "#15803d", "#b91c1c"]; const c = colors[idx % colors.length]
+                    return (
+                      <div key={loc.driverId} className="px-3 py-2.5 hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-2.5">
+                          <div className="shrink-0 size-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: c }}>{loc.registrationNumber.slice(-2)}</div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-xs font-semibold text-card-foreground truncate">{loc.registrationNumber}</p>
+                              <span className={cn("shrink-0 inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium", isStale ? "bg-muted text-muted-foreground" : "bg-success/10 text-success")}>{isStale ? "OFF" : "ON"}</span>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground truncate">{loc.firstName} {loc.lastName}</p>
+                          </div>
+                          <div className="shrink-0 text-right">
+                            <p className="text-xs font-bold text-card-foreground">{(loc.distance / 1000).toFixed(1)} km</p>
+                            <p className="text-[9px] text-muted-foreground">⏱ {new Date(loc.recordedAt).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}</p>
+                          </div>
                         </div>
-                        <div className="text-right"><p className="text-sm font-bold text-card-foreground">{(loc.distance / 1000).toFixed(2)} km</p><p className="text-xs text-muted-foreground">⏱ {new Date(loc.recordedAt).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}</p></div>
                       </div>
-                    </div>
-                  )})}
+                    )
+                  })}
+                </div>
+                <div className="border-t border-border px-3 py-2 shrink-0 bg-muted/30">
+                  <div className="grid grid-cols-2 gap-2 text-center">
+                    <div><p className="text-[10px] text-muted-foreground">รถออนไลน์</p><p className="text-sm font-bold text-success">{locations.filter(l => Date.now() - new Date(l.recordedAt).getTime() < 30 * 60 * 1000).length}</p></div>
+                    <div><p className="text-[10px] text-muted-foreground">ออฟไลน์</p><p className="text-sm font-bold text-muted-foreground">{locations.filter(l => Date.now() - new Date(l.recordedAt).getTime() >= 30 * 60 * 1000).length}</p></div>
+                  </div>
                 </div>
               </div>
-            </>
+            </div>
           )}
         </>
       )}
