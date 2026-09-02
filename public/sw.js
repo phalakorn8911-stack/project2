@@ -1,14 +1,15 @@
-const CACHE_NAME = "vehicle-maint-v2";
-const OFFLINE_URL = "/offline";
+const CACHE_NAME = "vehicle-maint-v3";
+const OFFLINE_URL = "/offline.html";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) =>
       cache.addAll([
-        "/offline",
+        "/offline.html",
         "/icons/icon-192.png",
         "/icons/icon-512.png",
         "/manifest.json",
+        "/favicon.png",
       ])
     )
   );
@@ -52,6 +53,12 @@ self.addEventListener("fetch", (event) => {
         }
         return response;
       })
-      .catch(() => caches.match(request).then((cached) => cached || caches.match(OFFLINE_URL)))
+      .catch(async () => {
+        const cached = await caches.match(request);
+        if (cached) return cached;
+        const offlinePage = await caches.match(OFFLINE_URL);
+        if (offlinePage) return offlinePage;
+        return new Response("ออฟไลน์", { status: 503, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+      })
   );
 });
