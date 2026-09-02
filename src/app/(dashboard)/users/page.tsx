@@ -38,7 +38,7 @@ export default function UsersPage() {
   const [units, setUnits] = useState<{ id: string; name: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState({ rank: "", firstName: "", lastName: "", email: "", roleId: "", unitId: "" })
+  const [editForm, setEditForm] = useState({ rank: "", firstName: "", lastName: "", email: "", roleId: "", unitId: "", password: "" })
   const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [batchMode, setBatchMode] = useState(false)
@@ -81,6 +81,7 @@ export default function UsersPage() {
       email: u.email ?? "",
       roleId: u.roleId ?? "",
       unitId: u.unitId ?? "",
+      password: "",
     })
   }
 
@@ -104,7 +105,7 @@ export default function UsersPage() {
 
   const handleCancel = () => {
     setEditingId(null)
-    setEditForm({ rank: "", firstName: "", lastName: "", email: "", roleId: "", unitId: "" })
+    setEditForm({ rank: "", firstName: "", lastName: "", email: "", roleId: "", unitId: "", password: "" })
   }
 
   const handleDelete = async (id: string) => {
@@ -241,7 +242,10 @@ export default function UsersPage() {
                   </td>
                   <td className="px-3 py-3">
                     {editingId === u.id ? (
-                      <input type="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} className="block w-full rounded-lg border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring" />
+                      <div className="space-y-1">
+                        <input type="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} className="block w-full rounded-lg border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring" />
+                        <input type="password" value={editForm.password} onChange={(e) => setEditForm({ ...editForm, password: e.target.value })} placeholder="รหัสผ่านใหม่ (ถ้าต้องการ)" className="block w-full rounded-lg border border-input bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring" />
+                      </div>
                     ) : (
                       <span className="text-muted-foreground">{u.email}</span>
                     )}

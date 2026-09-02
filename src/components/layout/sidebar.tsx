@@ -20,6 +20,7 @@ import {
   Building,
   ChevronLeft,
   MapPin,
+  UserCircle,
   type LucideIcon,
 } from "lucide-react"
 import { useState } from "react"
@@ -46,6 +47,7 @@ const mainNav: NavItem[] = [
 ]
 
 const secondaryNav: NavItem[] = [
+  { label: "ข้อมูลส่วนตัว", href: "/profile", icon: UserCircle },
   { label: "การแจ้งเตือน", href: "/notifications", icon: Bell },
   { label: "จัดการผู้ใช้", href: "/users", icon: Users, roles: ["admin"] },
   { label: "ตั้งค่า", href: "/settings", icon: Settings, roles: ["admin"] },
