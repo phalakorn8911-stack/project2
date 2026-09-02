@@ -1,0 +1,48 @@
+{
+  "name": "สถานภาพยานยนต์ ร.153 พัน.3",
+  "short_name": "VehicleMaint",
+  "description": "ระบบจัดการยานพาหนะและซ่อมบำรุง กองพันทหารราบที่ 153",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#eab308",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "th",
+  "categories": ["business", "utilities"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "แดชบอร์ด",
+      "short_name": "แดชบอร์ด",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "GPS Tracking",
+      "short_name": "GPS",
+      "url": "/gps-tracking",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "ใบงานซ่อม",
+      "short_name": "ใบงาน",
+      "url": "/work-orders",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
