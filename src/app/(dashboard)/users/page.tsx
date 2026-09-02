@@ -627,8 +627,51 @@ export default function UsersPage() {
               </div>
             </div>
             <div className="p-4 border-t border-border flex gap-2">
-              <button onClick={() => { setDetailUser(null); handleEdit(detailUser) }} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"><Pencil className="size-3.5" /> แก้ไข</button>
+              <button onClick={() => { setEditingId(detailUser.id); setEditForm({ rank: detailUser.rank||"", firstName: detailUser.firstName||"", lastName: detailUser.lastName||"", email: detailUser.email||"", roleId: detailUser.roleId||"", unitId: detailUser.unitId||"", password: "", address: detailUser.address||"", maritalStatus: detailUser.maritalStatus||"", education: detailUser.education||"", nationalId: detailUser.nationalId||"", civilianLicense: detailUser.civilianLicense||"", armyLicense: detailUser.armyLicense||"" }); setDetailUser(null) }} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"><Pencil className="size-3.5" /> แก้ไข</button>
               <button onClick={() => setDetailUser(null)} className="flex-1 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted transition-colors">ปิด</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full Edit Modal for Admin */}
+      {editingId && !showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <h2 className="text-lg font-semibold">แก้ไขข้อมูลผู้ใช้</h2>
+              <button onClick={handleCancel} className="p-1 rounded-lg hover:bg-muted transition-colors"><X className="h-5 w-5" /></button>
+            </div>
+            <div className="p-4 space-y-4">
+              <h3 className="text-sm font-semibold">ข้อมูลทั่วไป</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="block text-xs text-muted-foreground mb-1">ยศ</label><input value={editForm.rank} onChange={e=>setEditForm({...editForm,rank:e.target.value})} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
+                <div><label className="block text-xs text-muted-foreground mb-1">อีเมล</label><input type="email" value={editForm.email} onChange={e=>setEditForm({...editForm,email:e.target.value})} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
+                <div><label className="block text-xs text-muted-foreground mb-1">ชื่อ</label><input value={editForm.firstName} onChange={e=>setEditForm({...editForm,firstName:e.target.value})} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
+                <div><label className="block text-xs text-muted-foreground mb-1">นามสกุล</label><input value={editForm.lastName} onChange={e=>setEditForm({...editForm,lastName:e.target.value})} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>
+                <div><label className="block text-xs text-muted-foreground mb-1">รหัสผ่านใหม่ (ถ้าต้องการ)</label><input type="password" value={editForm.password} onChange={e=>setEditForm({...editForm,password:e.target.value})} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" placeholder="ไม่ต้องกรอกถ้าไม่เปลี่ยน" /></div>
+                <div><label className="block text-xs text-muted-foreground mb-1">บทบาท</label><select value={editForm.roleId} onChange={e=>setEditForm({...editForm,roleId:e.target.value})} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"><option value="">-- เลือก --</option>{roles.map((r)=><option key={r.id} value={r.id}>{roleLabels[r.name]??r.name}</option>)}</select></div>
+                <div><label className="block text-xs text-muted-foreground mb-1">หน่วยงาน</label><select value={editForm.unitId} onChange={e=>setEditForm({...editForm,unitId:e.target.value})} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"><option value="">-- เลือก --</option>{units.map((u)=><option key={u.id} value={u.id}>{u.name}</option>)}</select></div>
+              </div>
+
+              <h3 className="text-sm font-semibold pt-3 border-t border-border">ข้อมูลส่วนบุคคล</h3>
+              <div><label className="block text-xs text-muted-foreground mb-1">ที่อยู่</label><textarea value={editForm.address} onChange={e=>setEditForm({...editForm,address:e.target.value})} rows={2} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm resize-none" /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="block text-xs text-muted-foreground mb-1">สถานภาพ</label><select value={editForm.maritalStatus} onChange={e=>setEditForm({...editForm,maritalStatus:e.target.value})} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"><option value="">-- เลือก --</option><option value="โสด">โสด</option><option value="สมรส">สมรส</option><option value="หม้าย">หม้าย</option><option value="หย่า">หย่า</option></select></div>
+                <div><label className="block text-xs text-muted-foreground mb-1">การศึกษา</label><select value={editForm.education} onChange={e=>setEditForm({...editForm,education:e.target.value})} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"><option value="">-- เลือก --</option><option value="ประถมศึกษา">ประถมศึกษา</option><option value="มัธยมศึกษา">มัธยมศึกษา</option><option value="ปวช.">ปวช.</option><option value="ปวส.">ปวส.</option><option value="ปริญญาตรี">ปริญญาตรี</option><option value="ปริญญาโท">ปริญญาโท</option></select></div>
+              </div>
+              <div><label className="block text-xs text-muted-foreground mb-1">หมายเลขประชาชน</label><input value={editForm.nationalId} onChange={e=>setEditForm({...editForm,nationalId:e.target.value})} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" maxLength={13} /></div>
+
+              <h3 className="text-sm font-semibold pt-3 border-t border-border">ใบอนุญาตขับขี่</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="block text-xs text-muted-foreground mb-1">ใบขับขี่พลเรือน</label><select value={editForm.civilianLicense} onChange={e=>setEditForm({...editForm,civilianLicense:e.target.value})} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"><option value="">-- เลือก --</option><option value="บ.1">บ.1 รถยนต์ส่วนบุคคล ไม่เกิน 3,500 กก.</option><option value="บ.2">บ.2 รถยนต์ส่วนบุคคล นั่งเกิน 7 คน</option><option value="ท.1">ท.1 รถยนต์สาธารณะ ไม่เกิน 3,500 กก.</option><option value="ท.2">ท.2 รถยนต์สาธารณะ นั่งไม่เกิน 20 คน</option><option value="ท.3">ท.3 รถยนต์สาธารณะ นั่งเกิน 20 คน</option><option value="ท.4">ท.4 รถบรรทุกสาธารณะ</option><option value="ข.1">ข.1 รถจักรยานยนต์</option><option value="ข.2">ข.2 รถจักรยานยนต์สามล้อ</option><option value="ข.3">ข.3 รถแทรกเตอร์</option><option value="ข.4">ข.4 รถออฟโรด</option></select></div>
+                <div><label className="block text-xs text-muted-foreground mb-1">ใบขับขี่ ทบ.</label><select value={editForm.armyLicense} onChange={e=>setEditForm({...editForm,armyLicense:e.target.value})} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"><option value="">-- เลือก --</option><option value="ชนิดที่ 1">ชนิดที่ 1 รถยนต์สายพานใช้คันบังคับ</option><option value="ชนิดที่ 2">ชนิดที่ 2 รถยนต์สายพาน/กึ่งสายพาน หรือ 3 ล้อ เกิน 2 ตัน</option><option value="ชนิดที่ 3">ชนิดที่ 3 รถยนต์ 3 ล้อ ไม่เกิน 2 ตัน</option><option value="ชนิดที่ 4">ชนิดที่ 4 รถจักรยานยนต์พ่วงข้าง</option></select></div>
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-border">
+                <button onClick={handleCancel} className="flex-1 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted transition-colors">ยกเลิก</button>
+                <button onClick={handleSave} disabled={saving} className="flex-1 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">{saving ? "กำลังบันทึก..." : "บันทึก"}</button>
+              </div>
             </div>
           </div>
         </div>
