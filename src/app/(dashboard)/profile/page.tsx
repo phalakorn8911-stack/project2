@@ -1,8 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { User, Save, Lock, Shield, Building, Eye, EyeOff, CheckCircle, MapPin, GraduationCap, CreditCard, FileText } from "lucide-react"
-import { cn } from "@/lib/utils"
 
 const roleLabels: Record<string, string> = {
   admin: "ผู้ดูแลระบบ/ผู้บังคับบัญชา",
@@ -25,7 +23,10 @@ export default function ProfilePage() {
 
   useEffect(() => {
     fetch("/api/profile")
-      .then((r) => r.ok ? r.json() : null)
+      .then((r) => {
+        if (!r.ok) throw new Error("not ok")
+        return r.json()
+      })
       .then((data) => {
         if (data) {
           setProfile(data)
@@ -84,73 +85,79 @@ export default function ProfilePage() {
     setSaving(false)
   }
 
-  if (loading) return <div className="p-4 md:p-6"><div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">กำลังโหลด...</div></div>
+  if (loading) return (
+    <div className="p-4 md:p-6">
+      <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">กำลังโหลด...</div>
+    </div>
+  )
+
+  if (!profile) return (
+    <div className="p-4 md:p-6">
+      <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-destructive">ไม่สามารถโหลดข้อมูลได้ กรุณาเข้าสู่ระบบใหม่</div>
+    </div>
+  )
+
+  const inp = "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50"
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-2xl mx-auto">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">ข้อมูลส่วนตัว</h2>
+        <h2 className="text-lg font-semibold">ข้อมูลส่วนตัว</h2>
         <p className="text-sm text-muted-foreground">แก้ไขข้อมูลส่วนตัวและเปลี่ยนรหัสผ่าน</p>
       </div>
 
       {message && (
-        <div className={cn("rounded-lg px-4 py-3 text-sm flex items-center gap-2",
-          message.type === "success" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
-        )}>
-          {message.type === "success" ? <CheckCircle className="size-4" /> : <span>⚠</span>}
+        <div className={`rounded-lg px-4 py-3 text-sm ${message.type === "success" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
           {message.text}
         </div>
       )}
 
-      {/* Header */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-5">
         <div className="flex items-center gap-3 pb-4 border-b border-border">
-          <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <User className="size-7" />
+          <div className="flex size-14 items-center justify-center rounded-full bg-yellow-500/10 text-yellow-600 text-2xl font-bold">
+            {(form.firstName?.[0] || "?").toUpperCase()}
           </div>
           <div>
-            <p className="text-lg font-semibold text-card-foreground">{form.rank} {form.firstName} {form.lastName}</p>
-            <p className="text-sm text-muted-foreground flex items-center gap-1.5"><Shield className="size-3.5" /> {roleLabels[profile?.role] || profile?.role}</p>
-            {profile?.unit && <p className="text-sm text-muted-foreground flex items-center gap-1.5"><Building className="size-3.5" /> {profile?.unit}</p>}
+            <p className="text-lg font-semibold">{form.rank} {form.firstName} {form.lastName}</p>
+            <p className="text-sm text-muted-foreground">{roleLabels[profile?.role] || profile?.role}</p>
+            {profile?.unit && <p className="text-sm text-muted-foreground">{profile.unit}</p>}
           </div>
         </div>
 
-        {/* ข้อมูลทั่วไป */}
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-card-foreground flex items-center gap-2"><User className="size-4" /> ข้อมูลทั่วไป</h3>
+          <h3 className="text-sm font-semibold">ข้อมูลทั่วไป</h3>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-muted-foreground mb-1">ยศ</label>
-              <input value={form.rank} onChange={(e) => setForm({ ...form, rank: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" placeholder="เช่น สิบเอก" />
+              <input value={form.rank} onChange={(e) => setForm({ ...form, rank: e.target.value })} className={inp} placeholder="เช่น สิบเอก" />
             </div>
             <div>
               <label className="block text-xs text-muted-foreground mb-1">อีเมล</label>
-              <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" />
+              <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inp} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-muted-foreground mb-1">ชื่อ</label>
-              <input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" />
+              <input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} className={inp} />
             </div>
             <div>
               <label className="block text-xs text-muted-foreground mb-1">นามสกุล</label>
-              <input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" />
+              <input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} className={inp} />
             </div>
           </div>
         </div>
 
-        {/* ข้อมูลส่วนบุคคล */}
         <div className="space-y-4 pt-4 border-t border-border">
-          <h3 className="text-sm font-semibold text-card-foreground flex items-center gap-2"><FileText className="size-4" /> ข้อมูลส่วนบุคคล</h3>
+          <h3 className="text-sm font-semibold">ข้อมูลส่วนบุคคล</h3>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">ที่อยู่</label>
-            <textarea value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} rows={2} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50 resize-none" placeholder="ที่อยู่ปัจจุบัน" />
+            <textarea value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} rows={2} className={inp + " resize-none"} placeholder="ที่อยู่ปัจจุบัน" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-muted-foreground mb-1">สถานภาพ</label>
-              <select value={form.maritalStatus} onChange={(e) => setForm({ ...form, maritalStatus: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50">
+              <select value={form.maritalStatus} onChange={(e) => setForm({ ...form, maritalStatus: e.target.value })} className={inp}>
                 <option value="">-- เลือก --</option>
                 <option value="โสด">โสด</option>
                 <option value="สมรส">สมรส</option>
@@ -160,7 +167,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <label className="block text-xs text-muted-foreground mb-1">การศึกษา</label>
-              <select value={form.education} onChange={(e) => setForm({ ...form, education: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50">
+              <select value={form.education} onChange={(e) => setForm({ ...form, education: e.target.value })} className={inp}>
                 <option value="">-- เลือก --</option>
                 <option value="ประถมศึกษา">ประถมศึกษา</option>
                 <option value="มัธยมศึกษา">มัธยมศึกษา</option>
@@ -175,17 +182,16 @@ export default function ProfilePage() {
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">หมายเลขประชาชน</label>
-            <input value={form.nationalId} onChange={(e) => setForm({ ...form, nationalId: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" placeholder="13 หลัก" maxLength={13} />
+            <input value={form.nationalId} onChange={(e) => setForm({ ...form, nationalId: e.target.value })} className={inp} placeholder="13 หลัก" maxLength={13} />
           </div>
         </div>
 
-        {/* ใบอนุญาตขับขี่ */}
         <div className="space-y-4 pt-4 border-t border-border">
-          <h3 className="text-sm font-semibold text-card-foreground flex items-center gap-2"><CreditCard className="size-4" /> ใบอนุญาตขับขี่</h3>
+          <h3 className="text-sm font-semibold">ใบอนุญาตขับขี่</h3>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-muted-foreground mb-1">ใบขับขี่พลเรือน ประเภท</label>
-              <select value={form.civilianLicense} onChange={(e) => setForm({ ...form, civilianLicense: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50">
+              <select value={form.civilianLicense} onChange={(e) => setForm({ ...form, civilianLicense: e.target.value })} className={inp}>
                 <option value="">-- เลือก --</option>
                 <option value="ท">ท. รถยนต์นั่งส่วนบุคคลไม่เกิน 7 คนนั่ง</option>
                 <option value="ท2">ท2. รถยนต์นั่งส่วนบุคคลเกิน 7 คนนั่ง</option>
@@ -197,7 +203,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <label className="block text-xs text-muted-foreground mb-1">ใบขับขี่ ทบ. ประเภท</label>
-              <select value={form.armyLicense} onChange={(e) => setForm({ ...form, armyLicense: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50">
+              <select value={form.armyLicense} onChange={(e) => setForm({ ...form, armyLicense: e.target.value })} className={inp}>
                 <option value="">-- เลือก --</option>
                 <option value="ทบ.1">ทบ.1 รถยนต์ขนาดเล็ก</option>
                 <option value="ทบ.2">ทบ.2 รถยนต์ขนาดกลาง</option>
@@ -209,30 +215,27 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <button onClick={handleSaveProfile} disabled={saving} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
-          <Save className="size-4" /> บันทึกข้อมูล
+        <button onClick={handleSaveProfile} disabled={saving} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
+          {saving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
         </button>
       </div>
 
-      {/* เปลี่ยนรหัสผ่าน */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-5">
-        <h3 className="text-sm font-semibold text-card-foreground flex items-center gap-2"><Lock className="size-4" /> เปลี่ยนรหัสผ่าน</h3>
+        <h3 className="text-sm font-semibold">เปลี่ยนรหัสผ่าน</h3>
         <div className="space-y-3">
           <div>
             <label className="block text-xs text-muted-foreground mb-1">รหัสผ่านใหม่</label>
-            <div className="relative">
-              <input type={showPassword ? "text" : "password"} value={form.newPassword} onChange={(e) => setForm({ ...form, newPassword: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" placeholder="อย่างน้อย 4 ตัวอักษร" />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-              </button>
-            </div>
+            <input type={showPassword ? "text" : "password"} value={form.newPassword} onChange={(e) => setForm({ ...form, newPassword: e.target.value })} className={inp} placeholder="อย่างน้อย 4 ตัวอักษร" />
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">ยืนยันรหัสผ่านใหม่</label>
-            <input type={showPassword ? "text" : "password"} value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" placeholder="กรอกรหัสผ่านใหม่อีกครั้ง" />
+            <input type={showPassword ? "text" : "password"} value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} className={inp} placeholder="กรอกรหัสผ่านใหม่อีกครั้ง" />
           </div>
-          <button onClick={handleChangePassword} disabled={saving || !form.newPassword || !form.confirmPassword} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">
-            <Lock className="size-4" /> เปลี่ยนรหัสผ่าน
+          <button onClick={() => setShowPassword(!showPassword)} className="text-xs text-muted-foreground hover:text-foreground">
+            {showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+          </button>
+          <button onClick={handleChangePassword} disabled={saving || !form.newPassword || !form.confirmPassword} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
+            เปลี่ยนรหัสผ่าน
           </button>
         </div>
       </div>
