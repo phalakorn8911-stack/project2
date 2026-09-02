@@ -102,7 +102,7 @@ export default function DownloadPage() {
           </a>
         </div>
 
-        <p className="text-center text-xs text-slate-600">กองพันทหารราบที่ 153 กรมทหารราบที่ 15</p>
+        <p className="text-center text-xs text-slate-600">กองพันทหารราบที่ 3 กรมทหารราบที่ 153 กองพลทหารราบที่ 15</p>
       </div>
     </div>
   )
