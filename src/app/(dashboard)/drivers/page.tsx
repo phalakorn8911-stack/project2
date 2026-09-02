@@ -50,6 +50,7 @@ export default function DriversPage() {
   const [reportForm, setReportForm] = useState({ vehicleId: "", symptoms: "", reportDate: "" })
   const [editingReportId, setEditingReportId] = useState<string | null>(null)
   const [reportSaving, setReportSaving] = useState(false)
+  const [allVehicles, setAllVehicles] = useState<{ id: string; registrationNumber: string; model: string }[]>([])
 
   useEffect(() => {
     fetchDrivers()
@@ -182,9 +183,20 @@ export default function DriversPage() {
     }
   }
 
-  const openDriverDetail = (driver: Driver) => {
+  const openDriverDetail = async (driver: Driver) => {
     setSelectedDriver(driver)
     fetchReports(driver.id)
+    // Fetch all vehicles for the dropdown
+    try {
+      const res = await fetch("/api/vehicles")
+      if (res.ok) {
+        const data = await res.json()
+        const list = Array.isArray(data) ? data : data.vehicles ?? []
+        setAllVehicles(list.map((v: any) => ({ id: v.id, registrationNumber: v.registrationNumber, model: v.model })))
+      }
+    } catch {
+      setAllVehicles([])
+    }
   }
 
   const handleSaveReport = async () => {
@@ -517,7 +529,7 @@ export default function DriversPage() {
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50"
                     >
                       <option value="">-- เลือกรถ --</option>
-                      {selectedDriver.vehicles.map((v) => (
+                      {allVehicles.map((v) => (
                         <option key={v.id} value={v.id}>{v.registrationNumber} - {v.model}</option>
                       ))}
                     </select>
