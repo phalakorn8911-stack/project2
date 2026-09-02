@@ -808,7 +808,7 @@ export default function VehicleDetailPage() {
                         <p className="text-sm text-card-foreground">{rr.symptoms}</p>
                         <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
                           <span>{rr.systemCategory}</span>
-                          {rr.workOrder && <span>• WO: {rr.workOrder.woNumber}</span>}
+                          {rr.workOrder && <span>• ใบงาน: {rr.workOrder.woNumber}</span>}
                         </div>
                       </>
                     )}

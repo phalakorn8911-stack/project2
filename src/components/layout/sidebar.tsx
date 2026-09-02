@@ -43,7 +43,7 @@ const mainNav: NavItem[] = [
   { label: "ใบงานซ่อม", href: "/work-orders", icon: Wrench, roles: ["admin", "mechanic"] },
   { label: "คลังอะไหล่", href: "/parts", icon: Package, roles: ["admin", "mechanic"] },
   { label: "รายงาน", href: "/reports", icon: FileBarChart, roles: ["admin", "mechanic"] },
-  { label: "GPS Tracking", href: "/gps-tracking", icon: MapPin, roles: ["admin"] },
+  { label: "ติดตามรถ GPS", href: "/gps-tracking", icon: MapPin, roles: ["admin"] },
   { label: "ผู้ช่วย AI", href: "/ai-assistant", icon: Bot },
 ]
 

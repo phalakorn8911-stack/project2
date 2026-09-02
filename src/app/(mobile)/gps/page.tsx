@@ -95,7 +95,7 @@ export default function DriverGPSPage() {
               <MapPin className="size-4 text-white" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-white">GPS Tracker</h1>
+              <h1 className="text-sm font-bold text-white">ระบบติดตาม GPS</h1>
               <p className="text-[10px] text-emerald-200">ระบบติดตามตำแหน่งรถ</p>
             </div>
           </div>

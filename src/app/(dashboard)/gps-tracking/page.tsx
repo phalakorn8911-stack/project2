@@ -32,7 +32,7 @@ function MapComponent({ drivers }: { drivers: DriverLocation[] }) {
       const latest = driver.points[driver.points.length - 1]; const age = Date.now() - new Date(latest.recordedAt).getTime(); const isStale = age > 30 * 60 * 1000
       const icon = L.divIcon({ className: "", html: `<div style="background:${color};width:32px;height:32px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;opacity:${isStale ? 0.4 : 1};"><span style="color:white;font-size:10px;font-weight:bold;">${driver.registrationNumber.slice(-2)}</span></div>`, iconSize: [32, 32], iconAnchor: [16, 16] })
       const marker = L.marker([latest.latitude, latest.longitude], { icon }).addTo(map)
-      marker.bindPopup(`<div style="min-width:150px;font-family:sans-serif"><b style="font-size:13px">${driver.registrationNumber}</b><br/><span style="color:#666;font-size:11px">${driver.firstName} ${driver.lastName}</span><div style="margin-top:4px;font-size:10px;color:#888">📏 ${(driver.distance / 1000).toFixed(2)} km<br/>🏎 ${driver.maxSpeed.toFixed(0)} km/h<br/>🕐 ${new Date(latest.recordedAt).toLocaleString("th-TH")}</div></div>`)
+      marker.bindPopup(`<div style="min-width:150px;font-family:sans-serif"><b style="font-size:13px">${driver.registrationNumber}</b><br/><span style="color:#666;font-size:11px">${driver.firstName} ${driver.lastName}</span><div style="margin-top:4px;font-size:10px;color:#888">📏 ${(driver.distance / 1000).toFixed(2)} กม.<br/>🏎 ${driver.maxSpeed.toFixed(0)} กม./ชม.<br/>🕐 ${new Date(latest.recordedAt).toLocaleString("th-TH")}</div></div>`)
       markersRef.current.push(marker)
     })
     if (allPoints.length > 1) { map.fitBounds(L.latLngBounds(allPoints), { padding: [60, 60] }) }
@@ -481,8 +481,8 @@ export default function GPSTrackingPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-xl font-bold text-card-foreground">GPS Tracking</h1><p className="text-sm text-muted-foreground">ติดตามตำแหน่งรถแบบเรียลไทม์</p></div>
-        {tab === "map" && <button onClick={() => setAutoRefresh(!autoRefresh)} className={cn("inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition-colors", autoRefresh ? "border-success/30 bg-success/10 text-success" : "border-border text-muted-foreground")}><RefreshCw className={cn("size-3", autoRefresh && "animate-spin")} /> {autoRefresh ? "Auto (30s)" : "Off"}</button>}
+        <div><h1 className="text-xl font-bold text-card-foreground">ติดตามรถ GPS</h1><p className="text-sm text-muted-foreground">ติดตามตำแหน่งรถแบบเรียลไทม์</p></div>
+        {tab === "map" && <button onClick={() => setAutoRefresh(!autoRefresh)} className={cn("inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition-colors", autoRefresh ? "border-success/30 bg-success/10 text-success" : "border-border text-muted-foreground")}><RefreshCw className={cn("size-3", autoRefresh && "animate-spin")} /> {autoRefresh ? "อัตโนมัติ (30 วินาที)" : "ปิด"}</button>}
       </div>
 
       <div className="flex gap-1 rounded-xl border border-border bg-card p-1">
@@ -497,7 +497,7 @@ export default function GPSTrackingPage() {
             <div className="rounded-xl border border-border bg-card p-3"><div className="flex items-center gap-2 mb-1"><Truck className="size-4 text-info" /><span className="text-xs text-muted-foreground">รถวิ่ง</span></div><p className="text-2xl font-bold text-card-foreground">{locations.length}</p></div>
             <div className="rounded-xl border border-border bg-card p-3"><div className="flex items-center gap-2 mb-1"><Route className="size-4 text-success" /><span className="text-xs text-muted-foreground">ระยะทาง</span></div><p className="text-2xl font-bold text-success">{(totalDistance / 1000).toFixed(1)} <span className="text-sm font-normal">km</span></p></div>
             <div className="rounded-xl border border-border bg-card p-3"><div className="flex items-center gap-2 mb-1"><MapPin className="size-4 text-primary" /><span className="text-xs text-muted-foreground">จุดพิกัด</span></div><p className="text-2xl font-bold text-card-foreground">{totalPoints}</p></div>
-            <div className="rounded-xl border border-border bg-card p-3"><div className="flex items-center gap-2 mb-1"><Zap className="size-4 text-warning" /><span className="text-xs text-muted-foreground">km/h</span></div><p className="text-2xl font-bold text-card-foreground">{locations.length > 0 ? Math.max(...locations.map(l => l.maxSpeed)).toFixed(0) : 0}</p></div>
+            <div className="rounded-xl border border-border bg-card p-3"><div className="flex items-center gap-2 mb-1"><Zap className="size-4 text-warning" /><span className="text-xs text-muted-foreground">กม./ชม.</span></div><p className="text-2xl font-bold text-card-foreground">{locations.length > 0 ? Math.max(...locations.map(l => l.maxSpeed)).toFixed(0) : 0}</p></div>
           </div>
           {loading ? <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">กำลังโหลด...</div> : locations.length === 0 ? (
             <div className="rounded-xl border border-border bg-card p-12 text-center"><MapPin className="mx-auto mb-3 size-10 text-muted-foreground" /><p className="text-sm text-muted-foreground">ยังไม่มีข้อมูล GPS</p><p className="text-xs text-muted-foreground mt-1">เปิดเว็บ <b>/gps</b> บนมือถือเพื่อเริ่มติดตาม</p></div>
@@ -515,7 +515,7 @@ export default function GPSTrackingPage() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
                               <p className="text-xs font-semibold text-card-foreground truncate">{loc.registrationNumber}</p>
-                              <span className={cn("shrink-0 inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium", isStale ? "bg-muted text-muted-foreground" : "bg-success/10 text-success")}>{isStale ? "OFF" : "ON"}</span>
+                              <span className={cn("shrink-0 inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium", isStale ? "bg-muted text-muted-foreground" : "bg-success/10 text-success")}>{isStale ? "ปิด" : "เปิด"}</span>
                             </div>
                             <p className="text-[10px] text-muted-foreground truncate">{loc.firstName} {loc.lastName}</p>
                           </div>
