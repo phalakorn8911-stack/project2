@@ -19,6 +19,10 @@ export async function GET() {
         intervalMonths: p.intervalMonths,
         intervalHours: p.intervalHours,
         intervalMileage: p.intervalMileage,
+        cycleDay: (p as any).cycleDay ?? null,
+        cycleMonth: (p as any).cycleMonth ?? null,
+        cycleYear: (p as any).cycleYear ?? null,
+        description: (p as any).description ?? "",
         totalVehicles: p.schedules.length,
         dueSoon: p.schedules.filter((s) => s.status === "DUE_SOON").length,
         overdue: p.schedules.filter((s) => s.status === "OVERDUE").length,
@@ -32,7 +36,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { name, vehicleTypeId, intervalMonths, intervalMileage, intervalHours } = await request.json()
+    const { name, vehicleTypeId, intervalMonths, intervalMileage, intervalHours, cycleDay, cycleMonth, cycleYear, description } = await request.json()
 
     if (!name || !vehicleTypeId) {
       return NextResponse.json({ error: "กรุณากรอกชื่อแผน และประเภทรถ" }, { status: 400 })
@@ -45,6 +49,10 @@ export async function POST(request: Request) {
         ...(intervalMonths !== undefined && intervalMonths !== null && { intervalMonths }),
         ...(intervalMileage !== undefined && intervalMileage !== null && { intervalMileage }),
         ...(intervalHours !== undefined && intervalHours !== null && { intervalHours }),
+        ...((cycleDay !== undefined && cycleDay !== null) && { cycleDay }),
+        ...((cycleMonth !== undefined && cycleMonth !== null) && { cycleMonth }),
+        ...((cycleYear !== undefined && cycleYear !== null) && { cycleYear }),
+        ...(description !== undefined && { description }),
       },
     })
 

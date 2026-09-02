@@ -12,6 +12,10 @@ interface MaintenancePlan {
   intervalMonths: number | null
   intervalHours: number | null
   intervalMileage: number | null
+  cycleDay: number | null
+  cycleMonth: number | null
+  cycleYear: number | null
+  description: string
   totalVehicles: number
   dueSoon: number
   overdue: number
@@ -47,6 +51,10 @@ interface PlanForm {
   intervalMonths: string
   intervalMileage: string
   intervalHours: string
+  cycleDay: string
+  cycleMonth: string
+  cycleYear: string
+  description: string
 }
 
 const emptyForm: PlanForm = {
@@ -55,6 +63,10 @@ const emptyForm: PlanForm = {
   intervalMonths: "",
   intervalMileage: "",
   intervalHours: "",
+  cycleDay: "",
+  cycleMonth: "",
+  cycleYear: "",
+  description: "",
 }
 
 const scheduleStatusLabels: Record<string, { label: string; className: string }> = {
@@ -127,6 +139,10 @@ export default function MaintenancePlansPage() {
       intervalMonths: plan.intervalMonths?.toString() ?? "",
       intervalMileage: plan.intervalMileage?.toString() ?? "",
       intervalHours: plan.intervalHours?.toString() ?? "",
+      cycleDay: plan.cycleDay?.toString() ?? "",
+      cycleMonth: plan.cycleMonth?.toString() ?? "",
+      cycleYear: plan.cycleYear?.toString() ?? "",
+      description: plan.description ?? "",
     })
     setShowForm(true)
   }
@@ -147,6 +163,10 @@ export default function MaintenancePlansPage() {
       intervalMonths: form.intervalMonths ? parseInt(form.intervalMonths) : null,
       intervalMileage: form.intervalMileage ? parseFloat(form.intervalMileage) : null,
       intervalHours: form.intervalHours ? parseFloat(form.intervalHours) : null,
+      cycleDay: form.cycleDay ? parseInt(form.cycleDay) : null,
+      cycleMonth: form.cycleMonth ? parseInt(form.cycleMonth) : null,
+      cycleYear: form.cycleYear ? parseInt(form.cycleYear) : null,
+      description: form.description.trim(),
     }
 
     try {
@@ -358,6 +378,65 @@ export default function MaintenancePlansPage() {
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
             </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">วันที่กำหนด (วัน)</label>
+              <input
+                type="number"
+                min={1}
+                max={31}
+                value={form.cycleDay}
+                onChange={(e) => updateField("cycleDay", e.target.value)}
+                placeholder="เช่น 15"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">วันที่กำหนด (เดือน)</label>
+              <select
+                value={form.cycleMonth}
+                onChange={(e) => updateField("cycleMonth", e.target.value)}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              >
+                <option value="">ทุกเดือน</option>
+                <option value="1">มกราคม</option>
+                <option value="2">กุมภาพันธ์</option>
+                <option value="3">มีนาคม</option>
+                <option value="4">เมษายน</option>
+                <option value="5">พฤษภาคม</option>
+                <option value="6">มิถุนายน</option>
+                <option value="7">กรกฎาคม</option>
+                <option value="8">สิงหาคม</option>
+                <option value="9">กันยายน</option>
+                <option value="10">ตุลาคม</option>
+                <option value="11">พฤศจิกายน</option>
+                <option value="12">ธันวาคม</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">วงรอบ (ปี)</label>
+              <input
+                type="number"
+                min={1}
+                value={form.cycleYear}
+                onChange={(e) => updateField("cycleYear", e.target.value)}
+                placeholder="เช่น 1 (ทุกปี)"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-sm font-medium">รายละเอียดแผนซ่อม</label>
+              <textarea
+                value={form.description}
+                onChange={(e) => updateField("description", e.target.value)}
+                placeholder="อธิบายรายละเอียดแผนซ่อมบำรุง..."
+                rows={2}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-2 mt-6">
@@ -506,6 +585,13 @@ export default function MaintenancePlansPage() {
                   </div>
 
                   <div className="space-y-2 mb-4">
+                    {plan.cycleDay != null && plan.cycleMonth != null && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="h-3.5 w-3.5" />
+                        <span>ทุกวันที่ {plan.cycleDay} เดือน{["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."][plan.cycleMonth ?? 0]}</span>
+                        {plan.cycleYear != null && <span>ทุก {plan.cycleYear} ปี</span>}
+                      </div>
+                    )}
                     {plan.intervalMonths != null && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Clock className="h-3.5 w-3.5" />
@@ -523,6 +609,9 @@ export default function MaintenancePlansPage() {
                         <Clock className="h-3.5 w-3.5" />
                         <span>ทุก {plan.intervalHours} ชม.</span>
                       </div>
+                    )}
+                    {plan.description && (
+                      <p className="text-xs text-muted-foreground mt-1">{plan.description}</p>
                     )}
                   </div>
 

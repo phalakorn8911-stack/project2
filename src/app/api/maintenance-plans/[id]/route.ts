@@ -16,6 +16,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         ...(body.intervalMonths !== undefined && { intervalMonths: body.intervalMonths }),
         ...(body.intervalMileage !== undefined && { intervalMileage: body.intervalMileage }),
         ...(body.intervalHours !== undefined && { intervalHours: body.intervalHours }),
+        ...(body.cycleDay !== undefined && { cycleDay: body.cycleDay }),
+        ...(body.cycleMonth !== undefined && { cycleMonth: body.cycleMonth }),
+        ...(body.cycleYear !== undefined && { cycleYear: body.cycleYear }),
+        ...(body.description !== undefined && { description: body.description }),
       },
     })
 
