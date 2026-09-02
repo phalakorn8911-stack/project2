@@ -289,7 +289,7 @@ function VehiclesContent() {
         </button>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <input
@@ -397,7 +397,7 @@ function VehiclesContent() {
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-card rounded-xl border border-border shadow-xl w-full max-w-lg mx-4 p-6 space-y-4">
-            <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <h3 className="text-lg font-semibold text-card-foreground">{editId ? "แก้ไขยานพาหนะ" : "เพิ่มยานพาหนะ"}</h3>
               <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground">
                 <X className="size-5" />

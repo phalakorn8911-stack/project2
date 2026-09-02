@@ -99,7 +99,7 @@ export default function ProfilePage() {
           </div>
         </div>
         <h3 className="font-semibold">ข้อมูลทั่วไป</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div><label className="text-xs text-muted-foreground">ยศ</label><input value={form.rank||""} onChange={e=>setForm({...form,rank:e.target.value})} className={i} /></div>
           <div><label className="text-xs text-muted-foreground">อีเมล</label><input value={form.email||""} onChange={e=>setForm({...form,email:e.target.value})} className={i} /></div>
           <div><label className="text-xs text-muted-foreground">ชื่อ</label><input value={form.firstName||""} onChange={e=>setForm({...form,firstName:e.target.value})} className={i} /></div>
@@ -110,8 +110,8 @@ export default function ProfilePage() {
       <div className="rounded-xl border bg-card p-5 space-y-4">
         <h3 className="font-semibold">ข้อมูลส่วนบุคคล</h3>
         <div><label className="text-xs text-muted-foreground">ที่อยู่</label><textarea value={form.address||""} onChange={e=>setForm({...form,address:e.target.value})} rows={2} className={i} /></div>
-        <div className="grid grid-cols-2 gap-3">
-          <div><label className="text-xs text-muted-foreground">สถานภาพ</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div><label className="text-xs text-muted-foreground">สถานภาพ</label>
             <select value={form.maritalStatus||""} onChange={e=>setForm({...form,maritalStatus:e.target.value})} className={i}>
               <option value="">-- เลือก --</option>
               <option value="โสด">โสด</option>

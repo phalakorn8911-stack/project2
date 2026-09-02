@@ -1,7 +1,7 @@
 "use client"
 
 import { useSession, signOut } from "next-auth/react"
-import { Bell, LogOut, ChevronDown, User } from "lucide-react"
+import { Bell, LogOut, ChevronDown, User, Menu } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
@@ -19,7 +19,7 @@ const roleLabels: Record<string, string> = {
   driver: "พลขับ",
 }
 
-export function Header() {
+export function Header({ onMenuToggle }: { onMenuToggle?: () => void }) {
   const { data: session } = useSession()
   const [showMenu, setShowMenu] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
@@ -51,8 +51,15 @@ export function Header() {
   }, [showMenu])
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-border bg-background px-6">
+    <header className="flex h-14 items-center justify-between border-b border-border bg-background px-4 md:px-6">
       <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onMenuToggle}
+          className="md:hidden rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        >
+          <Menu className="size-5" />
+        </button>
         <h1 className="text-base font-semibold text-foreground">
             สถานภาพยานยนต์ ร.153 พัน.3
         </h1>
