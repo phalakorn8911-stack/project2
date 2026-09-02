@@ -185,7 +185,7 @@ export default function WorkOrdersPage() {
     workOrders.filter((wo) => statuses.includes(wo.status))
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">ใบงานซ่อม</h1>
         <button onClick={() => setShowForm(!showForm)} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
