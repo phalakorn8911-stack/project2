@@ -10,12 +10,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const body = await request.json()
 
     const updateData: any = {}
-    if (body.rank !== undefined) updateData.rank = body.rank
-    if (body.firstName !== undefined) updateData.firstName = body.firstName
-    if (body.lastName !== undefined) updateData.lastName = body.lastName
-    if (body.email !== undefined) updateData.email = body.email
-    if (body.roleId !== undefined) updateData.roleId = body.roleId
-    if (body.unitId !== undefined) updateData.unitId = body.unitId
+    const fields = [
+      "rank", "firstName", "lastName", "email", "roleId", "unitId",
+      "address", "maritalStatus", "education", "nationalId",
+      "civilianLicense", "armyLicense",
+    ]
+    for (const field of fields) {
+      if (body[field] !== undefined) updateData[field] = body[field]
+    }
     if (body.password && body.password.trim()) {
       updateData.password = await bcrypt.hash(body.password, 10)
     }
@@ -34,12 +36,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     })
 
     return NextResponse.json({
-      id: user.id,
-      name: user.name,
-      rank: user.rank,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
+      id: user.id, name: user.name, rank: user.rank,
+      firstName: user.firstName, lastName: user.lastName, email: user.email,
+      address: user.address, maritalStatus: user.maritalStatus,
+      education: user.education, nationalId: user.nationalId,
+      civilianLicense: user.civilianLicense, armyLicense: user.armyLicense,
     })
   } catch (error) {
     console.error("Update user error:", error)

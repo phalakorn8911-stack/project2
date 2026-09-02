@@ -90,6 +90,12 @@ model User {
   rank                String?               @map("rank")
   firstName           String?               @map("first_name")
   lastName            String?               @map("last_name")
+  address             String?               @map("address")
+  maritalStatus       String?               @map("marital_status")
+  education           String?               @map("education")
+  nationalId          String?               @map("national_id")
+  civilianLicense     String?               @map("civilian_license")
+  armyLicense         String?               @map("army_license")
   roleId              String                @db.Uuid
   role                Role                  @relation(fields: [roleId], references: [id])
   unitId              String?               @db.Uuid

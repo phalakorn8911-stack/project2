@@ -23,17 +23,13 @@ export async function GET(request: Request) {
 
     return NextResponse.json(
       users.map((u) => ({
-        id: u.id,
-        name: u.name,
-        rank: u.rank,
-        firstName: u.firstName,
-        lastName: u.lastName,
-        email: u.email,
-        roleId: u.roleId,
-        role: u.role.name,
-        unitId: u.unitId,
-        unit: u.unit?.name ?? "-",
-        status: u.status,
+        id: u.id, name: u.name, rank: u.rank,
+        firstName: u.firstName, lastName: u.lastName, email: u.email,
+        roleId: u.roleId, role: u.role.name, unitId: u.unitId,
+        unit: u.unit?.name ?? "-", status: u.status,
+        address: u.address, maritalStatus: u.maritalStatus,
+        education: u.education, nationalId: u.nationalId,
+        civilianLicense: u.civilianLicense, armyLicense: u.armyLicense,
       }))
     )
   } catch (error) {

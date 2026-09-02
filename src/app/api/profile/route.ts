@@ -13,7 +13,13 @@ export async function GET() {
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { id: true, email: true, name: true, rank: true, firstName: true, lastName: true, role: true, unit: true, status: true },
+      select: {
+        id: true, email: true, name: true, rank: true,
+        firstName: true, lastName: true, address: true,
+        maritalStatus: true, education: true, nationalId: true,
+        civilianLicense: true, armyLicense: true,
+        role: true, unit: true, status: true,
+      },
     })
     if (!user) return NextResponse.json({ error: "ไม่พบผู้ใช้" }, { status: 404 })
     return NextResponse.json(user)
@@ -31,9 +37,15 @@ export async function PATCH(request: Request) {
     const body = await request.json()
     const updateData: any = {}
 
-    if (body.firstName !== undefined) updateData.firstName = body.firstName
-    if (body.lastName !== undefined) updateData.lastName = body.lastName
-    if (body.email !== undefined) updateData.email = body.email
+    const textFields = [
+      "firstName", "lastName", "email", "rank",
+      "address", "maritalStatus", "education",
+      "nationalId", "civilianLicense", "armyLicense",
+    ]
+    for (const field of textFields) {
+      if (body[field] !== undefined) updateData[field] = body[field]
+    }
+
     if (body.password && body.password.trim()) {
       if (body.password.length < 4) return NextResponse.json({ error: "รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร" }, { status: 400 })
       updateData.password = await bcrypt.hash(body.password, 10)
@@ -51,7 +63,17 @@ export async function PATCH(request: Request) {
       data: updateData,
     })
 
-    return NextResponse.json({ message: "บันทึกสำเร็จ", user: { id: user.id, name: user.name, email: user.email, firstName: user.firstName, lastName: user.lastName } })
+    return NextResponse.json({
+      message: "บันทึกสำเร็จ",
+      user: {
+        id: user.id, name: user.name, email: user.email,
+        firstName: user.firstName, lastName: user.lastName,
+        rank: user.rank, address: user.address,
+        maritalStatus: user.maritalStatus, education: user.education,
+        nationalId: user.nationalId, civilianLicense: user.civilianLicense,
+        armyLicense: user.armyLicense,
+      },
+    })
   } catch (error) {
     console.error("Update profile error:", error)
     return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })

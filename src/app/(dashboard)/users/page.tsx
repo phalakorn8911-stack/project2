@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Users as UsersIcon, Shield, UserCheck, UserX, Pencil, Save, X, ListPlus, Trash2, Plus } from "lucide-react"
+import { Users as UsersIcon, Shield, UserCheck, UserX, Pencil, Save, X, ListPlus, Trash2, Plus, Eye, FileText, CreditCard } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const roleLabels: Record<string, string> = {
@@ -38,12 +38,13 @@ export default function UsersPage() {
   const [units, setUnits] = useState<{ id: string; name: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState({ rank: "", firstName: "", lastName: "", email: "", roleId: "", unitId: "", password: "" })
+  const [editForm, setEditForm] = useState({ rank: "", firstName: "", lastName: "", email: "", roleId: "", unitId: "", password: "", address: "", maritalStatus: "", education: "", nationalId: "", civilianLicense: "", armyLicense: "" })
   const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [batchMode, setBatchMode] = useState(false)
   const [batchItems, setBatchItems] = useState<UserForm[]>([{ ...defaultUserForm }])
   const [savingBatch, setSavingBatch] = useState(false)
+  const [detailUser, setDetailUser] = useState<any>(null)
 
   useEffect(() => {
     fetchUsers()
@@ -75,13 +76,11 @@ export default function UsersPage() {
   const handleEdit = (u: any) => {
     setEditingId(u.id)
     setEditForm({
-      rank: u.rank ?? "",
-      firstName: u.firstName ?? "",
-      lastName: u.lastName ?? "",
-      email: u.email ?? "",
-      roleId: u.roleId ?? "",
-      unitId: u.unitId ?? "",
-      password: "",
+      rank: u.rank ?? "", firstName: u.firstName ?? "", lastName: u.lastName ?? "",
+      email: u.email ?? "", roleId: u.roleId ?? "", unitId: u.unitId ?? "", password: "",
+      address: u.address ?? "", maritalStatus: u.maritalStatus ?? "",
+      education: u.education ?? "", nationalId: u.nationalId ?? "",
+      civilianLicense: u.civilianLicense ?? "", armyLicense: u.armyLicense ?? "",
     })
   }
 
@@ -105,7 +104,7 @@ export default function UsersPage() {
 
   const handleCancel = () => {
     setEditingId(null)
-    setEditForm({ rank: "", firstName: "", lastName: "", email: "", roleId: "", unitId: "", password: "" })
+    setEditForm({ rank: "", firstName: "", lastName: "", email: "", roleId: "", unitId: "", password: "", address: "", maritalStatus: "", education: "", nationalId: "", civilianLicense: "", armyLicense: "" })
   }
 
   const handleDelete = async (id: string) => {
@@ -298,6 +297,9 @@ export default function UsersPage() {
                       </div>
                     ) : (
                       <div className="inline-flex items-center gap-1">
+                        <button onClick={() => setDetailUser(u)} className="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="ดูรายละเอียด">
+                          <Eye className="size-3.5" />
+                        </button>
                         <button onClick={() => handleEdit(u)} className="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="แก้ไข">
                           <Pencil className="size-3.5" />
                         </button>
@@ -578,6 +580,55 @@ export default function UsersPage() {
                   {savingBatch ? "กำลังบันทึก..." : "เพิ่มผู้ใช้"}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Detail Modal */}
+      {detailUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-xl">
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <h2 className="text-lg font-semibold">รายละเอียดผู้ใช้</h2>
+              <button onClick={() => setDetailUser(null)} className="p-1 rounded-lg hover:bg-muted transition-colors"><X className="h-5 w-5" /></button>
+            </div>
+            <div className="p-4 space-y-4 text-sm">
+              <div className="flex items-center gap-3 pb-3 border-b border-border">
+                <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary"><UsersIcon className="size-6" /></div>
+                <div>
+                  <p className="font-semibold text-card-foreground">{detailUser.rank} {detailUser.firstName} {detailUser.lastName}</p>
+                  <p className="text-xs text-muted-foreground">{roleLabels[detailUser.role] ?? detailUser.role}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><span className="text-muted-foreground">ยศ:</span> <span className="text-card-foreground">{detailUser.rank || "-"}</span></div>
+                <div><span className="text-muted-foreground">อีเมล:</span> <span className="text-card-foreground">{detailUser.email}</span></div>
+                <div><span className="text-muted-foreground">ชื่อ:</span> <span className="text-card-foreground">{detailUser.firstName || "-"}</span></div>
+                <div><span className="text-muted-foreground">นามสกุล:</span> <span className="text-card-foreground">{detailUser.lastName || "-"}</span></div>
+                <div><span className="text-muted-foreground">หน่วยงาน:</span> <span className="text-card-foreground">{detailUser.unit || "-"}</span></div>
+                <div><span className="text-muted-foreground">สถานะ:</span> <span className="text-card-foreground">{detailUser.status === "ACTIVE" ? "ใช้งาน" : "ระงับ"}</span></div>
+              </div>
+              <div className="pt-3 border-t border-border space-y-3">
+                <h3 className="font-semibold text-card-foreground flex items-center gap-1.5"><FileText className="size-3.5" /> ข้อมูลส่วนบุคคล</h3>
+                <div className="grid grid-cols-1 gap-2">
+                  <div><span className="text-muted-foreground">ที่อยู่:</span> <span className="text-card-foreground">{detailUser.address || "-"}</span></div>
+                  <div><span className="text-muted-foreground">สถานภาพ:</span> <span className="text-card-foreground">{detailUser.maritalStatus || "-"}</span></div>
+                  <div><span className="text-muted-foreground">การศึกษา:</span> <span className="text-card-foreground">{detailUser.education || "-"}</span></div>
+                  <div><span className="text-muted-foreground">หมายเลขประชาชน:</span> <span className="text-card-foreground">{detailUser.nationalId || "-"}</span></div>
+                </div>
+              </div>
+              <div className="pt-3 border-t border-border space-y-3">
+                <h3 className="font-semibold text-card-foreground flex items-center gap-1.5"><CreditCard className="size-3.5" /> ใบอนุญาตขับขี่</h3>
+                <div className="grid grid-cols-1 gap-2">
+                  <div><span className="text-muted-foreground">ใบขับขี่พลเรือน:</span> <span className="text-card-foreground">{detailUser.civilianLicense || "-"}</span></div>
+                  <div><span className="text-muted-foreground">ใบขับขี่ ทบ.:</span> <span className="text-card-foreground">{detailUser.armyLicense || "-"}</span></div>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 border-t border-border flex gap-2">
+              <button onClick={() => { setDetailUser(null); handleEdit(detailUser) }} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"><Pencil className="size-3.5" /> แก้ไข</button>
+              <button onClick={() => setDetailUser(null)} className="flex-1 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted transition-colors">ปิด</button>
             </div>
           </div>
         </div>
