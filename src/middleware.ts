@@ -6,7 +6,7 @@ const roleAccess: Record<string, string[]> = {
   admin: [
     "/dashboard", "/vehicles", "/vehicle-types", "/units", "/drivers",
     "/maintenance-plans", "/work-orders", "/parts", "/reports",
-    "/ai-assistant", "/users", "/settings", "/notifications",
+    "/ai-assistant", "/users", "/settings", "/notifications", "/gps-tracking",
   ],
   mechanic: [
     "/dashboard", "/vehicles", "/drivers", "/maintenance-plans",
@@ -63,5 +63,6 @@ export const config = {
     "/users/:path*",
     "/settings/:path*",
     "/notifications/:path*",
+    "/gps-tracking/:path*",
   ],
 }
