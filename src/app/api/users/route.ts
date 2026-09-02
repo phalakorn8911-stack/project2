@@ -30,6 +30,7 @@ export async function GET(request: Request) {
         address: u.address, maritalStatus: u.maritalStatus,
         education: u.education, nationalId: u.nationalId,
         civilianLicense: u.civilianLicense, armyLicense: u.armyLicense,
+        photoUrl: u.photoUrl,
       }))
     )
   } catch (error) {

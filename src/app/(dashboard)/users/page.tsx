@@ -38,13 +38,14 @@ export default function UsersPage() {
   const [units, setUnits] = useState<{ id: string; name: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState({ rank: "", firstName: "", lastName: "", email: "", roleId: "", unitId: "", password: "", address: "", maritalStatus: "", education: "", nationalId: "", civilianLicense: "", armyLicense: "" })
+  const [editForm, setEditForm] = useState({ rank: "", firstName: "", lastName: "", email: "", roleId: "", unitId: "", password: "", address: "", maritalStatus: "", education: "", nationalId: "", civilianLicense: "", armyLicense: "", photoUrl: "" })
   const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [batchMode, setBatchMode] = useState(false)
   const [batchItems, setBatchItems] = useState<UserForm[]>([{ ...defaultUserForm }])
   const [savingBatch, setSavingBatch] = useState(false)
   const [detailUser, setDetailUser] = useState<any>(null)
+  const [uploadingUserPhoto, setUploadingUserPhoto] = useState<string | null>(null)
 
   useEffect(() => {
     fetchUsers()
@@ -81,6 +82,7 @@ export default function UsersPage() {
       address: u.address ?? "", maritalStatus: u.maritalStatus ?? "",
       education: u.education ?? "", nationalId: u.nationalId ?? "",
       civilianLicense: u.civilianLicense ?? "", armyLicense: u.armyLicense ?? "",
+      photoUrl: u.photoUrl ?? "",
     })
   }
 
@@ -104,7 +106,7 @@ export default function UsersPage() {
 
   const handleCancel = () => {
     setEditingId(null)
-    setEditForm({ rank: "", firstName: "", lastName: "", email: "", roleId: "", unitId: "", password: "", address: "", maritalStatus: "", education: "", nationalId: "", civilianLicense: "", armyLicense: "" })
+    setEditForm({ rank: "", firstName: "", lastName: "", email: "", roleId: "", unitId: "", password: "", address: "", maritalStatus: "", education: "", nationalId: "", civilianLicense: "", armyLicense: "", photoUrl: "" })
   }
 
   const handleDelete = async (id: string) => {
@@ -232,9 +234,13 @@ export default function UsersPage() {
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <div className="flex size-8 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                          <UsersIcon className="size-4" />
-                        </div>
+                        {u.photoUrl ? (
+                          <img src={u.photoUrl} alt={u.name} className="size-8 rounded-full object-cover" />
+                        ) : (
+                          <div className="flex size-8 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                            <UsersIcon className="size-4" />
+                          </div>
+                        )}
                         <span className="font-medium text-card-foreground">{u.name}</span>
                       </div>
                     )}
@@ -595,7 +601,39 @@ export default function UsersPage() {
             </div>
             <div className="p-4 space-y-4 text-sm">
               <div className="flex items-center gap-3 pb-3 border-b border-border">
-                <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary"><UsersIcon className="size-6" /></div>
+                {detailUser.photoUrl ? (
+                  <div className="relative">
+                    <img src={detailUser.photoUrl} alt={detailUser.name} className="size-16 rounded-full object-cover" />
+                    <button
+                      onClick={async () => {
+                        if (!confirm("ลบรูปภาพนี้?")) return
+                        await fetch(`/api/upload-user-photo?userId=${detailUser.id}`, { method: "DELETE" })
+                        setDetailUser({ ...detailUser, photoUrl: null })
+                        setUsers(users.map(u => u.id === detailUser.id ? { ...u, photoUrl: null } : u))
+                      }}
+                      className="absolute -bottom-1 -right-1 size-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center text-xs hover:bg-destructive/90"
+                    >x</button>
+                  </div>
+                ) : (
+                  <label className="flex size-16 items-center justify-center rounded-full bg-muted text-muted-foreground cursor-pointer hover:bg-muted/80 transition-colors">
+                    <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      setUploadingUserPhoto(detailUser.id)
+                      const fd = new FormData()
+                      fd.append("file", file)
+                      fd.append("userId", detailUser.id)
+                      const res = await fetch("/api/upload-user-photo", { method: "POST", body: fd })
+                      const data = await res.json()
+                      if (data.photoUrl) {
+                        setDetailUser({ ...detailUser, photoUrl: data.photoUrl })
+                        setUsers(users.map(u => u.id === detailUser.id ? { ...u, photoUrl: data.photoUrl } : u))
+                      }
+                      setUploadingUserPhoto(null)
+                    }} />
+                    {uploadingUserPhoto === detailUser.id ? "..." : "+"}
+                  </label>
+                )}
                 <div>
                   <p className="font-semibold text-card-foreground">{detailUser.rank} {detailUser.firstName} {detailUser.lastName}</p>
                   <p className="text-xs text-muted-foreground">{roleLabels[detailUser.role] ?? detailUser.role}</p>
@@ -627,7 +665,7 @@ export default function UsersPage() {
               </div>
             </div>
             <div className="p-4 border-t border-border flex gap-2">
-              <button onClick={() => { setEditingId(detailUser.id); setEditForm({ rank: detailUser.rank||"", firstName: detailUser.firstName||"", lastName: detailUser.lastName||"", email: detailUser.email||"", roleId: detailUser.roleId||"", unitId: detailUser.unitId||"", password: "", address: detailUser.address||"", maritalStatus: detailUser.maritalStatus||"", education: detailUser.education||"", nationalId: detailUser.nationalId||"", civilianLicense: detailUser.civilianLicense||"", armyLicense: detailUser.armyLicense||"" }); setDetailUser(null) }} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"><Pencil className="size-3.5" /> แก้ไข</button>
+              <button onClick={() => { setEditingId(detailUser.id); setEditForm({ rank: detailUser.rank||"", firstName: detailUser.firstName||"", lastName: detailUser.lastName||"", email: detailUser.email||"", roleId: detailUser.roleId||"", unitId: detailUser.unitId||"", password: "", address: detailUser.address||"", maritalStatus: detailUser.maritalStatus||"", education: detailUser.education||"", nationalId: detailUser.nationalId||"", civilianLicense: detailUser.civilianLicense||"", armyLicense: detailUser.armyLicense||"", photoUrl: detailUser.photoUrl||"" }); setDetailUser(null) }} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"><Pencil className="size-3.5" /> แก้ไข</button>
               <button onClick={() => setDetailUser(null)} className="flex-1 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted transition-colors">ปิด</button>
             </div>
           </div>
@@ -643,6 +681,40 @@ export default function UsersPage() {
               <button onClick={handleCancel} className="p-1 rounded-lg hover:bg-muted transition-colors"><X className="h-5 w-5" /></button>
             </div>
             <div className="p-4 space-y-4">
+              <div className="flex items-center gap-4 pb-3 border-b border-border">
+                {editForm.photoUrl ? (
+                  <div className="relative">
+                    <img src={editForm.photoUrl} alt="photo" className="size-16 rounded-full object-cover" />
+                    <button
+                      onClick={async () => {
+                        if (!confirm("ลบรูปภาพนี้?")) return
+                        await fetch(`/api/upload-user-photo?userId=${editingId}`, { method: "DELETE" })
+                        setEditForm({ ...editForm, photoUrl: "" })
+                        setUsers(users.map(u => u.id === editingId ? { ...u, photoUrl: null } : u))
+                      }}
+                      className="absolute -bottom-1 -right-1 size-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center text-xs hover:bg-destructive/90"
+                    >x</button>
+                  </div>
+                ) : (
+                  <label className="flex size-16 items-center justify-center rounded-full bg-muted text-muted-foreground cursor-pointer hover:bg-muted/80 transition-colors">
+                    <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (!file || !editingId) return
+                      const fd = new FormData()
+                      fd.append("file", file)
+                      fd.append("userId", editingId)
+                      const res = await fetch("/api/upload-user-photo", { method: "POST", body: fd })
+                      const data = await res.json()
+                      if (data.photoUrl) {
+                        setEditForm({ ...editForm, photoUrl: data.photoUrl })
+                        setUsers(users.map(u => u.id === editingId ? { ...u, photoUrl: data.photoUrl } : u))
+                      }
+                    }}>+</input>
+                    +
+                  </label>
+                )}
+                <p className="text-xs text-muted-foreground">คลิกเพื่อเพิ่ม/เปลี่ยนรูป</p>
+              </div>
               <h3 className="text-sm font-semibold">ข้อมูลทั่วไป</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div><label className="block text-xs text-muted-foreground mb-1">ยศ</label><input value={editForm.rank} onChange={e=>setEditForm({...editForm,rank:e.target.value})} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" /></div>

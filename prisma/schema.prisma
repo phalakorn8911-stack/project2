@@ -96,6 +96,7 @@ model User {
   nationalId          String?               @map("national_id")
   civilianLicense     String?               @map("civilian_license")
   armyLicense         String?               @map("army_license")
+  photoUrl            String?               @map("photo_url")
   roleId              String                @db.Uuid
   role                Role                  @relation(fields: [roleId], references: [id])
   unitId              String?               @db.Uuid
