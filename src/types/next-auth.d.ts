@@ -8,6 +8,7 @@ declare module "next-auth" {
     rank?: string | null
     firstName?: string | null
     lastName?: string | null
+    photoUrl?: string | null
   }
 
   interface Session {
@@ -18,6 +19,7 @@ declare module "next-auth" {
       rank?: string | null
       firstName?: string | null
       lastName?: string | null
+      photoUrl?: string | null
     } & DefaultSession["user"]
   }
 }
@@ -30,5 +32,6 @@ declare module "next-auth/jwt" {
     rank?: string | null
     firstName?: string | null
     lastName?: string | null
+    photoUrl?: string | null
   }
 }

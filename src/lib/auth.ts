@@ -11,7 +11,7 @@ async function findUserByEmail(email: string) {
   try {
     await pg.connect()
     const result = await pg.query(
-      `SELECT u.id, u.email, u.password, u.name, u.rank, u.first_name, u.last_name, u.status, u."unitId",
+      `SELECT u.id, u.email, u.password, u.name, u.rank, u.first_name, u.last_name, u.status, u."unitId", u.photo_url,
               r.name as role_name
        FROM users u
        JOIN roles r ON r.id = u."roleId"
@@ -58,6 +58,7 @@ export const authOptions: NextAuthOptions = {
           rank: user.rank,
           firstName: user.first_name,
           lastName: user.last_name,
+          photoUrl: user.photo_url,
         }
       },
     }),
@@ -71,6 +72,7 @@ export const authOptions: NextAuthOptions = {
         token.rank = user.rank
         token.firstName = user.firstName
         token.lastName = user.lastName
+        token.photoUrl = (user as any).photoUrl
       }
       return token
     },
@@ -82,6 +84,7 @@ export const authOptions: NextAuthOptions = {
         session.user.rank = token.rank as string | undefined
         session.user.firstName = token.firstName as string | undefined
         session.user.lastName = token.lastName as string | undefined
+        ;(session.user as any).photoUrl = token.photoUrl as string | undefined
       }
       return session
     },

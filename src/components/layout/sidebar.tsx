@@ -116,6 +116,18 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t border-sidebar-border p-2">
+        {!collapsed && session?.user && (
+          <Link href="/profile" className="flex items-center gap-2 rounded-lg px-3 py-2 mb-1 hover:bg-sidebar-accent/50 transition-colors">
+            {(session.user as any).photoUrl ? (
+              <img src={(session.user as any).photoUrl} alt="" className="size-7 rounded-full object-cover" />
+            ) : (
+              <div className="flex size-7 items-center justify-center rounded-full bg-sidebar-accent text-sidebar-foreground/60 text-xs">
+                {(session.user as any).firstName?.[0] || (session.user.name?.[0]) || "?"}
+              </div>
+            )}
+            <span className="text-xs text-sidebar-foreground/70 truncate">{(session.user as any).rank} {(session.user as any).firstName || session.user.name}</span>
+          </Link>
+        )}
         <button
           type="button"
           onClick={() => setCollapsed(!collapsed)}
