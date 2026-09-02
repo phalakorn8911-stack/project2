@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useState, Suspense } from "react"
+import { useEffect, useState, Suspense, useRef, useMemo } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { Search, Plus, Filter, Truck, X, Pencil, Trash2 } from "lucide-react"
+import { Search, Plus, Filter, Truck, X, Pencil, Trash2, MapPin } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const statusMeta: Record<string, { label: string; className: string }> = {
@@ -14,6 +14,103 @@ const statusMeta: Record<string, { label: string; className: string }> = {
   WAITING_PARTS: { label: "รออะไหล่", className: "text-status-parts bg-status-parts/10" },
   OUT_OF_SERVICE: { label: "ใช้งานไม่ได้", className: "text-destructive bg-destructive/10" },
   RETIRED: { label: "ปลดประจำการ", className: "text-muted-foreground bg-muted" },
+}
+
+function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371000
+  const dLat = ((lat2 - lat1) * Math.PI) / 180
+  const dLng = ((lng2 - lng1) * Math.PI) / 180
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+function GPSModal({ vehicle, points, loading, onClose, mapRef, mapInstanceRef }: {
+  vehicle: any; points: any[]; loading: boolean; onClose: () => void;
+  mapRef: React.RefObject<HTMLDivElement | null>; mapInstanceRef: React.MutableRefObject<any>
+}) {
+  useEffect(() => {
+    if (!mapRef.current || mapInstanceRef.current || points.length === 0) return
+    let cancelled = false
+    const init = async () => {
+      const L = (await import("leaflet")).default
+      await import("leaflet/dist/leaflet.css")
+      if (cancelled || !mapRef.current) return
+      const latlngs: [number, number][] = points.map((p: any) => [p.latitude, p.longitude])
+      const center = latlngs[Math.floor(latlngs.length / 2)] || latlngs[0]
+      const map = L.map(mapRef.current!, { center, zoom: 14, zoomControl: false })
+      L.control.zoom({ position: "bottomright" }).addTo(map)
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: '&copy; OpenStreetMap' }).addTo(map)
+      L.polyline(latlngs, { color: "#2563eb", weight: 4, opacity: 0.9 }).addTo(map)
+      if (latlngs.length > 1) {
+        L.polyline([latlngs[0], latlngs[latlngs.length - 1]], { color: "#dc2626", weight: 2, dashArray: "6,6" }).addTo(map)
+      }
+      const startIcon = L.divIcon({ className: "", html: '<div style="background:#16a34a;width:24px;height:24px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;"><span style="color:white;font-size:10px;">S</span></div>', iconSize: [24, 24], iconAnchor: [12, 12] })
+      const endIcon = L.divIcon({ className: "", html: '<div style="background:#dc2626;width:24px;height:24px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;"><span style="color:white;font-size:10px;">E</span></div>', iconSize: [24, 24], iconAnchor: [12, 12] })
+      L.marker(latlngs[0], { icon: startIcon }).addTo(map).bindPopup("จุดเริ่มต้น")
+      L.marker(latlngs[latlngs.length - 1], { icon: endIcon }).addTo(map).bindPopup("จุดล่าสุด")
+      latlngs.forEach((ll, i) => {
+        if (i % Math.max(1, Math.floor(latlngs.length / 10)) === 0 || i === latlngs.length - 1) {
+          L.circleMarker(ll, { radius: 4, color: "#2563eb", fillColor: "white", fillOpacity: 1, weight: 2 }).addTo(map)
+        }
+      })
+      map.fitBounds(L.latLngBounds(latlngs), { padding: [40, 40] })
+      mapInstanceRef.current = map
+    }
+    init()
+    return () => { cancelled = true; if (mapInstanceRef.current) { mapInstanceRef.current.remove(); mapInstanceRef.current = null } }
+  }, [points])
+
+  const totalDistance = useMemo(() => {
+    let d = 0
+    for (let i = 1; i < points.length; i++) {
+      d += haversineDistance(points[i - 1].latitude, points[i - 1].longitude, points[i].latitude, points[i].longitude)
+    }
+    return d
+  }, [points])
+
+  const maxSpeed = useMemo(() => points.reduce((m, p) => Math.max(m, p.speed || 0), 0), [points])
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-card rounded-xl border border-border shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <div>
+            <h3 className="text-base font-semibold text-card-foreground">GPS - {vehicle.registrationNumber}</h3>
+            <p className="text-xs text-muted-foreground">{vehicle.brand} {vehicle.model} • {points.length} จุดพิกัด</p>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></button>
+        </div>
+        <div className="flex-1 overflow-auto px-5 py-4 space-y-4">
+          {points.length > 0 && (
+            <div className="grid grid-cols-3 gap-3">
+              <div className="rounded-lg bg-muted/50 p-3 text-center">
+                <p className="text-lg font-bold text-card-foreground">{(totalDistance / 1000).toFixed(2)}</p>
+                <p className="text-[10px] text-muted-foreground">ระยะทาง (km)</p>
+              </div>
+              <div className="rounded-lg bg-muted/50 p-3 text-center">
+                <p className="text-lg font-bold text-card-foreground">{maxSpeed.toFixed(0)}</p>
+                <p className="text-[10px] text-muted-foreground">ความเร็วสูงสุด (km/h)</p>
+              </div>
+              <div className="rounded-lg bg-muted/50 p-3 text-center">
+                <p className="text-lg font-bold text-card-foreground">{points.length}</p>
+                <p className="text-[10px] text-muted-foreground">จุดพิกัด</p>
+              </div>
+            </div>
+          )}
+          {loading ? (
+            <div className="h-[300px] flex items-center justify-center text-sm text-muted-foreground">กำลังโหลดแผนที่...</div>
+          ) : points.length === 0 ? (
+            <div className="h-[300px] flex flex-col items-center justify-center text-muted-foreground">
+              <MapPin className="mb-2 size-8" />
+              <p className="text-sm">ยังไม่มีข้อมูล GPS สำหรับรถคันนี้</p>
+            </div>
+          ) : (
+            <div ref={mapRef} className="h-[350px] rounded-xl overflow-hidden" />
+          )}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function VehiclesContent() {
@@ -42,6 +139,12 @@ function VehiclesContent() {
     status: "AVAILABLE",
   })
   const [editId, setEditId] = useState<string | null>(null)
+
+  const [gpsModal, setGpsModal] = useState<{ open: boolean; vehicle: any | null }>({ open: false, vehicle: null })
+  const [gpsPoints, setGpsPoints] = useState<any[]>([])
+  const [gpsLoading, setGpsLoading] = useState(false)
+  const mapRef = useRef<HTMLDivElement>(null)
+  const mapInstanceRef = useRef<any>(null)
 
   useEffect(() => {
     fetch("/api/vehicles")
@@ -150,6 +253,27 @@ function VehiclesContent() {
 
   const filterLabel = statusFilter ? statusMeta[statusFilter]?.label ?? statusFilter : ""
 
+  const openGpsModal = async (vehicle: any) => {
+    setGpsModal({ open: true, vehicle })
+    setGpsLoading(true)
+    setGpsPoints([])
+    try {
+      const res = await fetch(`/api/gps-tracking?vehicleId=${vehicle.id}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (Array.isArray(data)) setGpsPoints(data)
+      }
+    } catch {} finally {
+      setGpsLoading(false)
+    }
+  }
+
+  const closeGpsModal = () => {
+    setGpsModal({ open: false, vehicle: null })
+    setGpsPoints([])
+    if (mapInstanceRef.current) { mapInstanceRef.current.remove(); mapInstanceRef.current = null }
+  }
+
   return (
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between">
@@ -248,6 +372,9 @@ function VehiclesContent() {
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
+                        <button onClick={() => openGpsModal(v)} className="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-success/10 hover:text-success transition-colors" title="GPS">
+                          <MapPin className="size-3.5" />
+                        </button>
                         <button onClick={() => openEdit(v)} className="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-info/10 hover:text-info transition-colors" title="แก้ไข">
                           <Pencil className="size-3.5" />
                         </button>
@@ -344,6 +471,10 @@ function VehiclesContent() {
             </div>
           </div>
         </div>
+      )}
+
+      {gpsModal.open && gpsModal.vehicle && (
+        <GPSModal vehicle={gpsModal.vehicle} points={gpsPoints} loading={gpsLoading} onClose={closeGpsModal} mapRef={mapRef} mapInstanceRef={mapInstanceRef} />
       )}
     </div>
   )
