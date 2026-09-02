@@ -26,6 +26,7 @@ export async function GET() {
         diagnosis: (wo as any).diagnosis ?? "",
         urgency: wo.repairRequest?.urgency ?? "MEDIUM",
         mechanicName: wo.mechanic?.name ?? "-",
+        mechanicPhotoUrl: wo.mechanic?.photoUrl ?? null,
         status: wo.status,
       }))
     )

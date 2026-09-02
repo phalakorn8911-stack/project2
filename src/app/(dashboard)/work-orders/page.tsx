@@ -15,6 +15,7 @@ interface WorkOrder {
   symptoms: string
   diagnosis: string
   mechanicName: string
+  mechanicPhotoUrl: string | null
   urgency: string
   status: WorkOrderStatus
 }
@@ -303,7 +304,10 @@ export default function WorkOrdersPage() {
                       </div>
                     )}
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        {wo.mechanicPhotoUrl ? (
+                          <img src={wo.mechanicPhotoUrl} alt="" className="size-4 rounded-full object-cover" />
+                        ) : null}
                         {wo.mechanicName}
                       </span>
                       <span
