@@ -2,8 +2,11 @@
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { requireAuth } from "@/lib/api-auth"
 
 export async function GET() {
+  const { session, error } = await requireAuth()
+  if (error) return error
   try {
     const plans = await prisma.maintenancePlan.findMany({
       include: { vehicleType: true, schedules: { include: { vehicle: true } } },
@@ -35,6 +38,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const { session, error } = await requireAuth()
+  if (error) return error
   try {
     const { name, vehicleTypeId, intervalMonths, intervalMileage, intervalHours, cycleDay, cycleMonth, cycleYear, description } = await request.json()
 

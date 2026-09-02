@@ -2,8 +2,11 @@
 
 import { NextResponse } from "next/server"
 import { Client } from "pg"
+import { requireAuth } from "@/lib/api-auth"
 
 export async function GET() {
+  const { session, error } = await requireAuth()
+  if (error) return error
   const pg = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
@@ -28,6 +31,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const { session, error } = await requireAuth()
+  if (error) return error
   const pg = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },

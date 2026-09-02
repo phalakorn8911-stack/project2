@@ -2,8 +2,11 @@
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { requireAuth } from "@/lib/api-auth"
 
 export async function GET() {
+  const { session, error } = await requireAuth()
+  if (error) return error
   try {
     const types = await prisma.vehicleType.findMany({
       orderBy: { name: "asc" },
@@ -27,6 +30,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const { session, error } = await requireAuth()
+  if (error) return error
   try {
     const { name, description, fuelType, weight, seatingCapacity, engineSpec } = await request.json()
 

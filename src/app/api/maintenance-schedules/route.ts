@@ -2,8 +2,11 @@
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { requireAuth } from "@/lib/api-auth"
 
 export async function GET(request: Request) {
+  const { session, error } = await requireAuth()
+  if (error) return error
   try {
     const { searchParams } = new URL(request.url)
     const planId = searchParams.get("planId")
@@ -42,6 +45,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const { session, error } = await requireAuth()
+  if (error) return error
   try {
     const { planId, vehicleId, lastPerformedDate, lastPerformedMileage, nextDueDate, nextDueMileage } = await request.json()
 

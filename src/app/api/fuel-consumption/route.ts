@@ -2,8 +2,11 @@ export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { Client } from "pg"
+import { requireAuth } from "@/lib/api-auth"
 
 export async function GET(request: Request) {
+  const { session, error } = await requireAuth()
+  if (error) return error
   const pg = new Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
   try {
     const { searchParams } = new URL(request.url)
@@ -26,6 +29,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const { session, error } = await requireAuth()
+  if (error) return error
   const pg = new Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
   try {
     const { vehicleId, fuelRate, fuelType, liters, costPerLiter, notes, recordedAt } = await request.json()
@@ -48,6 +53,8 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const { session, error } = await requireAuth()
+  if (error) return error
   const pg = new Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
   try {
     const { searchParams } = new URL(request.url)

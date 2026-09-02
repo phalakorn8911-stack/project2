@@ -3,8 +3,11 @@ export const dynamic = "force-dynamic"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { requireAuth } from "@/lib/api-auth"
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { session, error } = await requireAuth()
+  if (error) return error
   try {
     const { id } = await params
     const body = await request.json()
@@ -49,6 +52,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { session, error } = await requireAuth()
+  if (error) return error
   try {
     const { id } = await params
     await prisma.user.delete({ where: { id } })

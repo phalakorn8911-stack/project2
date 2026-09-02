@@ -3,8 +3,11 @@
 import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
 import { prisma } from "@/lib/prisma"
+import { requireAuth } from "@/lib/api-auth"
 
 export async function POST(request: Request) {
+  const { session, error } = await requireAuth()
+  if (error) return error
   try {
     const formData = await request.formData()
     const file = formData.get("file") as File | null
@@ -62,6 +65,8 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const { session, error } = await requireAuth()
+  if (error) return error
   try {
     const { searchParams } = new URL(request.url)
     const photoId = searchParams.get("id")
@@ -90,6 +95,8 @@ export async function DELETE(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  const { session, error } = await requireAuth()
+  if (error) return error
   try {
     const { photoId, vehicleId } = await request.json()
 

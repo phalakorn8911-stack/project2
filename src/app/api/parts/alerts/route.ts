@@ -2,8 +2,11 @@
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { requireAuth } from "@/lib/api-auth"
 
 export async function GET() {
+  const { session, error } = await requireAuth()
+  if (error) return error
   try {
     const parts = await prisma.part.findMany({
       include: { category: true },

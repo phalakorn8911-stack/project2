@@ -2,8 +2,11 @@
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { requireAuth } from "@/lib/api-auth"
 
 export async function GET() {
+  const { session, error } = await requireAuth()
+  if (error) return error
   try {
     const categories = await prisma.partCategory.findMany({ orderBy: { name: "asc" } })
     return NextResponse.json(categories)
@@ -13,6 +16,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const { session, error } = await requireAuth()
+  if (error) return error
   try {
     const { name } = await request.json()
     if (!name?.trim()) {

@@ -2,8 +2,11 @@ export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { Client } from "pg"
+import { requireAuth } from "@/lib/api-auth"
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { session, error } = await requireAuth()
+  if (error) return error
   const pg = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
@@ -49,6 +52,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { session, error } = await requireAuth()
+  if (error) return error
   const pg = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
