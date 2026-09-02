@@ -50,12 +50,68 @@ function TripsTab({ session }: { session: any }) {
   const [vehicles, setVehicles] = useState<any[]>([])
   const [saving, setSaving] = useState(false)
   const [gpsLocations, setGpsLocations] = useState<Map<string, any>>(new Map())
+  const [pinning, setPinning] = useState<"origin" | "dest" | null>(null)
+  const [pinError, setPinError] = useState<string | null>(null)
+  const [tripMapRef, setTripMapRef] = useState<HTMLDivElement | null>(null)
+  const [tripMapInstance, setTripMapInstance] = useState<any>(null)
   const [form, setForm] = useState({
     driverId: "", vehicleId: "",
     originTambon: "", originAmphoe: "", originProvince: "",
     destTambon: "", destAmphoe: "", destProvince: "",
+    originLat: 0, originLng: 0,
+    destLat: 0, destLng: 0,
     purpose: ""
   })
+
+  const reverseGeocode = async (lat: number, lng: number): Promise<{ tambon: string; amphoe: string; province: string }> => {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=th&zoom=18`)
+      const data = await res.json()
+      const addr = data.address || {}
+      return { tambon: addr.suburb || addr.village || addr.neighbourhood || addr.quarter || "", amphoe: addr.city_district || addr.district || addr.county || "", province: addr.state || addr.region || "" }
+    } catch { return { tambon: "", amphoe: "", province: "" } }
+  }
+
+  const pinLocation = async (type: "origin" | "dest") => {
+    if (!navigator.geolocation) { setPinError("เบราว์เซอร์ไม่รองรับ GPS"); return }
+    setPinning(type); setPinError(null)
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lng, accuracy } = pos.coords
+        if (accuracy > 50) { setPinError(`ความแม่นยำ ${Math.round(accuracy)}m (ต้อง <50m) กรุณาลองใหม่`); setPinning(null); return }
+        const geo = await reverseGeocode(lat, lng)
+        setForm(f => ({ ...f, [`${type}Lat`]: lat, [`${type}Lng`]: lng, [`${type}Tambon`]: geo.tambon, [`${type}Amphoe`]: geo.amphoe, [`${type}Province`]: geo.province }))
+        setPinning(null)
+      },
+      (err) => { setPinError(err.code === 1 ? "กรุณาเปิดสิทธิ์ location" : "ไม่สามารถระบุตำแหน่งได้"); setPinning(null) },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    )
+  }
+
+  useEffect(() => {
+    if (!tripMapInstance) return
+    let L: any; try { L = require("leaflet") } catch { return }
+    tripMapInstance.eachLayer((layer: any) => { if (layer instanceof L.Marker || layer instanceof L.Circle) tripMapInstance.removeLayer(layer) })
+    const allPts: [number, number][] = []
+    if (form.originLat && form.originLng) {
+      const icon = L.divIcon({ className: "", html: '<div style="background:#16a34a;width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;"><span style="color:white;font-size:11px;font-weight:bold;">S</span></div>', iconSize: [28, 28], iconAnchor: [14, 14] })
+      L.marker([form.originLat, form.originLng], { icon }).addTo(tripMapInstance).bindPopup("<b>ต้นทาง</b><br/>" + form.originTambon + " " + form.originAmphoe + " " + form.originProvince)
+      L.circle([form.originLat, form.originLng], { radius: 5, color: "#16a34a", fillColor: "#16a34a", fillOpacity: 0.3, weight: 2 }).addTo(tripMapInstance)
+      allPts.push([form.originLat, form.originLng])
+    }
+    if (form.destLat && form.destLng) {
+      const icon = L.divIcon({ className: "", html: '<div style="background:#dc2626;width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;"><span style="color:white;font-size:11px;font-weight:bold;">E</span></div>', iconSize: [28, 28], iconAnchor: [14, 14] })
+      L.marker([form.destLat, form.destLng], { icon }).addTo(tripMapInstance).bindPopup("<b>ปลายทาง</b><br/>" + form.destTambon + " " + form.destAmphoe + " " + form.destProvince)
+      L.circle([form.destLat, form.destLng], { radius: 5, color: "#dc2626", fillColor: "#dc2626", fillOpacity: 0.3, weight: 2 }).addTo(tripMapInstance)
+      allPts.push([form.destLat, form.destLng])
+    }
+    if (allPts.length > 1) {
+      L.polyline(allPts, { color: "#2563eb", weight: 3, dashArray: "8,8", opacity: 0.7 }).addTo(tripMapInstance)
+      tripMapInstance.fitBounds(L.latLngBounds(allPts), { padding: [60, 60] })
+    } else if (allPts.length === 1) {
+      tripMapInstance.setView(allPts[0], 15)
+    }
+  }, [tripMapInstance, form.originLat, form.destLat])
 
   const fetchTrips = async () => {
     setLoading(true)
@@ -91,11 +147,11 @@ function TripsTab({ session }: { session: any }) {
 
   const openForm = () => {
     if (isDriver && currentUserId) {
-      setForm({ driverId: currentUserId, vehicleId: "", originTambon: "", originAmphoe: "", originProvince: "", destTambon: "", destAmphoe: "", destProvince: "", purpose: "" })
+      setForm({ driverId: currentUserId, vehicleId: "", originTambon: "", originAmphoe: "", originProvince: "", destTambon: "", destAmphoe: "", destProvince: "", originLat: 0, originLng: 0, destLat: 0, destLng: 0, purpose: "" })
     } else {
-      setForm({ driverId: drivers[0]?.id || "", vehicleId: "", originTambon: "", originAmphoe: "", originProvince: "", destTambon: "", destAmphoe: "", destProvince: "", purpose: "" })
+      setForm({ driverId: drivers[0]?.id || "", vehicleId: "", originTambon: "", originAmphoe: "", originProvince: "", destTambon: "", destAmphoe: "", destProvince: "", originLat: 0, originLng: 0, destLat: 0, destLng: 0, purpose: "" })
     }
-    setShowForm(true)
+    setPinError(null); setShowForm(true)
   }
 
   const handleSave = async () => {
@@ -248,22 +304,38 @@ function TripsTab({ session }: { session: any }) {
             </div>
 
             <div className="rounded-lg border border-border p-3 space-y-3">
-              <div className="flex items-center gap-2 text-sm font-medium text-card-foreground"><MapPinned className="size-4 text-success" /> ต้นทาง</div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-medium text-card-foreground"><MapPinned className="size-4 text-success" /> ต้นทาง</div>
+                <button onClick={() => pinLocation("origin")} disabled={pinning !== null} className={cn("inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors", pinning === "origin" ? "bg-success/20 text-success" : "bg-success/10 text-success hover:bg-success/20")}>
+                  {pinning === "origin" ? <><span className="size-2 rounded-full bg-success animate-pulse" /> กำลังปักหมุด...</> : <><MapPin className="size-3" /> ปักหมุด GPS</>}
+                </button>
+              </div>
+              {form.originLat > 0 && <p className="text-[10px] text-success">📍 {form.originLat.toFixed(6)}, {form.originLng.toFixed(6)}</p>}
               <div className="grid grid-cols-3 gap-2">
-                <div><label className="block text-[10px] text-muted-foreground mb-1">ตำบล</label><input value={form.originTambon} onChange={(e) => setForm({ ...form, originTambon: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" placeholder="ตำบล" /></div>
-                <div><label className="block text-[10px] text-muted-foreground mb-1">อำเภอ</label><input value={form.originAmphoe} onChange={(e) => setForm({ ...form, originAmphoe: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" placeholder="อำเภอ" /></div>
+                <div><label className="block text-[10px] text-muted-foreground mb-1">ตำบล/แขวง</label><input value={form.originTambon} onChange={(e) => setForm({ ...form, originTambon: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" placeholder="ตำบล" /></div>
+                <div><label className="block text-[10px] text-muted-foreground mb-1">อำเภอ/เขต</label><input value={form.originAmphoe} onChange={(e) => setForm({ ...form, originAmphoe: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" placeholder="อำเภอ" /></div>
                 <div><label className="block text-[10px] text-muted-foreground mb-1">จังหวัด</label><input value={form.originProvince} onChange={(e) => setForm({ ...form, originProvince: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" placeholder="จังหวัด" /></div>
               </div>
             </div>
 
             <div className="rounded-lg border border-border p-3 space-y-3">
-              <div className="flex items-center gap-2 text-sm font-medium text-card-foreground"><MapPin className="size-4 text-destructive" /> ปลายทาง</div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-medium text-card-foreground"><MapPin className="size-4 text-destructive" /> ปลายทาง</div>
+                <button onClick={() => pinLocation("dest")} disabled={pinning !== null} className={cn("inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors", pinning === "dest" ? "bg-destructive/20 text-destructive" : "bg-destructive/10 text-destructive hover:bg-destructive/20")}>
+                  {pinning === "dest" ? <><span className="size-2 rounded-full bg-destructive animate-pulse" /> กำลังปักหมุด...</> : <><MapPin className="size-3" /> ปักหมุด GPS</>}
+                </button>
+              </div>
+              {form.destLat > 0 && <p className="text-[10px] text-destructive">📍 {form.destLat.toFixed(6)}, {form.destLng.toFixed(6)}</p>}
               <div className="grid grid-cols-3 gap-2">
-                <div><label className="block text-[10px] text-muted-foreground mb-1">ตำบล</label><input value={form.destTambon} onChange={(e) => setForm({ ...form, destTambon: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" placeholder="ตำบล" /></div>
-                <div><label className="block text-[10px] text-muted-foreground mb-1">อำเภอ</label><input value={form.destAmphoe} onChange={(e) => setForm({ ...form, destAmphoe: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" placeholder="อำเภอ" /></div>
+                <div><label className="block text-[10px] text-muted-foreground mb-1">ตำบล/แขวง</label><input value={form.destTambon} onChange={(e) => setForm({ ...form, destTambon: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" placeholder="ตำบล" /></div>
+                <div><label className="block text-[10px] text-muted-foreground mb-1">อำเภอ/เขต</label><input value={form.destAmphoe} onChange={(e) => setForm({ ...form, destAmphoe: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" placeholder="อำเภอ" /></div>
                 <div><label className="block text-[10px] text-muted-foreground mb-1">จังหวัด</label><input value={form.destProvince} onChange={(e) => setForm({ ...form, destProvince: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" placeholder="จังหวัด" /></div>
               </div>
             </div>
+
+            {(form.originLat > 0 || form.destLat > 0) && <div ref={(el) => { setTripMapRef(el); if (el && !tripMapInstance) { const initMap = async () => { const L = (await import("leaflet")).default; await import("leaflet/dist/leaflet.css"); const map = L.map(el, { center: [form.originLat || form.destLat, form.originLng || form.destLng], zoom: 14, zoomControl: false }); L.control.zoom({ position: "bottomright" }).addTo(map); L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: '&copy; OpenStreetMap' }).addTo(map); setTripMapInstance(map) }; initMap() } }} className="h-[250px] rounded-xl overflow-hidden border border-border" />}
+
+            {pinError && <div className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">⚠ {pinError}</div>}
 
             <div>
               <label className="block text-xs text-muted-foreground mb-1">วัตถุประสงค์</label>
