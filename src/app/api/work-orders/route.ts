@@ -22,6 +22,8 @@ export async function GET() {
         vehicleId: wo.vehicleId,
         vehicleRegistration: wo.vehicle.registrationNumber,
         issueDescription: wo.repairRequest?.symptoms ?? "ไม่ระบุอาการ",
+        symptoms: (wo as any).symptoms ?? "",
+        diagnosis: (wo as any).diagnosis ?? "",
         urgency: wo.repairRequest?.urgency ?? "MEDIUM",
         mechanicName: wo.mechanic?.name ?? "-",
         status: wo.status,
@@ -39,7 +41,7 @@ export async function POST(request: Request) {
     ssl: { rejectUnauthorized: false },
   })
   try {
-    const { vehicleId, supervisorId, repairRequestId, mechanicId, issueDescription } = await request.json()
+    const { vehicleId, supervisorId, repairRequestId, mechanicId, issueDescription, symptoms } = await request.json()
 
     if (!vehicleId || !supervisorId) {
       return NextResponse.json({ error: "กรุณากรอกยานพาหนะ, ผู้ควบคุม" }, { status: 400 })
@@ -53,10 +55,10 @@ export async function POST(request: Request) {
 
     const id = crypto.randomUUID()
     const result = await pg.query(
-      `INSERT INTO "work_orders" ("id", "woNumber", "vehicleId", "supervisorId", "repairRequestId", "mechanicId", "status")
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO "work_orders" ("id", "woNumber", "vehicleId", "supervisorId", "repairRequestId", "mechanicId", "status", "symptoms")
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING "id", "woNumber"`,
-      [id, woNumber, vehicleId, supervisorId, repairRequestId || null, mechanicId || null, "OPEN"]
+      [id, woNumber, vehicleId, supervisorId, repairRequestId || null, mechanicId || null, "OPEN", symptoms || ""]
     )
 
     if (repairRequestId) {

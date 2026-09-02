@@ -12,6 +12,8 @@ interface WorkOrder {
   woNumber: string
   vehicleRegistration: string
   issueDescription: string
+  symptoms: string
+  diagnosis: string
   mechanicName: string
   urgency: string
   status: WorkOrderStatus
@@ -65,10 +67,10 @@ export default function WorkOrdersPage() {
   const [mechanics, setMechanics] = useState<any[]>([])
   const [supervisors, setSupervisors] = useState<any[]>([])
   const [repairRequests, setRepairRequests] = useState<any[]>([])
-  const [form, setForm] = useState({ vehicleId: "", supervisorId: "", repairRequestId: "" })
+  const [form, setForm] = useState({ vehicleId: "", supervisorId: "", repairRequestId: "", symptoms: "" })
   const [saving, setSaving] = useState(false)
   const [editWO, setEditWO] = useState<WorkOrder | null>(null)
-  const [editForm, setEditForm] = useState({ mechanicId: "", supervisorId: "" })
+  const [editForm, setEditForm] = useState({ mechanicId: "", supervisorId: "", woNumber: "", symptoms: "", diagnosis: "" })
 
   const fetchWorkOrders = async () => {
     try {
@@ -108,7 +110,7 @@ export default function WorkOrdersPage() {
       })
       if (res.ok) {
         setShowForm(false)
-        setForm({ vehicleId: "", supervisorId: "", repairRequestId: "" })
+        setForm({ vehicleId: "", supervisorId: "", repairRequestId: "", symptoms: "" })
         fetchWorkOrders()
       }
     } catch (error) {
@@ -148,6 +150,9 @@ export default function WorkOrdersPage() {
     setEditForm({
       mechanicId: "",
       supervisorId: "",
+      woNumber: wo.woNumber,
+      symptoms: wo.symptoms || "",
+      diagnosis: wo.diagnosis || "",
     })
   }
 
@@ -158,6 +163,9 @@ export default function WorkOrdersPage() {
       const body: any = {}
       if (editForm.mechanicId) body.mechanicId = editForm.mechanicId
       if (editForm.supervisorId) body.supervisorId = editForm.supervisorId
+      if (editForm.woNumber !== editWO.woNumber) body.woNumber = editForm.woNumber
+      body.symptoms = editForm.symptoms
+      body.diagnosis = editForm.diagnosis
       await fetch(`/api/work-orders/${editWO.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -208,6 +216,13 @@ export default function WorkOrdersPage() {
               {saving ? "กำลังบันทึก..." : "บันทึก"}
             </button>
           </div>
+          <textarea
+            value={form.symptoms}
+            onChange={(e) => setForm({ ...form, symptoms: e.target.value })}
+            placeholder="อธิบายอาการเสียของยานพาหนะ (เช่น เครื่องยนต์สตาร์ทไม่ติด, เบรกไม่อยู่, มีเสียงผิดปกติ...)"
+            rows={2}
+            className="mt-3 w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
+          />
         </div>
       )}
 
@@ -275,6 +290,18 @@ export default function WorkOrdersPage() {
                       {wo.vehicleRegistration}
                     </p>
                     <p className="text-sm mb-2">{wo.issueDescription}</p>
+                    {wo.symptoms && (
+                      <div className="mb-2 rounded-lg bg-warning/10 border border-warning/20 px-2 py-1.5">
+                        <p className="text-xs font-medium text-warning mb-0.5">อาการเสีย</p>
+                        <p className="text-xs text-foreground">{wo.symptoms}</p>
+                      </div>
+                    )}
+                    {wo.diagnosis && (
+                      <div className="mb-2 rounded-lg bg-info/10 border border-info/20 px-2 py-1.5">
+                        <p className="text-xs font-medium text-info mb-0.5">ผลวินิจฉัย</p>
+                        <p className="text-xs text-foreground">{wo.diagnosis}</p>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">
                         {wo.mechanicName}
@@ -308,6 +335,15 @@ export default function WorkOrdersPage() {
             </div>
             <div className="space-y-3">
               <div>
+                <label className="block text-xs text-muted-foreground mb-1">หมายเลขใบงาน</label>
+                <input
+                  type="text"
+                  value={editForm.woNumber}
+                  onChange={(e) => setEditForm({ ...editForm, woNumber: e.target.value })}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
+                />
+              </div>
+              <div>
                 <label className="block text-xs text-muted-foreground mb-1">มอบหมายช่าง</label>
                 <select value={editForm.mechanicId} onChange={(e) => setEditForm({ ...editForm, mechanicId: e.target.value })} className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50">
                   <option value="">ไม่เปลี่ยน</option>
@@ -320,6 +356,26 @@ export default function WorkOrdersPage() {
                   <option value="">ไม่เปลี่ยน</option>
                   {supervisors.map((m: any) => <option key={m.id} value={m.id}>{m.name ?? `${m.firstName} ${m.lastName}`}</option>)}
                 </select>
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">อาการเสีย (อิสระ)</label>
+                <textarea
+                  value={editForm.symptoms}
+                  onChange={(e) => setEditForm({ ...editForm, symptoms: e.target.value })}
+                  placeholder="อธิบายอาการเสียของยานพาหนะ..."
+                  rows={3}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">ผลวินิจฉัย (อิสระ)</label>
+                <textarea
+                  value={editForm.diagnosis}
+                  onChange={(e) => setEditForm({ ...editForm, diagnosis: e.target.value })}
+                  placeholder="ระบุผลวินิจฉัยและแนวทางการซ่อม..."
+                  rows={3}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
+                />
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">

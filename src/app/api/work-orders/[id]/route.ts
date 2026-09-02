@@ -20,6 +20,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
     if (body.mechanicId !== undefined) updateData.mechanicId = body.mechanicId
     if (body.supervisorId !== undefined) updateData.supervisorId = body.supervisorId
+    if (body.woNumber !== undefined) updateData.woNumber = body.woNumber
+    if (body.symptoms !== undefined) updateData.symptoms = body.symptoms
+    if (body.diagnosis !== undefined) updateData.diagnosis = body.diagnosis
 
     const wo = await prisma.workOrder.update({
       where: { id },
