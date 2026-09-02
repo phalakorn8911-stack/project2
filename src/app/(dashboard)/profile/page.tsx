@@ -111,10 +111,16 @@ export default function ProfilePage() {
           <div><label className="text-xs text-muted-foreground">ใบขับขี่พลเรือน</label>
             <select value={form.civilianLicense||""} onChange={e=>setForm({...form,civilianLicense:e.target.value})} className={i}>
               <option value="">-- เลือก --</option>
-              <option value="ท">ท. รถยนต์นั่งส่วนบุคคล</option>
-              <option value="ท2">ท2. รถยนต์นั่งเกิน 7 คน</option>
-              <option value="ท3">ท3. รถยนต์บรรทุกส่วนบุคคล</option>
-              <option value="จ">จ. รถจักรยานยนต์</option>
+              <option value="บ.1">บ.1 รถยนต์ส่วนบุคคล ไม่เกิน 3,500 กก.</option>
+              <option value="บ.2">บ.2 รถยนต์ส่วนบุคคล นั่งเกิน 7 คน</option>
+              <option value="ท.1">ท.1 รถยนต์สาธารณะ ไม่เกิน 3,500 กก.</option>
+              <option value="ท.2">ท.2 รถยนต์สาธารณะ นั่งไม่เกิน 20 คน</option>
+              <option value="ท.3">ท.3 รถยนต์สาธารณะ นั่งเกิน 20 คน</option>
+              <option value="ท.4">ท.4 รถบรรทุกสาธารณะ</option>
+              <option value="ข.1">ข.1 รถจักรยานยนต์</option>
+              <option value="ข.2">ข.2 รถจักรยานยนต์สามล้อ</option>
+              <option value="ข.3">ข.3 รถแทรกเตอร์</option>
+              <option value="ข.4">ข.4 รถออฟโรด</option>
             </select>
           </div>
           <div><label className="text-xs text-muted-foreground">ใบขับขี่ ทบ.</label>
