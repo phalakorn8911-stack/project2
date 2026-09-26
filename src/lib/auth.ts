@@ -19,6 +19,9 @@ async function findUserByEmail(email: string) {
       [email]
     )
     return result.rows[0] || null
+  } catch (dbError) {
+    console.error("[auth] findUserByEmail failed:", dbError)
+    throw dbError
   } finally {
     await pg.end()
   }
@@ -37,28 +40,33 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        const user = await findUserByEmail(credentials.email)
+        try {
+          const user = await findUserByEmail(credentials.email)
 
-        if (!user || user.status !== "ACTIVE") {
+          if (!user || user.status !== "ACTIVE") {
+            return null
+          }
+
+          const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+
+          if (!isPasswordValid) {
+            return null
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role_name,
+            unitId: user.unitId,
+            rank: user.rank,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            photoUrl: user.photo_url,
+          }
+        } catch (authError) {
+          console.error("[auth] authorize failed:", authError)
           return null
-        }
-
-        const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
-
-        if (!isPasswordValid) {
-          return null
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role_name,
-          unitId: user.unitId,
-          rank: user.rank,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          photoUrl: user.photo_url,
         }
       },
     }),
