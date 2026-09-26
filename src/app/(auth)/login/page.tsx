@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { signIn } from "next-auth/react"
+import { signIn, getSession } from "next-auth/react"
 import { useState } from "react"
 import { Truck, Eye, EyeOff, Download } from "lucide-react"
 
@@ -29,9 +29,8 @@ export default function LoginPage() {
       setLoading(false)
     } else {
       try {
-        const res = await fetch("/api/auth/session")
-        const session = await res.json()
-        const role = session?.user?.role
+        const session = await getSession()
+        const role = (session?.user as { role?: string } | undefined)?.role
 
         if (role === "admin") {
           router.push("/dashboard")
