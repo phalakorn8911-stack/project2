@@ -344,6 +344,8 @@ model WorkOrder {
   endDate         DateTime?
   totalLaborCost  Float           @default(0)
   totalPartsCost  Float           @default(0)
+  symptoms        String?
+  diagnosis       String?
 
   tasks           WorkOrderTask[]
   partsUsed       WorkOrderPart[]
