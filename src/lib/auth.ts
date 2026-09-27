@@ -41,7 +41,8 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          const user = await findUserByEmail(credentials.email)
+          const email = credentials.email.trim().toLowerCase()
+          const user = await findUserByEmail(email)
 
           if (!user || user.status !== "ACTIVE") {
             return null
