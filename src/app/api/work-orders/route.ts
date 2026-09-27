@@ -28,6 +28,7 @@ export async function GET() {
         symptoms: (wo as any).symptoms ?? "",
         diagnosis: (wo as any).diagnosis ?? "",
         urgency: wo.repairRequest?.urgency ?? "MEDIUM",
+        mechanicId: wo.mechanicId ?? null,
         mechanicName: wo.mechanic?.name ?? "-",
         mechanicPhotoUrl: wo.mechanic?.photoUrl ?? null,
         status: wo.status,

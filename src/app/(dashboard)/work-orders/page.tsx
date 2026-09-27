@@ -1,8 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
 import { cn } from "@/lib/utils"
-import { ChevronDown, Plus, X, Pencil, Trash2 } from "lucide-react"
+import { ChevronDown, Plus, X, Pencil, Trash2, Wrench, Package } from "lucide-react"
 
 type WorkOrderStatus = "OPEN" | "PENDING_APPROVAL" | "ASSIGNED" | "DIAGNOSING" | "IN_PROGRESS" | "WAITING_PARTS" | "READY_FOR_QC" | "COMPLETED" | "CLOSED" | "CANCELLED"
 
@@ -18,6 +19,25 @@ interface WorkOrder {
   mechanicPhotoUrl: string | null
   urgency: string
   status: WorkOrderStatus
+  mechanicId: string | null
+}
+
+interface RepairTask {
+  id: string
+  taskDescription: string
+  laborHours: number
+  cost: number
+}
+
+interface UsedPart {
+  id: string
+  partId: string
+  partNumber: string
+  partName: string
+  unitMeasure: string
+  quantity: number
+  unitPrice: number
+  totalPrice: number
 }
 
 const statusConfig: Record<WorkOrderStatus, { label: string; color: string }> = {
@@ -60,8 +80,11 @@ const urgencyConfig: Record<string, { label: string; color: string }> = {
 }
 
 export default function WorkOrdersPage() {
+  const { data: session } = useSession()
+  const myId = (session?.user as any)?.id as string | undefined
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
   const [loading, setLoading] = useState(true)
+  const [mineOnly, setMineOnly] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [vehicles, setVehicles] = useState<any[]>([])
@@ -146,6 +169,119 @@ export default function WorkOrdersPage() {
     }
   }
 
+  // ---- ช่างรับงาน ----
+  const [accepting, setAccepting] = useState<string | null>(null)
+  const handleAccept = async (id: string) => {
+    setAccepting(id)
+    try {
+      const res = await fetch(`/api/work-orders/${id}/accept`, { method: "POST" })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        alert(d.error ?? "รับงานไม่สำเร็จ")
+      }
+      await fetchWorkOrders()
+    } catch (error) {
+      console.error("Accept work order error:", error)
+    } finally {
+      setAccepting(null)
+    }
+  }
+
+  // ---- บันทึกซ่อม (tasks + เบิกอะไหล่) ----
+  const [detailWO, setDetailWO] = useState<WorkOrder | null>(null)
+  const [tasks, setTasks] = useState<RepairTask[]>([])
+  const [usedParts, setUsedParts] = useState<UsedPart[]>([])
+  const [partsCatalog, setPartsCatalog] = useState<any[]>([])
+  const [taskForm, setTaskForm] = useState({ desc: "", hours: "", cost: "" })
+  const [issueForm, setIssueForm] = useState({ partId: "", qty: "1" })
+  const [detailSaving, setDetailSaving] = useState(false)
+
+  const openDetail = async (wo: WorkOrder) => {
+    setDetailWO(wo)
+    setTasks([])
+    setUsedParts([])
+    try {
+      const [tRes, pRes, cRes] = await Promise.all([
+        fetch(`/api/work-orders/${wo.id}/tasks`),
+        fetch(`/api/work-orders/${wo.id}/parts`),
+        partsCatalog.length ? null : fetch("/api/parts"),
+      ])
+      if (tRes.ok) setTasks(await tRes.json())
+      if (pRes.ok) setUsedParts(await pRes.json())
+      if (cRes && cRes.ok) {
+        const cd = await cRes.json()
+        setPartsCatalog(Array.isArray(cd) ? cd : cd.parts ?? [])
+      }
+    } catch (error) {
+      console.error("Load detail error:", error)
+    }
+  }
+
+  const refreshDetail = async (woId: string) => {
+    const [tRes, pRes] = await Promise.all([
+      fetch(`/api/work-orders/${woId}/tasks`),
+      fetch(`/api/work-orders/${woId}/parts`),
+    ])
+    if (tRes.ok) setTasks(await tRes.json())
+    if (pRes.ok) setUsedParts(await pRes.json())
+    fetchWorkOrders()
+  }
+
+  const handleAddTask = async () => {
+    if (!detailWO || !taskForm.desc.trim()) return
+    setDetailSaving(true)
+    try {
+      const res = await fetch(`/api/work-orders/${detailWO.id}/tasks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          taskDescription: taskForm.desc,
+          laborHours: Number(taskForm.hours) || 0,
+          cost: Number(taskForm.cost) || 0,
+        }),
+      })
+      if (res.ok) {
+        setTaskForm({ desc: "", hours: "", cost: "" })
+        await refreshDetail(detailWO.id)
+      }
+    } finally {
+      setDetailSaving(false)
+    }
+  }
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (!detailWO || !confirm("ลบรายการนี้?")) return
+    await fetch(`/api/work-orders/${detailWO.id}/tasks/${taskId}`, { method: "DELETE" })
+    await refreshDetail(detailWO.id)
+  }
+
+  const handleIssuePart = async () => {
+    if (!detailWO || !issueForm.partId) return
+    setDetailSaving(true)
+    try {
+      const res = await fetch(`/api/work-orders/${detailWO.id}/parts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ partId: issueForm.partId, quantity: Number(issueForm.qty) || 0 }),
+      })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        alert(d.error ?? "เบิกอะไหล่ไม่สำเร็จ")
+      } else {
+        setIssueForm({ partId: "", qty: "1" })
+        await refreshDetail(detailWO.id)
+      }
+    } finally {
+      setDetailSaving(false)
+    }
+  }
+
+  const handleReturnPart = async (rowId: string) => {
+    if (!detailWO || !confirm("คืนอะไหล่นี้เข้าสต็อก?")) return
+    await fetch(`/api/work-orders/${detailWO.id}/parts/${rowId}`, { method: "DELETE" })
+    await refreshDetail(detailWO.id)
+  }
+
   const openEdit = (wo: WorkOrder) => {
     setEditWO(wo)
     setEditForm({
@@ -182,16 +318,27 @@ export default function WorkOrdersPage() {
   }
 
   const getOrdersByStatuses = (statuses: WorkOrderStatus[]) =>
-    workOrders.filter((wo) => statuses.includes(wo.status))
+    workOrders.filter((wo) => statuses.includes(wo.status) && (!mineOnly || (myId && wo.mechanicId === myId)))
 
   return (
     <div className="p-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">ใบงานซ่อม</h1>
-        <button onClick={() => setShowForm(!showForm)} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
-          <Plus className="size-4" />
-          สร้างใบสั่งซ่อม
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setMineOnly(!mineOnly)}
+            className={cn(
+              "rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
+              mineOnly ? "bg-primary text-primary-foreground border-primary" : "border-input hover:bg-muted"
+            )}
+          >
+            งานของฉัน
+          </button>
+          <button onClick={() => setShowForm(!showForm)} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+            <Plus className="size-4" />
+            สร้างใบสั่งซ่อม
+          </button>
+        </div>
       </div>
 
       {showForm && (
@@ -248,6 +395,19 @@ export default function WorkOrdersPage() {
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-semibold">{wo.woNumber}</span>
                       <div className="flex items-center gap-1">
+                        {(wo.status === "OPEN" || wo.status === "ASSIGNED") && (
+                          <button
+                            onClick={() => handleAccept(wo.id)}
+                            disabled={accepting === wo.id}
+                            className="rounded-full bg-primary px-2 py-1 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+                            title="รับงานนี้"
+                          >
+                            {accepting === wo.id ? "..." : "รับงาน"}
+                          </button>
+                        )}
+                        <button onClick={() => openDetail(wo)} className="p-1 text-muted-foreground hover:text-info transition-colors" title="บันทึกซ่อม / เบิกอะไหล่">
+                          <Wrench className="size-3" />
+                        </button>
                         <button onClick={() => openEdit(wo)} className="p-1 text-muted-foreground hover:text-info transition-colors" title="แก้ไข">
                           <Pencil className="size-3" />
                         </button>
@@ -387,6 +547,67 @@ export default function WorkOrdersPage() {
               <button onClick={handleUpdate} disabled={saving || (!editForm.mechanicId && !editForm.supervisorId)} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
                 {saving ? "กำลังบันทึก..." : "บันทึก"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {detailWO && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-card rounded-xl border border-border shadow-xl w-full max-w-2xl mx-4 p-6 space-y-5 max-h-[90dvh] overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-card-foreground">บันทึกซ่อม {detailWO.woNumber} <span className="text-sm font-normal text-muted-foreground">({detailWO.vehicleRegistration})</span></h3>
+              <button onClick={() => setDetailWO(null)} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></button>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-semibold mb-2 flex items-center gap-1.5"><Wrench className="size-4" /> รายการซ่อม ({tasks.length}) · ค่าแรงรวม ฿{tasks.reduce((s, t) => s + Number(t.cost || 0), 0).toLocaleString()}</h4>
+              <div className="space-y-2 mb-3">
+                {tasks.map((t) => (
+                  <div key={t.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm">
+                    <div>
+                      <p className="font-medium">{t.taskDescription}</p>
+                      <p className="text-xs text-muted-foreground">{t.laborHours} ชม. · ฿{Number(t.cost).toLocaleString()}</p>
+                    </div>
+                    <button onClick={() => handleDeleteTask(t.id)} className="p-1 text-muted-foreground hover:text-destructive" title="ลบ"><Trash2 className="size-3.5" /></button>
+                  </div>
+                ))}
+                {tasks.length === 0 && <p className="text-xs text-muted-foreground">ยังไม่มีรายการซ่อม</p>}
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <input value={taskForm.desc} onChange={(e) => setTaskForm({ ...taskForm, desc: e.target.value })} placeholder="รายละเอียดงาน..." className="col-span-2 rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" />
+                <input value={taskForm.hours} onChange={(e) => setTaskForm({ ...taskForm, hours: e.target.value })} placeholder="ชั่วโมง" type="number" min="0" className="rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" />
+                <input value={taskForm.cost} onChange={(e) => setTaskForm({ ...taskForm, cost: e.target.value })} placeholder="ค่าแรง (บาท)" type="number" min="0" className="rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" />
+              </div>
+              <button onClick={handleAddTask} disabled={detailSaving || !taskForm.desc.trim()} className="mt-2 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
+                {detailSaving ? "กำลังบันทึก..." : "เพิ่มรายการซ่อม"}
+              </button>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-semibold mb-2 flex items-center gap-1.5"><Package className="size-4" /> อะไหล่ที่ใช้ ({usedParts.length}) · รวม ฿{usedParts.reduce((s, p) => s + Number(p.totalPrice || 0), 0).toLocaleString()}</h4>
+              <div className="space-y-2 mb-3">
+                {usedParts.map((p) => (
+                  <div key={p.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm">
+                    <div>
+                      <p className="font-medium">{p.partName} <span className="text-xs text-muted-foreground">({p.partNumber})</span></p>
+                      <p className="text-xs text-muted-foreground">{p.quantity} {p.unitMeasure} × ฿{Number(p.unitPrice).toLocaleString()} = ฿{Number(p.totalPrice).toLocaleString()}</p>
+                    </div>
+                    <button onClick={() => handleReturnPart(p.id)} className="p-1 text-muted-foreground hover:text-destructive" title="คืนสต็อก"><Trash2 className="size-3.5" /></button>
+                  </div>
+                ))}
+                {usedParts.length === 0 && <p className="text-xs text-muted-foreground">ยังไม่มีการเบิกอะไหล่</p>}
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                <select value={issueForm.partId} onChange={(e) => setIssueForm({ ...issueForm, partId: e.target.value })} className="col-span-2 md:col-span-1 rounded-lg border border-input bg-background px-2 py-2 text-sm">
+                  <option value="">เลือกอะไหล่</option>
+                  {partsCatalog.map((p: any) => <option key={p.id} value={p.id}>{p.name} (เหลือ {p.stockQuantity})</option>)}
+                </select>
+                <input value={issueForm.qty} onChange={(e) => setIssueForm({ ...issueForm, qty: e.target.value })} placeholder="จำนวน" type="number" min="1" className="rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" />
+                <button onClick={handleIssuePart} disabled={detailSaving || !issueForm.partId} className="rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
+                  {detailSaving ? "..." : "เบิกอะไหล่"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
