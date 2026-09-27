@@ -46,12 +46,54 @@ export default function UsersPage() {
   const [savingBatch, setSavingBatch] = useState(false)
   const [detailUser, setDetailUser] = useState<any>(null)
   const [uploadingUserPhoto, setUploadingUserPhoto] = useState<string | null>(null)
+  const [tab, setTab] = useState<"users" | "drivers">("users")
+  const [driversList, setDriversList] = useState<any[]>([])
+  const [editingDriverId, setEditingDriverId] = useState<string | null>(null)
+  const [driverForm, setDriverForm] = useState({ rank: "", firstName: "", lastName: "" })
 
   useEffect(() => {
     fetchUsers()
     fetchRoles()
     fetchUnits()
+    fetchDrivers()
   }, [])
+
+  const fetchDrivers = () => {
+    fetch("/api/drivers")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => setDriversList(Array.isArray(data) ? data : []))
+      .catch(() => setDriversList([]))
+  }
+
+  const handleDriverSave = async () => {
+    if (!editingDriverId) return
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/drivers/${editingDriverId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(driverForm),
+      })
+      if (res.ok) {
+        setEditingDriverId(null)
+        fetchDrivers()
+      }
+    } catch (err) {
+      console.error("Save driver error:", err)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDriverDelete = async (id: string) => {
+    if (!confirm("ต้องการลบพลขับคนนี้?")) return
+    try {
+      const res = await fetch(`/api/drivers/${id}`, { method: "DELETE" })
+      if (res.ok) fetchDrivers()
+    } catch (err) {
+      console.error("Delete driver error:", err)
+    }
+  }
 
   const fetchUsers = () => {
     fetch("/api/users")
@@ -200,8 +242,82 @@ export default function UsersPage() {
         </div>
       </div>
 
+      <div className="flex items-center gap-2">
+        {(["users", "drivers"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={cn(
+              "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+              tab === t ? "bg-primary text-primary-foreground" : "border border-border hover:bg-muted"
+            )}
+          >
+            {t === "users" ? `ผู้ใช้ระบบ (${users.length})` : `พลขับ (${driversList.length})`}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">กำลังโหลด...</div>
+      ) : tab === "drivers" ? (
+        <div className="overflow-x-auto rounded-xl border border-border bg-card">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">ยศ</th>
+                <th className="px-3 py-3 font-medium">ชื่อ-นามสกุล</th>
+                <th className="px-3 py-3 font-medium">รถที่ขับ</th>
+                <th className="px-4 py-3 font-medium text-right">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {driversList.map((d) => (
+                <tr key={d.id} className="border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors">
+                  <td className="px-4 py-3 text-card-foreground">
+                    {editingDriverId === d.id ? (
+                      <input type="text" value={driverForm.rank} onChange={(e) => setDriverForm({ ...driverForm, rank: e.target.value })} className="block w-24 rounded-lg border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" />
+                    ) : (d.rank || "-")}
+                  </td>
+                  <td className="px-3 py-3">
+                    {editingDriverId === d.id ? (
+                      <div className="flex items-center gap-1">
+                        <input type="text" value={driverForm.firstName} onChange={(e) => setDriverForm({ ...driverForm, firstName: e.target.value })} placeholder="ชื่อ" className="block w-24 rounded-lg border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" />
+                        <input type="text" value={driverForm.lastName} onChange={(e) => setDriverForm({ ...driverForm, lastName: e.target.value })} placeholder="นามสกุล" className="block w-28 rounded-lg border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" />
+                      </div>
+                    ) : (
+                      <span className="font-medium text-card-foreground">{d.firstName} {d.lastName}</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-3 text-muted-foreground">
+                    {d.vehicles?.length ? d.vehicles.map((v: any) => v.registrationNumber).join(", ") : "-"}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {editingDriverId === d.id ? (
+                      <div className="inline-flex items-center gap-1">
+                        <button onClick={handleDriverSave} disabled={saving} className="inline-flex items-center justify-center size-7 rounded-lg text-success hover:bg-success/10 transition-colors" title="บันทึก">
+                          <Save className="size-3.5" />
+                        </button>
+                        <button onClick={() => setEditingDriverId(null)} className="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-muted transition-colors" title="ยกเลิก">
+                          <X className="size-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="inline-flex items-center gap-1">
+                        <button onClick={() => { setEditingDriverId(d.id); setDriverForm({ rank: d.rank ?? "", firstName: d.firstName ?? "", lastName: d.lastName ?? "" }) }} className="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="แก้ไข">
+                          <Pencil className="size-3.5" />
+                        </button>
+                        <button onClick={() => handleDriverDelete(d.id)} className="inline-flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors" title="ลบ">
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {driversList.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">ยังไม่มีพลขับ</p>}
+        </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border bg-card">
           <table className="w-full text-sm">
