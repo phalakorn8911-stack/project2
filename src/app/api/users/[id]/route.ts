@@ -21,6 +21,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     for (const field of fields) {
       if (body[field] !== undefined) updateData[field] = body[field]
     }
+    // FK ว่าง ("") ต้องเป็น null ไม่เช่นนั้น Prisma โยน P2003
+    if (updateData.unitId === "") updateData.unitId = null
+    if (updateData.roleId === "") delete updateData.roleId
     if (body.password && body.password.trim()) {
       updateData.password = await bcrypt.hash(body.password, 10)
     }
@@ -45,8 +48,17 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       education: user.education, nationalId: user.nationalId,
       civilianLicense: user.civilianLicense, armyLicense: user.armyLicense,
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error("Update user error:", error)
+    if (error.code === "P2002") {
+      return NextResponse.json({ error: "อีเมลซ้ำกับผู้ใช้อื่น" }, { status: 409 })
+    }
+    if (error.code === "P2003") {
+      return NextResponse.json({ error: "บทบาทหรือหน่วยงานไม่ถูกต้อง" }, { status: 400 })
+    }
+    if (error.code === "P2025") {
+      return NextResponse.json({ error: "ไม่พบผู้ใช้" }, { status: 404 })
+    }
     return NextResponse.json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" }, { status: 500 })
   }
 }
