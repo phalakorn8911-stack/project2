@@ -284,6 +284,10 @@ model MaintenancePlan {
   intervalMonths  Int?
   intervalMileage Float?
   intervalHours   Float?
+  cycleDay        Int?
+  cycleMonth      Int?
+  cycleYear       Int?
+  description     String?
 
   schedules       MaintenanceSchedule[]
 

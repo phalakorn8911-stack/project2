@@ -22,10 +22,10 @@ export async function GET() {
         intervalMonths: p.intervalMonths,
         intervalHours: p.intervalHours,
         intervalMileage: p.intervalMileage,
-        cycleDay: (p as any).cycleDay ?? null,
-        cycleMonth: (p as any).cycleMonth ?? null,
-        cycleYear: (p as any).cycleYear ?? null,
-        description: (p as any).description ?? "",
+        cycleDay: p.cycleDay ?? null,
+        cycleMonth: p.cycleMonth ?? null,
+        cycleYear: p.cycleYear ?? null,
+        description: p.description ?? "",
         totalVehicles: p.schedules.length,
         dueSoon: p.schedules.filter((s) => s.status === "DUE_SOON").length,
         overdue: p.schedules.filter((s) => s.status === "OVERDUE").length,
@@ -40,6 +40,10 @@ export async function GET() {
 export async function POST(request: Request) {
   const { session, error } = await requireAuth()
   if (error) return error
+  const role = (session!.user as any).role
+  if (role !== "admin" && role !== "mechanic") {
+    return NextResponse.json({ error: "เฉพาะผู้ดูแลและช่างซ่อมเท่านั้น" }, { status: 403 })
+  }
   try {
     const { name, vehicleTypeId, intervalMonths, intervalMileage, intervalHours, cycleDay, cycleMonth, cycleYear, description } = await request.json()
 
