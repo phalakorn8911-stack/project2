@@ -146,14 +146,18 @@ export default function WorkOrdersPage() {
     }
   }
 
-  const updateStatus = async (id: string, newStatus: WorkOrderStatus) => {
+  const updateStatus = async (wo: WorkOrder, newStatus: WorkOrderStatus) => {
     try {
-      await fetch(`/api/work-orders/${id}`, {
+      const res = await fetch(`/api/work-orders/${wo.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       })
-      await fetchWorkOrders()
+      if (res.ok) {
+        await fetchWorkOrders()
+        // เปิดหน้าใบงานซ่อมทันทีหลังเปลี่ยนสถานะ
+        await openDetail({ ...wo, status: newStatus })
+      }
     } catch (error) {
       console.error("Failed to update status:", error)
     } finally {
@@ -454,7 +458,7 @@ export default function WorkOrdersPage() {
                             {statusOptions.map((opt) => (
                               <button
                                 key={opt.value}
-                                onClick={() => updateStatus(wo.id, opt.value)}
+                                onClick={() => updateStatus(wo, opt.value)}
                                 className={cn(
                                   "w-full text-left text-sm px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors first:rounded-t-lg last:rounded-b-lg",
                                   wo.status === opt.value && "font-semibold bg-accent"
