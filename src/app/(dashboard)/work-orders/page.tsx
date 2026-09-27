@@ -82,6 +82,8 @@ const urgencyConfig: Record<string, { label: string; color: string }> = {
 export default function WorkOrdersPage() {
   const { data: session } = useSession()
   const myId = (session?.user as any)?.id as string | undefined
+  const myRole = (session?.user as any)?.role as string | undefined
+  const canManage = myRole === "admin" || myRole === "mechanic"
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [mineOnly, setMineOnly] = useState(false)
@@ -334,10 +336,12 @@ export default function WorkOrdersPage() {
           >
             งานของฉัน
           </button>
+          {canManage && (
           <button onClick={() => setShowForm(!showForm)} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
             <Plus className="size-4" />
             สร้างใบสั่งซ่อม
           </button>
+          )}
         </div>
       </div>
 
@@ -395,7 +399,7 @@ export default function WorkOrdersPage() {
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-semibold">{wo.woNumber}</span>
                       <div className="flex items-center gap-1">
-                        {(wo.status === "OPEN" || wo.status === "ASSIGNED") && (
+                        {canManage && (wo.status === "OPEN" || wo.status === "ASSIGNED") && (
                           <button
                             onClick={() => handleAccept(wo.id)}
                             disabled={accepting === wo.id}
@@ -405,16 +409,23 @@ export default function WorkOrdersPage() {
                             {accepting === wo.id ? "..." : "รับงาน"}
                           </button>
                         )}
+                        {canManage && (
                         <button onClick={() => openDetail(wo)} className="p-1 text-muted-foreground hover:text-info transition-colors" title="บันทึกซ่อม / เบิกอะไหล่">
                           <Wrench className="size-3" />
                         </button>
+                        )}
+                        {canManage && (
                         <button onClick={() => openEdit(wo)} className="p-1 text-muted-foreground hover:text-info transition-colors" title="แก้ไข">
                           <Pencil className="size-3" />
                         </button>
+                        )}
+                        {canManage && (
                         <button onClick={() => handleDelete(wo.id)} className="p-1 text-muted-foreground hover:text-destructive transition-colors" title="ลบ">
                           <Trash2 className="size-3" />
                         </button>
+                        )}
                         <div className="relative">
+                        {canManage ? (
                         <button
                           onClick={() =>
                             setOpenDropdown(openDropdown === wo.id ? null : wo.id)
@@ -428,6 +439,16 @@ export default function WorkOrdersPage() {
                           {statusConfig[wo.status].label}
                           <ChevronDown className="h-3 w-3" />
                         </button>
+                        ) : (
+                        <span
+                          className={cn(
+                            "flex items-center gap-1 text-xs rounded-full px-2 py-1",
+                            statusConfig[wo.status].color
+                          )}
+                        >
+                          {statusConfig[wo.status].label}
+                        </span>
+                        )}
                         {openDropdown === wo.id && (
                           <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-lg border border-border bg-popover shadow-md">
                             {statusOptions.map((opt) => (
