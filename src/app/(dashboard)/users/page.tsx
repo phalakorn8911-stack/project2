@@ -709,7 +709,7 @@ export default function UsersPage() {
                         setEditForm({ ...editForm, photoUrl: data.photoUrl })
                         setUsers(users.map(u => u.id === editingId ? { ...u, photoUrl: data.photoUrl } : u))
                       }
-                    }}>+</input>
+                    }} />
                     +
                   </label>
                 )}
