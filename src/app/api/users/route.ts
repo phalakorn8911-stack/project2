@@ -45,6 +45,10 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const { session, error } = await requireAuth()
   if (error) return error
+  // กันสร้าง admin มั่ว: เฉพาะ admin สร้างผู้ใช้ได้
+  if ((session!.user as any).role !== "admin") {
+    return NextResponse.json({ error: "เฉพาะผู้ดูแลระบบเท่านั้น" }, { status: 403 })
+  }
   try {
     const body = await request.json()
 

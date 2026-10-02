@@ -8,6 +8,10 @@ import { requireAuth } from "@/lib/api-auth"
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { session, error } = await requireAuth()
   if (error) return error
+  // กันยกระดับสิทธิ์: เฉพาะ admin แก้ไขผู้ใช้อื่นได้
+  if ((session!.user as any).role !== "admin") {
+    return NextResponse.json({ error: "เฉพาะผู้ดูแลระบบเท่านั้น" }, { status: 403 })
+  }
   try {
     const { id } = await params
     const body = await request.json()
@@ -66,6 +70,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { session, error } = await requireAuth()
   if (error) return error
+  if ((session!.user as any).role !== "admin") {
+    return NextResponse.json({ error: "เฉพาะผู้ดูแลระบบเท่านั้น" }, { status: 403 })
+  }
   try {
     const { id } = await params
     await prisma.user.delete({ where: { id } })

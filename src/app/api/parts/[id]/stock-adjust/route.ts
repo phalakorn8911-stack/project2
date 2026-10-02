@@ -12,16 +12,24 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   })
   try {
     const { id } = await params
-    const { adjustment, reason, performedById } = await request.json()
+    const { adjustment, reason } = await request.json()
 
     if (adjustment === undefined || typeof adjustment !== "number") {
       return NextResponse.json({ error: "กรุณาระบุจำนวนที่ต้องการปรับ" }, { status: 400 })
     }
 
-    await pg.connect()
-
+    // ต้อง login และเป็น admin/ช่างเท่านั้น + ผูกคนทำกับ session จริง (กันปลอม)
     const session = await getServerSession(authOptions)
-    const userId = performedById || session?.user?.id || null
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "ไม่ได้เข้าสู่ระบบ" }, { status: 401 })
+    }
+    const role = (session.user as any).role
+    if (role !== "admin" && role !== "mechanic") {
+      return NextResponse.json({ error: "เฉพาะผู้ดูแลและช่างซ่อมเท่านั้น" }, { status: 403 })
+    }
+    const userId = session.user.id
+
+    await pg.connect()
 
     await pg.query("BEGIN")
 
