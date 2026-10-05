@@ -64,6 +64,8 @@ export default function VehicleDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { data: session } = useSession()
+  const myRole = (session?.user as any)?.role as string | undefined
+  const canEditHistory = myRole === "admin" || myRole === "mechanic"
   const [vehicle, setVehicle] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [photos, setPhotos] = useState<Photo[]>([])
@@ -147,18 +149,21 @@ export default function VehicleDetailPage() {
 
   const handleSaveHistory = async () => {
     try {
-      if (editingHistoryId) {
-        await fetch(`/api/vehicle-histories/${editingHistoryId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(historyForm),
-        })
-      } else {
-        await fetch("/api/vehicle-histories", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...historyForm, vehicleId: params.id }),
-        })
+      const res = editingHistoryId
+        ? await fetch(`/api/vehicle-histories/${editingHistoryId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(historyForm),
+          })
+        : await fetch("/api/vehicle-histories", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...historyForm, vehicleId: params.id }),
+          })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        alert(d.error ?? "บันทึกไม่สำเร็จ")
+        return
       }
       fetchHistories()
       setShowHistoryForm(false)
@@ -166,13 +171,19 @@ export default function VehicleDetailPage() {
       setHistoryForm({ licensePlate: "", engineNumber: "", receivedDate: "", receivedFrom: "", withdrawer: "", engineCc: "", horsepower: "", totalQuantity: 0, maintenanceDetails: "" })
     } catch (err) {
       console.error("Save history error:", err)
+      alert("บันทึกไม่สำเร็จ กรุณาลองใหม่")
     }
   }
 
   const handleDeleteHistory = async (id: string) => {
     if (!confirm("ต้องการลบประวัติรายการนี้?")) return
     try {
-      await fetch(`/api/vehicle-histories/${id}`, { method: "DELETE" })
+      const res = await fetch(`/api/vehicle-histories/${id}`, { method: "DELETE" })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        alert(d.error ?? "ลบไม่สำเร็จ")
+        return
+      }
       fetchHistories()
     } catch (err) {
       console.error("Delete history error:", err)
@@ -899,12 +910,14 @@ export default function VehicleDetailPage() {
             <h3 className="text-sm font-semibold text-card-foreground">ประวัติรถ</h3>
             <p className="text-xs text-muted-foreground">{histories.length} รายการ</p>
           </div>
+          {canEditHistory && (
           <button
             onClick={() => { setShowHistoryForm(true); setEditingHistoryId(null); setHistoryForm({ licensePlate: "", engineNumber: "", receivedDate: "", receivedFrom: "", withdrawer: "", engineCc: "", horsepower: "", totalQuantity: 0, maintenanceDetails: "" }) }}
             className="inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity"
           >
             + เพิ่ม
           </button>
+          )}
         </div>
 
         {showHistoryForm && (
@@ -959,18 +972,25 @@ export default function VehicleDetailPage() {
           {histories.length === 0 ? (
             <p className="text-xs text-muted-foreground text-center py-4">ไม่มีประวัติ</p>
           ) : (
-            histories.map((h) => (
+            histories.map((h, idx) => (
               <div key={h.id} className="rounded-lg border border-border p-3">
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2 flex-wrap">
+                    {idx === 0 && (
+                      <span className="text-[10px] font-medium text-success bg-success/10 rounded-full px-2 py-0.5">ล่าสุด</span>
+                    )}
                     <span className="text-xs font-medium text-card-foreground">ทะเบียน: {h.licensePlate || "-"}</span>
                     {h.engineNumber && <span className="text-[10px] text-muted-foreground">| เครื่อง: {h.engineNumber}</span>}
                     {h.engineCc && <span className="text-[10px] text-muted-foreground">| {h.engineCc} CC</span>}
                     {h.horsepower && <span className="text-[10px] text-muted-foreground">| {h.horsepower} แรงม้า</span>}
                   </div>
                   <div className="flex items-center gap-1">
+                    {canEditHistory && (
                     <button onClick={() => handleEditHistory(h)} className="p-1 text-muted-foreground hover:text-info"><Pencil className="size-3" /></button>
+                    )}
+                    {canEditHistory && (
                     <button onClick={() => handleDeleteHistory(h.id)} className="p-1 text-muted-foreground hover:text-destructive"><Trash2 className="size-3" /></button>
+                    )}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-muted-foreground">

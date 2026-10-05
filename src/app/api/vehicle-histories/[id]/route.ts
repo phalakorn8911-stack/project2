@@ -7,6 +7,10 @@ import { requireAuth } from "@/lib/api-auth"
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { session, error } = await requireAuth()
   if (error) return error
+  const role = (session!.user as any).role
+  if (role !== "admin" && role !== "mechanic") {
+    return NextResponse.json({ error: "เฉพาะผู้ดูแลและช่างซ่อมเท่านั้น" }, { status: 403 })
+  }
   const pg = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
@@ -51,6 +55,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { session, error } = await requireAuth()
   if (error) return error
+  const role = (session!.user as any).role
+  if (role !== "admin" && role !== "mechanic") {
+    return NextResponse.json({ error: "เฉพาะผู้ดูแลและช่างซ่อมเท่านั้น" }, { status: 403 })
+  }
   const pg = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },

@@ -4,8 +4,11 @@ import { NextResponse } from "next/server"
 import { Client } from "pg"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
+import { requireAuth } from "@/lib/api-auth"
 
 export async function GET(request: Request) {
+  const { error } = await requireAuth()
+  if (error) return error
   const pg = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
@@ -25,7 +28,7 @@ export async function GET(request: Request) {
        FROM vehicle_histories vh
        LEFT JOIN users u ON u.id = vh.created_by
        WHERE vh.vehicle_id = $1
-       ORDER BY vh.created_at DESC`,
+       ORDER BY vh.received_date DESC NULLS LAST, vh.created_at DESC`,
       [vehicleId]
     )
 
@@ -53,8 +56,13 @@ export async function GET(request: Request) {
     await pg.end()
   }
 }
-
 export async function POST(request: Request) {
+  const { session: authSession, error: authError } = await requireAuth()
+  if (authError) return authError
+  const role = (authSession!.user as any).role
+  if (role !== "admin" && role !== "mechanic") {
+    return NextResponse.json({ error: "เฉพาะผู้ดูแลและช่างซ่อมเท่านั้น" }, { status: 403 })
+  }
   const pg = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
