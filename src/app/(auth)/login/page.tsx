@@ -32,11 +32,13 @@ export default function LoginPage() {
         const session = await getSession()
         const role = (session?.user as { role?: string } | undefined)?.role
 
-        if (role === "admin") {
+        if (role === "admin" || role === "commander") {
           router.push("/dashboard")
-        } else if (role === "mechanic") {
+        } else if (role === "mechanic" || role === "head_mechanic") {
           router.push("/work-orders")
-        } else if (role === "driver") {
+        } else if (role === "parts_officer") {
+          router.push("/parts")
+        } else if (role === "driver" || role === "vehicle_officer") {
           router.push("/vehicles")
         } else {
           router.push("/dashboard")

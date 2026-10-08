@@ -2,14 +2,14 @@ export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { Client } from "pg"
-import { requireAuth } from "@/lib/api-auth"
+import { requireAuth, isMechanicLike } from "@/lib/api-auth"
 
 // คืนอะไหล่ที่เบิก: ลบรายการ + คืนสต็อก ใน transaction เดียว
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string; rowId: string }> }) {
   const { session, error } = await requireAuth()
   if (error) return error
   const role = (session!.user as any).role
-  if (role !== "mechanic" && role !== "admin") {
+  if (!isMechanicLike(role)) {
     return NextResponse.json({ error: "เฉพาะช่างซ่อมเท่านั้น" }, { status: 403 })
   }
 

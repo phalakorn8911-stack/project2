@@ -4,7 +4,7 @@ import { NextResponse } from "next/server"
 import { Client } from "pg"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { requireAuth } from "@/lib/api-auth"
+import { requireAuth, isMechanicLike } from "@/lib/api-auth"
 
 export async function GET(request: Request) {
   const { error } = await requireAuth()
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   const { session: authSession, error: authError } = await requireAuth()
   if (authError) return authError
   const role = (authSession!.user as any).role
-  if (role !== "admin" && role !== "mechanic") {
+  if (!isMechanicLike(role)) {
     return NextResponse.json({ error: "เฉพาะผู้ดูแลและช่างซ่อมเท่านั้น" }, { status: 403 })
   }
   const pg = new Client({

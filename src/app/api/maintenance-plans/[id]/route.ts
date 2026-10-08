@@ -2,13 +2,13 @@ export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { requireAuth } from "@/lib/api-auth"
+import { requireAuth, isMechanicLike } from "@/lib/api-auth"
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { session, error } = await requireAuth()
   if (error) return error
   const role = (session!.user as any).role
-  if (role !== "admin" && role !== "mechanic") {
+  if (!isMechanicLike(role)) {
     return NextResponse.json({ error: "เฉพาะผู้ดูแลและช่างซ่อมเท่านั้น" }, { status: 403 })
   }
   try {
@@ -41,7 +41,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   const { session, error } = await requireAuth()
   if (error) return error
   const role = (session!.user as any).role
-  if (role !== "admin" && role !== "mechanic") {
+  if (!isMechanicLike(role)) {
     return NextResponse.json({ error: "เฉพาะผู้ดูแลและช่างซ่อมเท่านั้น" }, { status: 403 })
   }
   try {

@@ -8,12 +8,33 @@ const roleAccess: Record<string, string[]> = {
     "/maintenance-plans", "/work-orders", "/parts", "/reports",
     "/ai-assistant", "/users", "/settings", "/notifications", "/gps-tracking", "/profile", "/download",
   ],
+  // ผบ. = admin
+  commander: [
+    "/dashboard", "/vehicles", "/vehicle-types", "/units", "/drivers",
+    "/maintenance-plans", "/work-orders", "/parts", "/reports",
+    "/ai-assistant", "/users", "/settings", "/notifications", "/gps-tracking", "/profile", "/download",
+  ],
   mechanic: [
+    "/dashboard", "/vehicles", "/drivers", "/maintenance-plans",
+    "/work-orders", "/parts", "/reports", "/ai-assistant", "/notifications", "/profile", "/download",
+  ],
+  // หัวหน้าช่าง = ช่าง
+  head_mechanic: [
     "/dashboard", "/vehicles", "/drivers", "/maintenance-plans",
     "/work-orders", "/parts", "/reports", "/ai-assistant", "/notifications", "/profile", "/download",
   ],
   driver: [
     "/dashboard", "/vehicles", "/drivers", "/ai-assistant", "/notifications", "/profile", "/download",
+  ],
+  // นายทหารยานยนต์
+  vehicle_officer: [
+    "/dashboard", "/vehicles", "/vehicle-types", "/drivers", "/reports",
+    "/ai-assistant", "/notifications", "/profile", "/download",
+  ],
+  // นายทหารคลังอะไหล่
+  parts_officer: [
+    "/dashboard", "/parts", "/reports",
+    "/ai-assistant", "/notifications", "/profile", "/download",
   ],
 }
 
@@ -35,14 +56,17 @@ export async function middleware(request: NextRequest) {
   const role = token.role as string
   const path = url.pathname
 
-  if (role && roleAccess[role]) {
-    const allowed = roleAccess[role].some(
-      (prefix) => path === prefix || path.startsWith(prefix + "/")
-    )
-
-    if (!allowed) {
+  // fail-closed: role ที่ไม่รู้จักอยู่ได้แค่ dashboard
+  const allowed = roleAccess[role]
+  if (!allowed) {
+    if (path !== "/dashboard" && !path.startsWith("/dashboard/")) {
       return NextResponse.redirect(new URL("/dashboard", request.url))
     }
+    return NextResponse.next()
+  }
+
+  if (!allowed.some((prefix) => path === prefix || path.startsWith(prefix + "/"))) {
+    return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
   return NextResponse.next()

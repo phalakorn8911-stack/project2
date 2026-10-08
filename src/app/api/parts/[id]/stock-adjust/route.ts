@@ -4,6 +4,7 @@ import { NextResponse } from "next/server"
 import { Client } from "pg"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
+import { canAdjustStock } from "@/lib/api-auth"
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const pg = new Client({
@@ -24,7 +25,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "ไม่ได้เข้าสู่ระบบ" }, { status: 401 })
     }
     const role = (session.user as any).role
-    if (role !== "admin" && role !== "mechanic") {
+    if (!canAdjustStock(role)) {
       return NextResponse.json({ error: "เฉพาะผู้ดูแลและช่างซ่อมเท่านั้น" }, { status: 403 })
     }
     const userId = session.user.id

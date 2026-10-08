@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { requireAuth } from "@/lib/api-auth"
+import { requireAuth, isMechanicLike } from "@/lib/api-auth"
 
 // ช่างกดรับงาน: ผูกงานให้ตัวเอง + เริ่มสถานะ IN_PROGRESS
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -11,7 +11,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   try {
     const { id } = await params
     const role = (session!.user as any).role
-    if (role !== "mechanic" && role !== "admin") {
+    if (!isMechanicLike(role)) {
       return NextResponse.json({ error: "เฉพาะช่างซ่อมเท่านั้น" }, { status: 403 })
     }
 

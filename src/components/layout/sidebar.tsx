@@ -36,14 +36,14 @@ type NavItem = {
 const mainNav: NavItem[] = [
   { label: "แดชบอร์ด", href: "/dashboard", icon: LayoutDashboard },
   { label: "ยานพาหนะ", href: "/vehicles", icon: Truck },
-  { label: "ประเภทรถ", href: "/vehicle-types", icon: Tags, roles: ["admin"] },
-  { label: "หน่วยงาน", href: "/units", icon: Building, roles: ["admin"] },
-  { label: "คนขับรถ", href: "/drivers", icon: UserCog, roles: ["admin", "mechanic"] },
-  { label: "แผนซ่อมบำรุง", href: "/maintenance-plans", icon: ClipboardCheck, roles: ["admin", "mechanic"] },
-  { label: "ใบงานซ่อม", href: "/work-orders", icon: Wrench, roles: ["admin", "mechanic"] },
-  { label: "คลังอะไหล่", href: "/parts", icon: Package, roles: ["admin", "mechanic"] },
-  { label: "รายงาน", href: "/reports", icon: FileBarChart, roles: ["admin", "mechanic"] },
-  { label: "ติดตามรถ GPS", href: "/gps-tracking", icon: MapPin, roles: ["admin"] },
+  { label: "ประเภทรถ", href: "/vehicle-types", icon: Tags, roles: ["admin", "commander", "vehicle_officer"] },
+  { label: "หน่วยงาน", href: "/units", icon: Building, roles: ["admin", "commander"] },
+  { label: "คนขับรถ", href: "/drivers", icon: UserCog, roles: ["admin", "commander", "mechanic", "head_mechanic", "vehicle_officer"] },
+  { label: "แผนซ่อมบำรุง", href: "/maintenance-plans", icon: ClipboardCheck, roles: ["admin", "commander", "mechanic", "head_mechanic"] },
+  { label: "ใบงานซ่อม", href: "/work-orders", icon: Wrench, roles: ["admin", "commander", "mechanic", "head_mechanic"] },
+  { label: "คลังอะไหล่", href: "/parts", icon: Package, roles: ["admin", "commander", "mechanic", "head_mechanic", "parts_officer"] },
+  { label: "รายงาน", href: "/reports", icon: FileBarChart, roles: ["admin", "commander", "mechanic", "head_mechanic", "vehicle_officer", "parts_officer"] },
+  { label: "ติดตามรถ GPS", href: "/gps-tracking", icon: MapPin, roles: ["admin", "commander"] },
   { label: "ผู้ช่วย AI", href: "/ai-assistant", icon: Bot },
 ]
 
@@ -51,8 +51,8 @@ const secondaryNav: NavItem[] = [
   { label: "ข้อมูลส่วนตัว", href: "/profile", icon: UserCircle },
   { label: "ดาวน์โหลดแอป", href: "/download", icon: Download },
   { label: "การแจ้งเตือน", href: "/notifications", icon: Bell },
-  { label: "จัดการผู้ใช้", href: "/users", icon: Users, roles: ["admin"] },
-  { label: "ตั้งค่า", href: "/settings", icon: Settings, roles: ["admin"] },
+  { label: "จัดการผู้ใช้", href: "/users", icon: Users, roles: ["admin", "commander"] },
+  { label: "ตั้งค่า", href: "/settings", icon: Settings, roles: ["admin", "commander"] },
 ]
 
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {

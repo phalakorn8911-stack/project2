@@ -6,8 +6,12 @@ import { cn } from "@/lib/utils"
 
 const roleLabels: Record<string, string> = {
   admin: "ผู้ดูแลระบบ/ผู้บังคับบัญชา",
+  commander: "ผู้บังคับบัญชา",
   mechanic: "ช่างซ่อม",
+  head_mechanic: "หัวหน้าช่าง",
   driver: "พลขับ",
+  vehicle_officer: "นายทหารยานยนต์",
+  parts_officer: "นายทหารคลังอะไหล่",
 }
 
 interface UserForm {

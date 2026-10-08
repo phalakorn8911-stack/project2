@@ -3,13 +3,13 @@ export const dynamic = "force-dynamic"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
-import { requireAuth } from "@/lib/api-auth"
+import { requireAuth, isAdminLike } from "@/lib/api-auth"
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { session, error } = await requireAuth()
   if (error) return error
   // กันยกระดับสิทธิ์: เฉพาะ admin แก้ไขผู้ใช้อื่นได้
-  if ((session!.user as any).role !== "admin") {
+  if (!isAdminLike((session!.user as any).role)) {
     return NextResponse.json({ error: "เฉพาะผู้ดูแลระบบเท่านั้น" }, { status: 403 })
   }
   try {
@@ -70,7 +70,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { session, error } = await requireAuth()
   if (error) return error
-  if ((session!.user as any).role !== "admin") {
+  if (!isAdminLike((session!.user as any).role)) {
     return NextResponse.json({ error: "เฉพาะผู้ดูแลระบบเท่านั้น" }, { status: 403 })
   }
   try {

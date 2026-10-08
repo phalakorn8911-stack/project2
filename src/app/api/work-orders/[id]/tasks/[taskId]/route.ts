@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { requireAuth } from "@/lib/api-auth"
+import { requireAuth, isMechanicLike } from "@/lib/api-auth"
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string; taskId: string }> }) {
   const { session, error } = await requireAuth()
@@ -10,7 +10,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   try {
     const { id, taskId } = await params
     const role = (session!.user as any).role
-    if (role !== "mechanic" && role !== "admin") {
+    if (!isMechanicLike(role)) {
       return NextResponse.json({ error: "เฉพาะช่างซ่อมเท่านั้น" }, { status: 403 })
     }
 

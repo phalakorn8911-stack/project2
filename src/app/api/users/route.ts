@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
-import { requireAuth } from "@/lib/api-auth"
+import { requireAuth, isAdminLike } from "@/lib/api-auth"
 
 export async function GET(request: Request) {
   const { session, error } = await requireAuth()
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
   const { session, error } = await requireAuth()
   if (error) return error
   // กันสร้าง admin มั่ว: เฉพาะ admin สร้างผู้ใช้ได้
-  if ((session!.user as any).role !== "admin") {
+  if (!isAdminLike((session!.user as any).role)) {
     return NextResponse.json({ error: "เฉพาะผู้ดูแลระบบเท่านั้น" }, { status: 403 })
   }
   try {
