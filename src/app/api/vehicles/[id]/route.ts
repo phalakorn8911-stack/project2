@@ -146,18 +146,30 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
     await pg.connect()
 
-    await pg.query(`DELETE FROM vehicle_drivers WHERE vehicle_id = $1`, [id])
-    await pg.query(`DELETE FROM vehicle_photos WHERE "vehicleId" = $1`, [id])
-    await pg.query(`DELETE FROM vehicle_documents WHERE "vehicleId" = $1`, [id])
-    await pg.query(`DELETE FROM vehicle_readings WHERE "vehicleId" = $1`, [id])
-    await pg.query(`DELETE FROM inspection_items WHERE "checklistId" IN (SELECT id FROM inspection_checklists WHERE "vehicleId" = $1)`, [id])
-    await pg.query(`DELETE FROM inspection_checklists WHERE "vehicleId" = $1`, [id])
-    await pg.query(`DELETE FROM work_order_parts WHERE "workOrderId" IN (SELECT id FROM work_orders WHERE "vehicleId" = $1)`, [id])
-    await pg.query(`DELETE FROM work_order_tasks WHERE "workOrderId" IN (SELECT id FROM work_orders WHERE "vehicleId" = $1)`, [id])
-    await pg.query(`DELETE FROM work_orders WHERE "vehicleId" = $1`, [id])
-    await pg.query(`DELETE FROM repair_requests WHERE "vehicleId" = $1`, [id])
-    await pg.query(`DELETE FROM maintenance_schedules WHERE "vehicleId" = $1`, [id])
-    await pg.query(`DELETE FROM vehicles WHERE id = $1`, [id])
+    await pg.query("BEGIN")
+    try {
+      await pg.query(`DELETE FROM vehicle_drivers WHERE vehicle_id = $1`, [id])
+      await pg.query(`DELETE FROM vehicle_photos WHERE "vehicleId" = $1`, [id])
+      await pg.query(`DELETE FROM vehicle_documents WHERE "vehicleId" = $1`, [id])
+      await pg.query(`DELETE FROM vehicle_readings WHERE "vehicleId" = $1`, [id])
+      await pg.query(`DELETE FROM vehicle_histories WHERE vehicle_id = $1`, [id])
+      await pg.query(`DELETE FROM vehicle_trips WHERE "vehicleId" = $1`, [id])
+      await pg.query(`DELETE FROM fuel_consumption WHERE "vehicleId" = $1`, [id])
+      await pg.query(`DELETE FROM gps_tracking WHERE "vehicleId" = $1`, [id])
+      await pg.query(`DELETE FROM driver_reports WHERE "vehicleId" = $1`, [id])
+      await pg.query(`DELETE FROM inspection_items WHERE "checklistId" IN (SELECT id FROM inspection_checklists WHERE "vehicleId" = $1)`, [id])
+      await pg.query(`DELETE FROM inspection_checklists WHERE "vehicleId" = $1`, [id])
+      await pg.query(`DELETE FROM work_order_parts WHERE "workOrderId" IN (SELECT id FROM work_orders WHERE "vehicleId" = $1)`, [id])
+      await pg.query(`DELETE FROM work_order_tasks WHERE "workOrderId" IN (SELECT id FROM work_orders WHERE "vehicleId" = $1)`, [id])
+      await pg.query(`DELETE FROM work_orders WHERE "vehicleId" = $1`, [id])
+      await pg.query(`DELETE FROM repair_requests WHERE "vehicleId" = $1`, [id])
+      await pg.query(`DELETE FROM maintenance_schedules WHERE "vehicleId" = $1`, [id])
+      await pg.query(`DELETE FROM vehicles WHERE id = $1`, [id])
+      await pg.query("COMMIT")
+    } catch (txError) {
+      await pg.query("ROLLBACK")
+      throw txError
+    }
 
     return NextResponse.json({ ok: true })
   } catch (error) {

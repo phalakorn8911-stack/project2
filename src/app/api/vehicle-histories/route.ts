@@ -20,6 +20,9 @@ export async function GET(request: Request) {
     if (!vehicleId) {
       return NextResponse.json({ error: "กรุณากรอกยานพาหนะ" }, { status: 400 })
     }
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(vehicleId)) {
+      return NextResponse.json({ error: "รหัสยานพาหนะไม่ถูกต้อง" }, { status: 400 })
+    }
 
     await pg.connect()
 
